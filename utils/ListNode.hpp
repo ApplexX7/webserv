@@ -1,37 +1,43 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Parser.hpp                                         :+:      :+:    :+:   */
+/*   ListNode.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/09/05 08:06:05 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/07 14:42:43 by wbelfatm         ###   ########.fr       */
+/*   Created: 2024/09/07 14:09:18 by wbelfatm          #+#    #+#             */
+/*   Updated: 2024/09/07 14:56:13 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PARSER_HPP
+#ifndef LIST_NODE
 
-# define PARSER_HPP
+# define LIST_NODE
 
+#include <map>
 #include <iostream>
-#include "../utils/ListNode.hpp"
 
-class Parser {
+class ListNode {
+
     private:
-        std::string _fileName;
-        std::string _fileContent;
+        ListNode *next;
+        ListNode *child;
+        std::string content;       
 
     public:
-        Parser( void );
-        Parser( std::string );
-        Parser( Parser& );
-        ~Parser( void );
-        Parser& operator=( Parser& );
-
-        void loadFile( void );
+        ListNode( void );
+        ListNode( std::string );
+        ListNode( ListNode& );
+        ListNode& operator=( ListNode& );
+        ~ListNode( void );
+        
+        void addNext( ListNode* );
+        void addChild( ListNode* );
         std::string getContent( void );
-        static ListNode *extractBlock( std::string );
+        ListNode *getNext( void );
+        ListNode *getChild( void );
+    
+
 };
 
 #endif

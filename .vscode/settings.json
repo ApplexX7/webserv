@@ -59,6 +59,14 @@
     "typeinfo": "cpp",
     "unordered_map": "cpp",
     "utility": "cpp",
-    "vector": "cpp"
-  }
+    "vector": "cpp",
+    "deque": "cpp",
+    "fstream": "cpp",
+    "iomanip": "cpp",
+    "stack": "cpp",
+    "__tree": "cpp",
+    "list": "cpp",
+    "map": "cpp"
+  },
+  "C_Cpp.errorSquiggles": "disabled"
 }
