@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:05 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/07 14:42:43 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/13 08:52:58 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,10 @@ class Parser {
 
         void loadFile( void );
         std::string getContent( void );
-        static ListNode *extractBlock( std::string );
+
+        
+        static ListNode *extractBlock( std::string, int );
+        static std::string strTrim( std::string );
 };
 
 #endif

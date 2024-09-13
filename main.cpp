@@ -6,22 +6,21 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:04:58 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/07 15:32:35 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/13 10:13:55 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
 
-void printChilds( ListNode *child, int level)
+void printChilds( ListNode *child)
 {
-    std::string prefix = "\t";
-    for (int i = 0; i < level; i++)
-        prefix += "\t";
-
+    std::vector<std::string> fields;
     while (child)
     {
-        std::cout << prefix + "child: " + child->getContent() << std::endl;
-        printChilds(child->getChild(), level + 1);
+        std::cout << "child start: " + child->getContent() << std::endl;
+        fields = child->getFields();
+        for (size_t i = 0; i < fields.size(); i++)
+            std::cout << '\t' << fields[i] << std::endl;
         child = child->getNext();
     }
 }
@@ -36,12 +35,18 @@ int main(int argc, char **argv)
 
     std::string configPath(argv[1]);
     Parser parser(configPath);
-    ListNode* head = Parser::extractBlock(parser.getContent());
-    (void) head;
+    
+    ListNode* head = parser.extractBlock(parser.getContent(), 0);
+    std::vector<std::string> fields;
+
     while (head)
     {
         std::cout << head->getContent() << std::endl;
-        printChilds(head->getChild(), 0);
+        fields = head->getFields();
+        for (size_t i = 0; i < fields.size(); i++)
+            std::cout << fields[i] << std::endl;
+        printChilds(head->getChild());
         head = head->getNext();
+        std::cout << std::endl;
     }
 }

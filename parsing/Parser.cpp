@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/07 15:34:45 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/13 10:15:19 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ void Parser::loadFile( void )
     std::ifstream file;
     std::string content;
     std::string line;
+    std::string tmpLine;
 
     file.open(path);
 
@@ -48,7 +49,11 @@ void Parser::loadFile( void )
     content = "";
     while (std::getline(file, line))
     {
-        content += line;
+        tmpLine = Parser::strTrim(line);
+        
+        if (tmpLine.empty())
+            continue ;
+        content += Parser::strTrim(line);
         content += "\n";
     }
     
@@ -60,66 +65,88 @@ std::string Parser::getContent( void )
     return this->_fileContent;
 }
 
-ListNode *Parser::extractBlock( std::string str )
+ListNode *Parser::extractBlock( std::string str, int level )
 {
-    ListNode *head;
+    std::string server;
+    std::string tmp;
+    size_t start = 0;
+    size_t end = 0;
+    ListNode* head;
+    int isInsideBlock = 0;
 
-    int size = str.size();
-    std::string key = "";
-    std::string val = "";
-    int inside = 0;
-    int start;
+    if (str.empty())
+        return NULL;
 
-    int i = 0;
-    
-    while (i < size)
+    while (end < str.length() && str[end] != '{')
+        end++;
+
+    server = str.substr(start, end);
+    head = new ListNode(server);
+    start = end + 2;
+    end = start;
+
+    // std::cout << server << std::endl;
+
+    // either it is a simple field: add to vector
+    while (end < str.length())
     {
-        if (str[i] == '{' || str[i] == '\n')
+        // std::cout << str.substr(start, str.length()) << std::endl << std::endl;
+        while (end < str.length() && str[end] != '{' && str[end] != '}' && str[end] != '\n')
+            end++;
+        tmp = str.substr(start, end - start);
+
+        char tmpChar = str[end];
+
+        // if it is '{' then there's a subfield
+            // check if level is 0, create a subfield
+            // otherwise take it as field
+        if (tmpChar == '{')
+        {
+            if (level == 0)
+            {
+                end++;
+                isInsideBlock = 0;
+                while (end < str.length() && ((str[end] == '}' && isInsideBlock > 0) || (str[end] != '}')))
+                {
+                    if (str[end] == '{')
+                        isInsideBlock++;
+                    if (str[end] == '}')
+                        isInsideBlock--;
+                    end++;
+                }
+
+                end++;
+
+                head->addChild(Parser::extractBlock(str.substr(start, end - start), level + 1));
+            }
+            else
+            {
+                end++;
+                tmp += '{';
+                head->addField(tmp);
+            }
+        }
+        else if (tmpChar == '\n')
+            head->addField(tmp);
+        else if (tmpChar == '}')
+        {
+            head->addNext(Parser::extractBlock(str.substr(end + 1, str.length()), level));
             break ;
-        key += str[i];
-        i++;
-    }
-
-    head = new ListNode(key);
-    if (i >= size)
-    {
-        return head;
-    }
-    
-    
-    if (str[i] == '{')
-    {
-        inside = 0;
-        i++;
-        while (i < size && (str[i] == ' ' || str[i] == '\n'))
-            i++;
-        start = i;
-        while (i < size)
-        {
-            if (str[i] == '}' && inside <= 0)
-                break ;
-            if (str[i] == '{')
-                inside++;
-            if (str[i] == '}')
-                inside--;
-            i++;
         }
-        if (i >= size || inside < 0)
-        {
-            std::cout << "Invalid braces" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-        val = str.substr(start, i - start);
+        end++;
+        start = end;
     }
-
-    if (i + 1 < size)
-    {
-        head->addNext(Parser::extractBlock(str.substr(i + 1, size - i + 1)));
-    }
-    
-    if (!val.empty())
-        head->addChild(Parser::extractBlock(val));
-
-
     return head;
+}
+
+std::string Parser::strTrim( std::string str )
+{
+    int start = 0;
+    int end = str.length() - 1;
+
+    while (std::isspace(str[start]))
+        start++;
+    while (std::isspace(str[end]))
+        end--;
+    return str.substr(start, end - start + 1);
 }
