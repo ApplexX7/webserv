@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/20 10:14:04 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/20 11:47:12 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,7 +190,7 @@ bool Parser::checkValidList( ListNode *head, int level )
             ||  fields[i].find('}') != fields[i].npos)
                 return false;
         }
-        
+
         if (tmp->hasChild())
             isValid = isValid && Parser::checkValidList(tmp->getChild(), level + 1);
         tmp = tmp->getNext();
@@ -201,7 +201,7 @@ bool Parser::checkValidList( ListNode *head, int level )
 
 bool Parser::checkValidContent( std::string str ) {
     std::stack<char> st;
-    
+
     for (size_t i = 0; i < str.length(); i++) {
         if (st.empty() && (str[i] == '{' || str[i] == '}'))
         {
