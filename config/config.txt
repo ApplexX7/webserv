@@ -1,3 +1,7 @@
-server 3 {
+server {
     location /dsfdsf { test hello }
+    location / {
+        root index.html index.htm
+        hello
+    }
 }

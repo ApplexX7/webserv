@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:04:58 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/20 08:42:55 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/20 10:06:31 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,9 +35,17 @@ int main(int argc, char **argv)
 
     std::string configPath(argv[1]);
     Parser parser(configPath);
-    
-    ListNode* head = parser.extractBlock(parser.getContent(), 0);
+
+    std::string content = parser.getContent();
+
+    if (Parser::checkValidContent(content) == false)
+        return printf("INVALID BRACES IN CONFIG");
+
+    ListNode* head = parser.extractBlocks(parser.getContent(), 0);
     std::vector<std::string> fields;
+
+    if (Parser::checkValidList(head, 0) == false)
+        return printf("INVALID CONFIG FILE");
 
     while (head)
     {

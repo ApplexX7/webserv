@@ -6,13 +6,14 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/20 08:45:29 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/20 10:14:04 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
 #include <fstream>
 #include <algorithm>
+#include <stack>
 
 Parser::Parser( void ) {};
 
@@ -66,7 +67,7 @@ std::string Parser::getContent( void )
     return this->_fileContent;
 }
 
-ListNode *Parser::extractBlock( std::string str, int level )
+ListNode *Parser::extractBlocks( std::string str, int level )
 {
     std::string server;
     std::string tmp;
@@ -75,7 +76,7 @@ ListNode *Parser::extractBlock( std::string str, int level )
     ListNode* head;
     int isInsideBlock = 0;
 
-    if (str.empty())
+    if (Parser::strTrim(str).empty())
         return NULL;
 
     while (end < str.length() && str[end] != '{')
@@ -116,7 +117,7 @@ ListNode *Parser::extractBlock( std::string str, int level )
                     end++;
                 }
                 end++;
-                head->addChild(Parser::extractBlock(str.substr(start, end - start), level + 1));
+                head->addChild(Parser::extractBlocks(str.substr(start, end - start), level + 1));
             }
             else
             {
@@ -144,7 +145,7 @@ ListNode *Parser::extractBlock( std::string str, int level )
         {
             if (str[end - 1] != '\n')
                 head->addField(tmp);
-            head->addNext(Parser::extractBlock(str.substr(end + 1, str.length()), level));
+            head->addNext(Parser::extractBlocks(str.substr(end + 1, str.length()), level));
             break ;
         }
         end++;
@@ -165,8 +166,53 @@ std::string Parser::strTrim( std::string str )
     return str.substr(start, end - start + 1);
 }
 
-bool Parser::checkValid( ListNode *head )
+bool Parser::checkValidList( ListNode *head, int level )
 {
-    (void) head;
-    return true;
+    ListNode *tmp = head;
+    bool isValid = true;
+    std::string content;
+    std::vector<std::string> fields;
+
+
+    if (level > 1)
+        return false;
+
+    // check if content contains braces
+    while (tmp && isValid) {
+        content = Parser::strTrim(tmp->getContent());
+        fields = tmp->getFields();
+        if ((level == 0 && content != "server") || content.find('{') != content.npos
+         || content.find('}') != content.npos)
+            return false;
+
+        for (size_t i = 0; i < fields.size(); i++) {
+            if (fields[i].find('{') != fields[i].npos
+            ||  fields[i].find('}') != fields[i].npos)
+                return false;
+        }
+        
+        if (tmp->hasChild())
+            isValid = isValid && Parser::checkValidList(tmp->getChild(), level + 1);
+        tmp = tmp->getNext();
+    }
+
+    return isValid;
+}
+
+bool Parser::checkValidContent( std::string str ) {
+    std::stack<char> st;
+    
+    for (size_t i = 0; i < str.length(); i++) {
+        if (st.empty() && (str[i] == '{' || str[i] == '}'))
+        {
+            st.push(str[i]);
+            continue;
+        }
+        if (str[i] == '}')
+            st.pop();
+        if (str[i] == '{')
+            st.push(str[i]);
+            
+    }
+    return st.empty();
 }
