@@ -6,12 +6,13 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/13 10:15:19 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/20 08:45:29 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
 #include <fstream>
+#include <algorithm>
 
 Parser::Parser( void ) {};
 
@@ -83,17 +84,17 @@ ListNode *Parser::extractBlock( std::string str, int level )
     server = str.substr(start, end);
     head = new ListNode(server);
     start = end + 2;
+    if (str[start - 1] != '\n')
+        start--;
     end = start;
-
-    // std::cout << server << std::endl;
 
     // either it is a simple field: add to vector
     while (end < str.length())
     {
-        // std::cout << str.substr(start, str.length()) << std::endl << std::endl;
         while (end < str.length() && str[end] != '{' && str[end] != '}' && str[end] != '\n')
             end++;
         tmp = str.substr(start, end - start);
+        
 
         char tmpChar = str[end];
 
@@ -114,15 +115,26 @@ ListNode *Parser::extractBlock( std::string str, int level )
                         isInsideBlock--;
                     end++;
                 }
-
                 end++;
-
                 head->addChild(Parser::extractBlock(str.substr(start, end - start), level + 1));
             }
             else
             {
+                start = end;
                 end++;
-                tmp += '{';
+                isInsideBlock = 0;
+                while (end < str.length() && ((str[end] == '}' && isInsideBlock > 0) || (str[end] != '}')))
+                {
+                    if (str[end] == '{')
+                        isInsideBlock++;
+                    if (str[end] == '}')
+                        isInsideBlock--;
+                    end++;
+                }
+                end++;
+                tmp += str.substr(start, end - start + 1);
+                
+                std::replace(tmp.begin(), tmp.end(), '\n', ' ');
                 head->addField(tmp);
             }
         }
@@ -130,6 +142,8 @@ ListNode *Parser::extractBlock( std::string str, int level )
             head->addField(tmp);
         else if (tmpChar == '}')
         {
+            if (str[end - 1] != '\n')
+                head->addField(tmp);
             head->addNext(Parser::extractBlock(str.substr(end + 1, str.length()), level));
             break ;
         }
@@ -149,4 +163,10 @@ std::string Parser::strTrim( std::string str )
     while (std::isspace(str[end]))
         end--;
     return str.substr(start, end - start + 1);
+}
+
+bool Parser::checkValid( ListNode *head )
+{
+    (void) head;
+    return true;
 }
