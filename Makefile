@@ -6,15 +6,15 @@
 #    By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/09/05 08:03:16 by wbelfatm          #+#    #+#              #
-#    Updated: 2024/09/07 14:43:54 by wbelfatm         ###   ########.fr        #
+#    Updated: 2024/09/22 08:51:04 by wbelfatm         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-CFLAGS = -Wall -Wextra -Werror -std=c++98
-SRC = main.cpp parsing/Parser.cpp utils/ListNode.cpp
+CFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g
+SRC = main.cpp parsing/Parser.cpp utils/ListNode.cpp utils/ServerNode.cpp
 OBJ = ${SRC:.cpp=.o}
 NAME = webserv
-HEADERS = webserv.hpp parsing/Parser.hpp utils/ListNode.hpp
+HEADERS = webserv.hpp parsing/Parser.hpp utils/ListNode.hpp utils/ServerNode.hpp
 CC = c++
 RM = rm -f
 

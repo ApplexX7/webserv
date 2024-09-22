@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/20 11:47:12 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/22 08:54:17 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,4 +215,30 @@ bool Parser::checkValidContent( std::string str ) {
             
     }
     return st.empty();
+}
+
+std::vector<std::string> *Parser::strSplit( std::string str ) {
+    size_t start;
+    size_t end;
+    std::vector<std::string> *strs = new std::vector<std::string>;
+
+    while (str.length() > 0)
+    {
+        start = 0;
+        while (start < str.length() && str[start] == ' ')
+            start++;
+        if (start >= str.length())
+            break;
+        end = start;
+        while (end < str.length() && str[end] != ' ')
+            end++;
+        strs->push_back(str.substr(start, end - start));
+        // std::cout << str.substr(start, end - start) << std::endl;
+
+        if (end >= str.length())
+            break ;
+        str = str.substr(end + 1, str.length() - 1);
+    }
+
+    return strs;
 }

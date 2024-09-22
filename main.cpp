@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:04:58 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/20 10:06:31 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/22 08:56:28 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,14 +47,28 @@ int main(int argc, char **argv)
     if (Parser::checkValidList(head, 0) == false)
         return printf("INVALID CONFIG FILE");
 
-    while (head)
+    // while (head)
+    // {
+    //     std::cout << head->getContent() << std::endl;
+    //     fields = head->getFields();
+    //     for (size_t i = 0; i < fields.size(); i++)
+    //         std::cout << fields[i] << std::endl;
+    //     printChilds(head->getChild());
+    //     head = head->getNext();
+    //     std::cout << std::endl;
+    // }
+
+    ServerNode n(head);
+
+    std::map<std::string, std::vector<std::string> > f = n.getFields();
+
+    std::map<std::string, std::vector<std::string> >::iterator it;
+    for (it = f.begin(); it != f.end(); it++)
     {
-        std::cout << head->getContent() << std::endl;
-        fields = head->getFields();
-        for (size_t i = 0; i < fields.size(); i++)
-            std::cout << fields[i] << std::endl;
-        printChilds(head->getChild());
-        head = head->getNext();
+        std::cout << it->first << ": ";
+        for (int i = 0; i < (int) it->second.size(); i++) {
+            std::cout << it->second[i] << " ";
+        }
         std::cout << std::endl;
     }
 }

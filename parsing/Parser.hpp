@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:05 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/20 12:13:51 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/22 08:20:57 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ class Parser {
 
         // string utils
         static std::string strTrim( std::string );
-        static std::string strSplit( std::string );
+        static std::vector<std::string> *strSplit( std::string );
 
         // general utils
         static ListNode *extractBlocks( std::string, int );
