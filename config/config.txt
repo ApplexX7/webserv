@@ -1,8 +1,10 @@
 server {
+    listen 3000 500
+    listen 4000
     location /dsfdsf { test hello }
     location / {
         root index.html index.htm
-        hello
+        hello 
     }
 
     hello world dsfdf dfdfs
