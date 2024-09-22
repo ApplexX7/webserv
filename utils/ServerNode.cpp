@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/22 08:54:35 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/22 10:06:17 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,9 @@ ServerNode::ServerNode( ListNode *server ) {
     // loop through the server fields, get the first word as key and others as value
     std::vector<std::string> fields = server->getFields();
     std::vector<std::string> splitField;
+    std::string path;
+    
+    ListNode *child = server->getChild();
 
     for (int i = 0; i < (int) fields.size(); i++) {
         splitField = *(Parser::strSplit(fields[i]));
@@ -28,7 +31,26 @@ ServerNode::ServerNode( ListNode *server ) {
             this->addField(splitField[0], splitField[j]);
         }
     }
-    // loop through children set second word as key and all other fields as value
+    
+    // loop through children, set second word as key and all other fields as value
+    while (child != NULL)
+    {
+        fields = child->getFields();
+        splitField = *(Parser::strSplit(child->getContent()));
+        if (splitField.size() != 2)
+        {
+            std::cerr << "LOCATION PATH INVALID" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        path = splitField[1];
+        for (int i = 0; i < (int) fields.size(); i++) {
+            splitField = *(Parser::strSplit(fields[i]));
+            for (int j = 1; j < (int) splitField.size(); j++) {
+                this->addLocationField(path, splitField[0], splitField[j]);
+            }
+        }
+        child = child->getNext();
+    }
 };
 
 ServerNode::ServerNode( ServerNode& cpy ) {
@@ -43,9 +65,17 @@ ServerNode& ServerNode::operator=( ServerNode& rhs ) {
 ServerNode::~ServerNode( void ) {};
 
 void ServerNode::addField( std::string key, std::string value) {
-    this->fields[key].push_back(value);
+    this->fields[key].addValue(value);
 }
 
-std::map<std::string, std::vector<std::string> > ServerNode::getFields( void ) {
+void ServerNode::addLocationField( std::string path, std::string key, std::string value) {
+    this->locations[path][key].addValue(value);
+}
+
+std::map<std::string, Field > ServerNode::getFields( void ) {
     return this->fields;
+}
+
+std::map<std::string, std::map<std::string, Field > > ServerNode::getLocations( void ) {
+    return this->locations;
 }

@@ -6,12 +6,13 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/22 08:43:13 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/22 09:59:16 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 #include "ListNode.hpp"
+#include "Field.hpp"
 
 #include <iostream>
 #include <vector>
@@ -20,8 +21,8 @@
 class ServerNode {
 
     private:
-        std::map<std::string, std::vector<std::string> > fields;
-        std::map<std::string, std::vector<std::string> > locations;
+        std::map<std::string, Field > fields;
+        std::map<std::string, std::map<std::string, Field > > locations;
 
     public:
         ServerNode( void );
@@ -31,7 +32,9 @@ class ServerNode {
         ~ServerNode( void );
 
         void addField( std::string, std::string );
-        std::map<std::string, std::vector<std::string> > getFields( void );
+        std::map<std::string, Field > getFields( void );
     
+        void addLocationField( std::string, std::string, std::string);
+        std::map<std::string, std::map<std::string, Field > > getLocations( void );
     
 };

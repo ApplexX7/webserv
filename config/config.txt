@@ -8,3 +8,7 @@ server {
     hello world dsfdf dfdfs
     again / /html
 }
+
+server {
+    walid belfatmi
+}
