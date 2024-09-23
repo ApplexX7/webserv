@@ -1,16 +1,18 @@
 server {
-    listen 3000 500
-    listen 4000
-    location /dsfdsf { test hello }
-    location / {
-        root index.html index.htm
-        hello 
-    }
+    listen 3000 500 4000;
+    location /dsfdsf { 
+        test hello;
+    };
+    location / { root index.html; index.htm hello };
 
-    hello world dsfdf dfdfs
-    again / /html
+    hello world dsfdf dfdfs;
 }
 
-server {
-    walid belfatmi
+server
+{
+    walid belfatmi;
+    root hello.html;
+    location / {
+        root index.html;
+    }
 }

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/22 09:59:16 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/23 11:37:11 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 #include <iostream>
 #include <vector>
 #include <map>
+
+// 
 
 class ServerNode {
 
@@ -36,5 +38,4 @@ class ServerNode {
     
         void addLocationField( std::string, std::string, std::string);
         std::map<std::string, std::map<std::string, Field > > getLocations( void );
-    
 };

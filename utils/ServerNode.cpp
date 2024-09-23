@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/22 10:28:06 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/23 12:22:50 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,14 +22,18 @@ ServerNode::ServerNode( ListNode *server ) {
     std::vector<std::string> fields = server->getFields();
     std::vector<std::string> splitField;
     std::string path;
+    std::string trimedField;
     
     ListNode *child = server->getChild();
 
     for (int i = 0; i < (int) fields.size(); i++) {
-        splitField = *(Parser::strSplit(fields[i]));
+        trimedField = Parser::strTrim(fields[i]);
+        if (trimedField.length() == 0)
+            continue;
+        splitField = *(Parser::strSplit(trimedField));
         if (splitField.size() < 2)
         {
-            std::cerr << "Field has no value" << std::endl;
+            std::cerr << "Field " + splitField[0] + " has no value" << std::endl;
             exit(EXIT_FAILURE);
         }
         for (int j = 1; j < (int) splitField.size(); j++) {
@@ -51,6 +55,9 @@ ServerNode::ServerNode( ListNode *server ) {
         path = splitField[1];
     
         for (int i = 0; i < (int) fields.size(); i++) {
+            trimedField = Parser::strTrim(fields[i]);
+            if (trimedField.length() == 0)
+                continue;
             splitField = *(Parser::strSplit(fields[i]));
             if (splitField.size() < 2)
             {

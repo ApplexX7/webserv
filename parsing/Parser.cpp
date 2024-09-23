@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/22 08:54:17 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/23 12:14:28 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ void Parser::loadFile( void )
         if (tmpLine.empty())
             continue ;
         content += Parser::strTrim(line);
-        content += "\n";
+        content += " ";
     }
     
     this->_fileContent = content;
@@ -92,7 +92,7 @@ ListNode *Parser::extractBlocks( std::string str, int level )
     // either it is a simple field: add to vector
     while (end < str.length())
     {
-        while (end < str.length() && str[end] != '{' && str[end] != '}' && str[end] != '\n')
+        while (end < str.length() && str[end] != '{' && str[end] != '}' && str[end] != ';')
             end++;
         tmp = str.substr(start, end - start);
         
@@ -139,11 +139,11 @@ ListNode *Parser::extractBlocks( std::string str, int level )
                 head->addField(tmp);
             }
         }
-        else if (tmpChar == '\n')
+        else if (tmpChar == ';')
             head->addField(tmp);
         else if (tmpChar == '}')
         {
-            if (str[end - 1] != '\n')
+            if (str[end - 1] != ';')
                 head->addField(tmp);
             head->addNext(Parser::extractBlocks(str.substr(end + 1, str.length()), level));
             break ;

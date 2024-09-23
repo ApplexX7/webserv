@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:04:58 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/22 10:16:24 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/23 12:19:37 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,10 @@ void printChilds( ListNode *child)
     std::vector<std::string> fields;
     while (child)
     {
-        std::cout << "child start: " + child->getContent() << std::endl;
+        std::cout << "\tchild start: " + child->getContent() << std::endl;
         fields = child->getFields();
         for (size_t i = 0; i < fields.size(); i++)
-            std::cout << '\t' << fields[i] << std::endl;
+            std::cout << "\t\t" << fields[i] << std::endl;
         child = child->getNext();
     }
 }
@@ -83,10 +83,10 @@ int main(int argc, char **argv)
     //     std::cout << head->getContent() << std::endl;
     //     fields = head->getFields();
     //     for (size_t i = 0; i < fields.size(); i++)
-    //         std::cout << fields[i] << std::endl;
+    //         std::cout << '\t' << fields[i] << std::endl;
     //     printChilds(head->getChild());
     //     head = head->getNext();
-    //     std::cout << std::endl;
+    //     std::cout <<  "=================" << std::endl;
     // }
 
     while (head) {
