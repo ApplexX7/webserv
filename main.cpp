@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:04:58 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 11:16:04 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 11:59:36 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,11 +95,16 @@ int main(int argc, char **argv)
     // ServerNode server(head);
 
     while (head) {
-         printServerNode(head);
-         std::cout << "==========================" << std::endl;
-        head = head->getNext();
+        try
+        {
+            printServerNode(head);
+            std::cout << "==========================" << std::endl;
+            head = head->getNext();
+            
+        }
+        catch (Parser::ParsingException e) {
+            std::cout << "Config file error: " << e.what() << std::endl;
+            break ;
+        }
     }
-
-    
-    
 }

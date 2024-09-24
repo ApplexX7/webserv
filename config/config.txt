@@ -1,4 +1,5 @@
 server {
+    hhhhh;
     listen 3000 500;
     listen 4000     ;
     root jilali.html;
@@ -12,9 +13,10 @@ server {
 
 server
 {
+    f;
     walid belfatmi;wesh hi hello;
     root hello.html;
     location / {
-        
+        dfs;
     }
 }

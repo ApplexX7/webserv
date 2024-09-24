@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 11:24:34 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 11:58:24 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,10 +34,7 @@ ServerNode::ServerNode( ListNode *server ) {
             continue;
         splitField = *(Parser::strSplit(trimedField));
         if (splitField.size() < 2)
-        {
-            std::cerr << "Field " + splitField[0] + " has no value" << std::endl;
-            exit(EXIT_FAILURE);
-        }
+            throw Parser::ParsingException("Field " + splitField[0] + " has no value");
         for (int j = 1; j < (int) splitField.size(); j++) {
             this->addField(splitField[0], splitField[j]);
         }
@@ -48,19 +45,10 @@ ServerNode::ServerNode( ListNode *server ) {
     {
         fields = child->getFields();
         splitField = *(Parser::strSplit(child->getContent()));
-        if (splitField.size() != 2)
-        {
-            std::cerr << "LOCATION PATH INVALID" << std::endl;
-            exit(EXIT_FAILURE);
-        }
+        if (splitField.size() != 2 || splitField[0] != "location")
+            throw Parser::ParsingException("Invalid location Field");
         
         path = splitField[1];
-
-        if (fields.size() == 0)
-        {
-            std::cerr << "LOCATION HAS NO DIRECTIVES" << std::endl;
-            exit(EXIT_FAILURE);
-        }
 
         for (int i = 0; i < (int) fields.size(); i++) {
             trimedField = Parser::strTrim(fields[i]);
@@ -68,10 +56,7 @@ ServerNode::ServerNode( ListNode *server ) {
                 continue ;
             splitField = *(Parser::strSplit(trimedField));
             if (splitField.size() < 2)
-            {
-                std::cerr << "Field \"" + splitField[0] +  "\" has no value" << std::endl;
-                exit(EXIT_FAILURE);
-            }
+                throw Parser::ParsingException("Field " + splitField[0] + " has no value");
             for (int j = 1; j < (int) splitField.size(); j++) {
                 this->addLocationField(path, splitField[0], splitField[j]);
             }
