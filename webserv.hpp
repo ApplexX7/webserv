@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:14:22 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 12:05:11 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 12:38:02 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,10 @@
 
 
 class Webserv {
-    
+    public:
+        Webserv( void );
+        Webserv( std::string );
+        ~Webserv( void );
 };
 
 #endif

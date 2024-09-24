@@ -1,4 +1,4 @@
-server {
+server {}
     hhhhh;
     listen 3000 500;
     listen 4000     ;
