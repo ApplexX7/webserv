@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/07 14:15:55 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/20 09:35:30 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 22:03:05 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,4 +85,12 @@ bool ListNode::hasChild( void )
 std::vector<std::string> ListNode::getFields( void )
 {
     return this->fields;
+}
+
+void ListNode::freeListNode( ListNode *head ) {
+    if (!head)
+        return ;
+    ListNode::freeListNode(head->getChild());
+    ListNode::freeListNode(head->getNext());
+    delete head;
 }

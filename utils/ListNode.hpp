@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/07 14:09:18 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 09:38:26 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 22:01:53 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,8 @@ class ListNode {
         bool hasNext( void );
         bool hasChild( void );
         std::vector<std::string> getFields( void );
+        
+        static void freeListNode( ListNode* );
 };
 
 #endif

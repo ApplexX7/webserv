@@ -67,7 +67,14 @@
     "__tree": "cpp",
     "list": "cpp",
     "map": "cpp",
-    "filesystem": "cpp"
+    "filesystem": "cpp",
+    "__verbose_abort": "cpp",
+    "clocale": "cpp",
+    "execution": "cpp",
+    "variant": "cpp"
   },
-  "C_Cpp.errorSquiggles": "disabled"
+  "C_Cpp.errorSquiggles": "disabled",
+  "cSpell.words": [
+    "Webserv"
+  ]
 }

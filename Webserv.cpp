@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 12:38:38 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 22:37:33 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,70 +29,73 @@ void printChilds( ListNode *child)
 
 void printServerNode(ListNode* server) {
     ServerNode n(server);
-    std::map<std::string, Field > fields;
+    // (void) server;
+    // std::map<std::string, Field > fields;
 
-    std::map<std::string, Field > f = n.getFields();
+    // std::map<std::string, Field > f = n.getFields();
 
-    std::map<std::string, Field >::iterator it;
-    for (it = f.begin(); it != f.end(); it++)
-    {
-        std::cout << it->first << " => ";
-        for (int i = 0; i < (int) it->second.getValues().size(); i++) {
-            std::cout << it->second.getValues()[i] << " ";
-        }
-        std::cout << std::endl;
-    }
+    // std::map<std::string, Field >::iterator it;
+    // for (it = f.begin(); it != f.end(); it++)
+    // {
+    //     std::cout << it->first << " => ";
+    //     for (int i = 0; i < (int) it->second.getValues().size(); i++) {
+    //         std::cout << it->second.getValues()[i] << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
 
-    std::map<std::string, Location > locations = n.getLocations();
+    // std::map<std::string, Location > locations = n.getLocations();
 
-    std::map<std::string, Location >::iterator loc_it;
+    // std::map<std::string, Location >::iterator loc_it;
         
     
-    for (loc_it = locations.begin(); loc_it != locations.end(); loc_it++) {
-        std::cout << loc_it->first << ": " << std::endl;
-        fields = loc_it->second.getFields();
-        for (it = fields.begin(); it != fields.end(); it++) {
-            std::cout << "\t" << it->first << " => ";
-            for (int i = 0; i < (int) it->second.getValues().size(); i++) {
-                std::cout << it->second.getValues()[i] << " ";
-            }
-            std::cout << std::endl;
-        }
-    }
+    // for (loc_it = locations.begin(); loc_it != locations.end(); loc_it++) {
+    //     std::cout << loc_it->first << ": " << std::endl;
+    //     fields = loc_it->second.getFields();
+    //     for (it = fields.begin(); it != fields.end(); it++) {
+    //         std::cout << "\t" << it->first << " => ";
+    //         for (int i = 0; i < (int) it->second.getValues().size(); i++) {
+    //             std::cout << it->second.getValues()[i] << " ";
+    //         }
+    //         std::cout << std::endl;
+    //     }
+    // }
 }
 
 Webserv::Webserv( std::string configPath ) {
-
-    std::cout << "Here" << std::endl;
-
     Parser parser(configPath);
     std::string content = parser.getContent();
     std::vector<std::string> fields;
     ListNode* head;
+    ListNode* tmp;
 
     if (Parser::checkValidContent(content) == false)
-        throw Parser::ParsingException("INVALID BRACES IN CONFIG");
+        throw Parser::ParsingException("Invalid braces in config file");
 
     head = parser.extractBlocks(parser.getContent(), 0);
-
+    this->listHead = head;
     if (Parser::checkValidList(head, 0) == false)
-        throw Parser::ParsingException("INVALID CONFIG FILE");
+        throw Parser::ParsingException("Invalid server block name");
 
-    while (head) {
-        try
-        {
-            printServerNode(head);
-            std::cout << "==========================" << std::endl;
-            head = head->getNext();
-            
-        }
-        catch (Parser::ParsingException e) {
-            std::cout << "Config file error: " << e.what() << std::endl;
-            break ;
-        }
+    tmp = head;
+    try
+    {
+    while (tmp) {
+        printServerNode(tmp);
+        
+        tmp = tmp->getNext();
+        this->servers.push_back(new ServerNode(tmp));
     }
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << "Config file error: " << e.what() << std::endl;
+    }
+
 }
 
 Webserv::~Webserv( void ) {
-    std::cout << "FREE here" << std::endl;
+    ListNode::freeListNode(this->listHead);
+    
+    // todo: free servers
 }

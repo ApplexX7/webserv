@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 11:45:47 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 22:27:14 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,9 +159,9 @@ std::string Parser::strTrim( std::string str )
     int start = 0;
     int end = str.length() - 1;
 
-    while (std::isspace(str[start]))
+    while (start <= end && std::isspace(str[start]))
         start++;
-    while (std::isspace(str[end]))
+    while (end >= 0 && std::isspace(str[end]))
         end--;
     return str.substr(start, end - start + 1);
 }
@@ -217,10 +217,10 @@ bool Parser::checkValidContent( std::string str ) {
     return st.empty();
 }
 
-std::vector<std::string> *Parser::strSplit( std::string str ) {
+std::vector<std::string> Parser::strSplit( std::string str ) {
     size_t start;
     size_t end;
-    std::vector<std::string> *strs = new std::vector<std::string>;
+    std::vector<std::string> strs;
 
     while (str.length() > 0)
     {
@@ -232,7 +232,7 @@ std::vector<std::string> *Parser::strSplit( std::string str ) {
         end = start;
         while (end < str.length() && str[end] != ' ')
             end++;
-        strs->push_back(str.substr(start, end - start));
+        strs.push_back(str.substr(start, end - start));
         // std::cout << str.substr(start, end - start) << std::endl;
 
         if (end >= str.length())

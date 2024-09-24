@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:04:58 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 12:39:25 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 22:38:38 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,11 +27,12 @@ int main(int argc, char **argv)
     try
     {
         Webserv webserv(configPath);
-
         // (void) webserv;
     }
     catch(const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
+        std::cerr << "Config file error: " << e.what() << '\n';
     }
+
+    // while (1);`
 }

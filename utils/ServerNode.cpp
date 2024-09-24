@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 11:58:24 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 22:28:09 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,11 @@ ServerNode::ServerNode( ListNode *server ) {
         trimedField = Parser::strTrim(fields[i]);
         if (trimedField.length() == 0)
             continue;
-        splitField = *(Parser::strSplit(trimedField));
-        if (splitField.size() < 2)
-            throw Parser::ParsingException("Field " + splitField[0] + " has no value");
+        splitField = (Parser::strSplit(trimedField));
+        if (splitField.size() == 1)
+            throw Parser::ParsingException("Directive " + splitField[0] + " has no value");
+        if (this->fieldExists(splitField[0]))
+            throw Parser::ParsingException("Duplicate directives for " + splitField[0]);
         for (int j = 1; j < (int) splitField.size(); j++) {
             this->addField(splitField[0], splitField[j]);
         }
@@ -44,19 +46,23 @@ ServerNode::ServerNode( ListNode *server ) {
     while (child != NULL)
     {
         fields = child->getFields();
-        splitField = *(Parser::strSplit(child->getContent()));
+        splitField = (Parser::strSplit(child->getContent()));
         if (splitField.size() != 2 || splitField[0] != "location")
-            throw Parser::ParsingException("Invalid location Field");
+            throw Parser::ParsingException("Invalid location directive");
         
         path = splitField[1];
+
+        if (this->locationExists(path))
+            throw Parser::ParsingException("Duplicate locations for path " + path);
 
         for (int i = 0; i < (int) fields.size(); i++) {
             trimedField = Parser::strTrim(fields[i]);
             if (trimedField.length() == 0)
                 continue ;
-            splitField = *(Parser::strSplit(trimedField));
-            if (splitField.size() < 2)
-                throw Parser::ParsingException("Field " + splitField[0] + " has no value");
+            splitField = (Parser::strSplit(trimedField));
+            if (splitField.size() == 1)
+                throw Parser::ParsingException("Directive " + splitField[0] + " has no value");
+            
             for (int j = 1; j < (int) splitField.size(); j++) {
                 this->addLocationField(path, splitField[0], splitField[j]);
             }
@@ -99,4 +105,16 @@ std::map<std::string, Location > ServerNode::getLocations( void ) {
 
 Field ServerNode::getField( std::string key ) {
     return this->fields[key];
+}
+
+bool ServerNode::fieldExists( std::string key ) {
+    if (this->fields.find(key) != this->fields.end())
+        return true;
+    return false;
+}
+
+bool ServerNode::locationExists( std::string path ) {
+    if (this->locations.find(path) != this->locations.end())
+        return true;
+    return false;
 }
