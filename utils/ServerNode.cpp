@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 10:13:01 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 11:24:34 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 ServerNode::ServerNode( void ) {};
 
 ServerNode::ServerNode( ListNode *server ) {
-    
     std::map<std::string,  Location>::iterator it;
 
     // loop through the server fields, get the first word as key and others as value
@@ -26,7 +25,7 @@ ServerNode::ServerNode( ListNode *server ) {
     std::vector<std::string> splitField;
     std::string path;
     std::string trimedField;
-    
+
     ListNode *child = server->getChild();
 
     for (int i = 0; i < (int) fields.size(); i++) {
@@ -56,11 +55,17 @@ ServerNode::ServerNode( ListNode *server ) {
         }
         
         path = splitField[1];
-    
+
+        if (fields.size() == 0)
+        {
+            std::cerr << "LOCATION HAS NO DIRECTIVES" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
         for (int i = 0; i < (int) fields.size(); i++) {
             trimedField = Parser::strTrim(fields[i]);
             if (trimedField.length() == 0)
-                continue;
+                continue ;
             splitField = *(Parser::strSplit(trimedField));
             if (splitField.size() < 2)
             {
@@ -71,11 +76,13 @@ ServerNode::ServerNode( ListNode *server ) {
                 this->addLocationField(path, splitField[0], splitField[j]);
             }
         }
+        if (this->locations.find(path) == this->locations.end())
+        {
+            // location has no directives
+            this->locations[path] = NULL;
+        }
+        this->locations[path].setServer(this);
         child = child->getNext();
-    }
-
-    for (it = this->locations.begin(); it != this->locations.end(); it++) {
-        it->second.setServer(this);
     }
 };
 
@@ -103,4 +110,8 @@ std::map<std::string, Field > ServerNode::getFields( void ) {
 
 std::map<std::string, Location > ServerNode::getLocations( void ) {
     return this->locations;
+}
+
+Field ServerNode::getField( std::string key ) {
+    return this->fields[key];
 }

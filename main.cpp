@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:04:58 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 09:49:54 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 11:16:04 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ void printServerNode(ListNode* server) {
     std::map<std::string, Location > locations = n.getLocations();
 
     std::map<std::string, Location >::iterator loc_it;
+        
     
     for (loc_it = locations.begin(); loc_it != locations.end(); loc_it++) {
         std::cout << loc_it->first << ": " << std::endl;
@@ -91,9 +92,14 @@ int main(int argc, char **argv)
     //     std::cout <<  "=================" << std::endl;
     // }
 
+    // ServerNode server(head);
+
     while (head) {
          printServerNode(head);
          std::cout << "==========================" << std::endl;
         head = head->getNext();
     }
+
+    
+    
 }

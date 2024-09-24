@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 09:30:53 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 10:09:10 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 10:43:43 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ class Location {
         void setServer( ServerNode* server );
         std::map<std::string, Field > getFields( void );
         void addField( std::string, std::string );
+        Field getField( std::string );
 };
 
 #endif
