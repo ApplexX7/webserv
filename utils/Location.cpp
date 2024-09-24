@@ -1,32 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Field.hpp                                          :+:      :+:    :+:   */
+/*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/09/22 09:40:14 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 09:38:15 by wbelfatm         ###   ########.fr       */
+/*   Created: 2024/09/24 09:31:10 by wbelfatm          #+#    #+#             */
+/*   Updated: 2024/09/24 10:08:55 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef FIELD_HPP
+#include "Location.hpp"
 
-# define FIELD_HPP
-
-#include <iostream>
-#include <vector>
-
-class Field {
-    private:
-        std::string name;
-        std::vector<std::string> values;
-
-    public:
-        Field( void );
-
-        void addValue( std::string );
-        std::vector<std::string> getValues( void );
+Location::Location( void ) {
 };
 
-#endif
+Location::Location( ServerNode* server ) {
+    this->server = server;
+}
+
+void Location::setServer( ServerNode* server ) {
+    this->server = server;
+}
+
+std::map<std::string, Field > Location::getFields( void ) {
+    return this->fields;
+}
+
+void Location::addField( std::string key, std::string value ) {
+    this->fields[key].addValue(value);
+}

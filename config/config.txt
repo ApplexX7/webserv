@@ -1,5 +1,6 @@
 server {
-    listen 3000 500 4000;
+    listen 3000 500;
+    listen 4000     ;
     location /dsfdsf { 
         test hello;
     };

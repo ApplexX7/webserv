@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:04:58 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/23 12:19:37 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 09:49:54 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ void printChilds( ListNode *child)
 
 void printServerNode(ListNode* server) {
     ServerNode n(server);
+    std::map<std::string, Field > fields;
 
     std::map<std::string, Field > f = n.getFields();
 
@@ -40,13 +41,14 @@ void printServerNode(ListNode* server) {
         std::cout << std::endl;
     }
 
-    std::map<std::string, std::map<std::string, Field > > locations = n.getLocations();
+    std::map<std::string, Location > locations = n.getLocations();
 
-    std::map<std::string, std::map<std::string, Field > >::iterator loc_it;
+    std::map<std::string, Location >::iterator loc_it;
     
     for (loc_it = locations.begin(); loc_it != locations.end(); loc_it++) {
         std::cout << loc_it->first << ": " << std::endl;
-        for (it = loc_it->second.begin(); it != loc_it->second.end(); it++) {
+        fields = loc_it->second.getFields();
+        for (it = fields.begin(); it != fields.end(); it++) {
             std::cout << "\t" << it->first << " => ";
             for (int i = 0; i < (int) it->second.getValues().size(); i++) {
                 std::cout << it->second.getValues()[i] << " ";

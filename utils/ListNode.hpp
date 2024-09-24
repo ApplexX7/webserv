@@ -6,13 +6,13 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/07 14:09:18 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/20 09:34:53 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 09:38:26 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef LIST_NODE
+#ifndef LIST_NODE_HPP
 
-# define LIST_NODE
+# define LIST_NODE_HPP
 
 #include <map>
 #include <iostream>
