@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 10:42:33 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 12:08:16 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 #include "ListNode.hpp"
 #include "Field.hpp"
 #include "Location.hpp"
-
 #include <iostream>
 #include <vector>
 #include <map>

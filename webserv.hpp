@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:14:22 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 11:54:46 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 12:05:11 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,5 +18,10 @@
 # include <vector>
 # include "parsing/Parser.hpp"
 # include "utils/ServerNode.hpp"
+
+
+class Webserv {
+    
+};
 
 #endif

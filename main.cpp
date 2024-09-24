@@ -6,11 +6,11 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:04:58 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 11:59:36 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/24 12:01:23 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "webserv.hpp"
+#include "Webserv.hpp"
 
 void printChilds( ListNode *child)
 {
