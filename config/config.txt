@@ -1,6 +1,9 @@
 server {
     listen 3000;
     root ff;
+    error_page 1 f;
+    error_page 300 f f;
+
     location /dsfdsf { 
         root f;
     };

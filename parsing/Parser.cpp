@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/25 11:18:49 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/25 16:52:18 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -287,4 +287,13 @@ void Parser::validateBodySize( std::vector<std::string> values ) {
 void Parser::validateErrorPage( std::vector<std::string> values ) {
     if (values.size() < 2)
         throw Parser::ParsingException("Invalid number of arguments for \"error_page\"");
+}
+
+bool Parser::isNumber( std::string str ) {
+    for (int i = 0; i < (int) str.length(); i++)
+    {
+        if (!std::isdigit(str[i]))
+            return false;
+    }
+    return true;
 }

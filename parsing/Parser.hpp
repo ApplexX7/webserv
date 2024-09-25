@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:05 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/25 10:54:26 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/25 16:46:56 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,9 @@ class Parser {
         static void validateErrorPage( std::vector<std::string> );
         static void validateListen( std::vector<std::string> );
         static void validateRoot( std::vector<std::string> );
+
+        // check types
+        static bool isNumber( std::string );
 
         class ParsingException: public std::exception {
             private:
