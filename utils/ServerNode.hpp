@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 22:09:46 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/25 08:20:26 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,16 @@ class ServerNode {
         std::map<std::string,  Location> locations;
 
     public:
+        std::vector<std::string> allowedFields;
+        std::vector<std::string> allowedLocationFields;
+        
         ServerNode( void );
         ServerNode( ListNode* );
         ServerNode( ServerNode& );
         ServerNode& operator=( ServerNode& );
         ~ServerNode( void );
+
+        void initializeServer( ListNode* );
 
         void addField( std::string, std::string );
         std::map<std::string, Field > getFields( void );

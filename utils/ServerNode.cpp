@@ -6,18 +6,14 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 22:28:09 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/25 08:21:32 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerNode.hpp"
 #include "../parsing/Parser.hpp"
 
-// canonical form
-
-ServerNode::ServerNode( void ) {};
-
-ServerNode::ServerNode( ListNode *server ) {
+void ServerNode::initializeServer( ListNode* server ) {
     std::map<std::string,  Location>::iterator it;
 
     // loop through the server fields, get the first word as key and others as value
@@ -75,6 +71,29 @@ ServerNode::ServerNode( ListNode *server ) {
         this->locations[path].setServer(this);
         child = child->getNext();
     }
+}
+
+// canonical form
+ServerNode::ServerNode( void ) {};
+
+void setAllowedFields( ServerNode* server ) {
+    // allowed server fields
+    server->allowedFields.push_back("root");
+    server->allowedFields.push_back("listen");
+    server->allowedFields.push_back("server_name");
+    server->allowedFields.push_back("hello");
+
+    // allowed location fields
+    server->allowedLocationFields.push_back("root");
+    
+}
+
+ServerNode::ServerNode( ListNode *server ) {
+
+    // todo: set allowed fields
+    setAllowedFields(this);
+
+    initializeServer(server);
 };
 
 ServerNode::ServerNode( ServerNode& cpy ) {
@@ -88,10 +107,20 @@ ServerNode& ServerNode::operator=( ServerNode& rhs ) {
 ServerNode::~ServerNode( void ) {};
 
 void ServerNode::addField( std::string key, std::string value) {
+    if (std::find(
+        this->allowedFields.begin(),
+        this->allowedFields.end(),
+        key) == this->allowedFields.end())
+        throw Parser::ParsingException("Unknown directive " + key);
     this->fields[key].addValue(value);
 }
 
 void ServerNode::addLocationField( std::string path, std::string key, std::string value) {
+    if (std::find(
+        this->allowedLocationFields.begin(),
+        this->allowedLocationFields.end(),
+        key) == this->allowedLocationFields.end())
+        throw Parser::ParsingException("Unknown directive " + key + " for location block");
     this->locations[path].addField(key, value);
 }
 
