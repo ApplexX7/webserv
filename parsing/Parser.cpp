@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 22:27:14 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/25 11:13:35 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,4 +241,50 @@ std::vector<std::string> Parser::strSplit( std::string str ) {
     }
 
     return strs;
+}
+
+const char* Parser::ParsingException::what() const throw() {
+    return message.c_str();
+};
+
+Parser::ParsingException::ParsingException(std::string msg): message(msg) {};
+
+Parser::ParsingException::~ParsingException() throw() {};
+
+void Parser::validateField( std::string key, std::vector<std::string> values ) {
+    if (key == "root")
+        Parser::validateRoot(values);
+    if (key == "listen")
+        Parser::validateListen(values);
+    if (key == "limit_except")
+        Parser::validateAllowedMethods(values);
+    if (key == "client_max_body_size")
+        Parser::validateBodySize(values);
+    if (key == "error_page")
+        Parser::validateErrorPage(values);
+}
+
+void Parser::validateRoot( std::vector<std::string> values ) {
+    if (values.size() != 1)
+        throw Parser::ParsingException("Invalid number of arguments for \"root\"");
+}
+
+void Parser::validateListen( std::vector<std::string> values ) {
+    if (values.size() == 0)
+        throw Parser::ParsingException("Invalid number of arguments for \"listen\"");
+}
+
+void Parser::validateAllowedMethods( std::vector<std::string> values ) {
+    if (values.size() == 0)
+        throw Parser::ParsingException("Invalid number of arguments for \"limit_except\"");
+}
+
+void Parser::validateBodySize( std::vector<std::string> values ) {
+    if (values.size() == 0)
+        throw Parser::ParsingException("Invalid number of arguments for \"client_max_body_size\"");
+}
+
+void Parser::validateErrorPage( std::vector<std::string> values ) {
+    if (values.size() == 0)
+        throw Parser::ParsingException("Invalid number of arguments for \"error_page\"");
 }

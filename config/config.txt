@@ -1,11 +1,10 @@
 server {
     listen 3000 500 4000;
-    root jilali.html;
-    location /dsfdsf { 
-        root hello;
+    root ff;
+    locaion /dsfdsf { 
+        root f f;
     };
     location / { root index.html;  };
-    hello world dsfdf dfdfs;
 }
 
 server

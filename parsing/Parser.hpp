@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:05 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 22:27:22 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/25 10:54:26 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,26 +41,24 @@ class Parser {
         static bool checkValidList( ListNode *, int );
         static bool checkValidContent( std::string );
 
+        // field validation
+        static void validateField( std::string, std::vector<std::string> );
+        static void validateBodySize( std::vector<std::string> );
+        static void validateAllowedMethods( std::vector<std::string> );
+        static void validateErrorPage( std::vector<std::string> );
+        static void validateListen( std::vector<std::string> );
+        static void validateRoot( std::vector<std::string> );
 
         class ParsingException: public std::exception {
             private:
                 std::string message;
 
             public:
-                // Constructor accepts a const char* that is used to set
-                // the exception message
-                explicit ParsingException(std::string msg)
-                    : message(msg)
-                {
-                }
+                ParsingException(std::string);
 
-                // Override the what() method to return our message
-                virtual const char* what() const throw()
-                {
-                    return message.c_str();
-                }
+                virtual const char* what() const throw();
 
-                virtual ~ParsingException() throw() {}
+                virtual ~ParsingException() throw();
         };
         
 };

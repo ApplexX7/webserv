@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/25 08:07:28 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/25 10:05:29 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,17 +80,15 @@ Webserv::Webserv( std::string configPath ) {
     try
     {
         while (tmp) {
-            printServerNode(tmp);
-            
             this->servers.push_back(new ServerNode(tmp));
             tmp = tmp->getNext();
         }
+        std::cout << "ALL GOOD" << std::endl;
     }
     catch(const std::exception& e)
     {
         std::cerr << "Config file error: " << e.what() << std::endl;
     }
-
 }
 
 Webserv::~Webserv( void ) {

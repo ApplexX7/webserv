@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/25 08:21:32 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/25 11:16:26 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,6 @@
 
 void ServerNode::initializeServer( ListNode* server ) {
     std::map<std::string,  Location>::iterator it;
-
-    // loop through the server fields, get the first word as key and others as value
     std::vector<std::string> fields = server->getFields();
     std::vector<std::string> splitField;
     std::string path;
@@ -30,21 +28,22 @@ void ServerNode::initializeServer( ListNode* server ) {
             continue;
         splitField = (Parser::strSplit(trimedField));
         if (splitField.size() == 1)
-            throw Parser::ParsingException("Directive " + splitField[0] + " has no value");
+            throw Parser::ParsingException("Invalid number of arguments for " + splitField[0]);
         if (this->fieldExists(splitField[0]))
             throw Parser::ParsingException("Duplicate directives for " + splitField[0]);
         for (int j = 1; j < (int) splitField.size(); j++) {
             this->addField(splitField[0], splitField[j]);
         }
+
+        Parser::validateField(splitField[0], this->getField(splitField[0]).getValues());
     }
-    
-    // loop through children, set second word as key and all other fields as value
+
     while (child != NULL)
     {
         fields = child->getFields();
         splitField = (Parser::strSplit(child->getContent()));
         if (splitField.size() != 2 || splitField[0] != "location")
-            throw Parser::ParsingException("Invalid location directive");
+            throw Parser::ParsingException("Expected location directive but got \"" + splitField[0] + "\"");
         
         path = splitField[1];
 
@@ -57,11 +56,13 @@ void ServerNode::initializeServer( ListNode* server ) {
                 continue ;
             splitField = (Parser::strSplit(trimedField));
             if (splitField.size() == 1)
-                throw Parser::ParsingException("Directive " + splitField[0] + " has no value");
+                throw Parser::ParsingException("Invalid number of arguments for " + splitField[0]);
             
             for (int j = 1; j < (int) splitField.size(); j++) {
                 this->addLocationField(path, splitField[0], splitField[j]);
             }
+
+            Parser::validateField(splitField[0], this->locations[path].getField(splitField[0]).getValues());
         }
         if (this->locations.find(path) == this->locations.end())
         {
@@ -81,18 +82,20 @@ void setAllowedFields( ServerNode* server ) {
     server->allowedFields.push_back("root");
     server->allowedFields.push_back("listen");
     server->allowedFields.push_back("server_name");
-    server->allowedFields.push_back("hello");
+    server->allowedFields.push_back("client_max_body_size");
+    server->allowedFields.push_back("upload_allowed");
+    server->allowedFields.push_back("error_page");
 
     // allowed location fields
     server->allowedLocationFields.push_back("root");
+    server->allowedLocationFields.push_back("client_max_body_size");
+    server->allowedLocationFields.push_back("limit_except");
+    server->allowedLocationFields.push_back("error_page");
     
 }
 
 ServerNode::ServerNode( ListNode *server ) {
-
-    // todo: set allowed fields
     setAllowedFields(this);
-
     initializeServer(server);
 };
 
