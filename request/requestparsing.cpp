@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:17:43 by mohilali          #+#    #+#             */
-/*   Updated: 2024/09/24 17:31:06 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/09/25 16:21:40 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,6 @@ void requestline(std::string str, Request &Methode){
         std::cerr << "501 Not Implemented\n";
         exit(0);
     }
-    //check the Request-URI
-    //Valid HTPP
     int pos;
     pos = str.find_last_of(' ');
     if (str.substr(pos + 1, str.length()) != "HTTP/1.1"){
@@ -42,25 +40,75 @@ void requestline(std::string str, Request &Methode){
 }
 
 
-void parsHeader(std::string str, Request &Methode){
-    if (std::count(str.begin(), str.end(), ' ') != 1){
-        std::cerr <<  "HTPP/1.1 400 Bad Request" << std::endl;
-        exit(0);
+/*
+    Parse the header request
+    and fill the map with the headers value
+    betwen a header and another is \r\n
+    the begging of the string str is the Host value tell the end of the headers
+*/
+
+
+// need it later
+    // if (std::count(str.begin(), str.end(), ' ') != 1){
+    //     std::cerr <<  "HTPP/1.1 400 Bad Request" << std::endl;
+    //     exit(0);
+    // }
+    // str = str.erase(0,6);
+    // if (str.empty()){
+    //     std::cerr <<  "HTPP/1.1 400 Bad Request" << std::endl;
+    //     exit(0);
+    // }
+    // if (str.find_first_of("@#!$%&^*+=_/") != std::string::npos){
+    //     std::cerr <<  "HTPP/1.1 400 Bad Request" << std::endl;
+    //     exit(0);
+    // }
+    // if (str[0] == '.' || str[0] == '-' || str[str.length() - 1] == '.' || str[str.length() - 1] == '-'){
+    //     std::cerr <<  "HTPP/1.1 400 Bad Request" << std::endl;
+    //     exit(0);
+    // }
+    // str.erase();
+
+void herderparser(std::string str, Request &Methode){
+    int pos;
+    std::string line;
+    std::string name;
+    std::string value;
+    std::istringstream strheader(str);
+
+    while (std::getline(strheader, line)){
+       if (line == "\r")
+            break;
+        pos = line.find(':');
+        if ((size_t)pos == std::string::npos){
+            std::cerr << "HTPP/1.1 400 Bad request"<< std::endl;
+            //changing exit later;
+            exit(0);
+        }
+        name = line.substr(0, pos);
+        value = line.substr(pos + 1);
+        // isspace should not be in the name
+        int f = name.find(' ');
+        int fi = name.find('\t');
+        if ((size_t)f != std::string::npos || (size_t)fi != std::string::npos){
+            std::cerr << "HTPP/1.1 400 Bad request"<< std::endl;
+            exit(0);
+        }
+        value.erase(std::remove_if(value.begin(), value.end(), ::isspace), value.end());
+        if (value.empty() || name.empty()){
+            std::cerr << "HTPP/1.1 400 BAD request" << std::endl;
+            exit(0);
+        }
+        //remove isspace from the value;
+        Methode.setHeaders(name, value);
     }
-    str = str.erase(0,6);
-    if (str.empty()){
-        std::cerr <<  "HTPP/1.1 400 Bad Request" << std::endl;
-        exit(0);
-    }
-    if (str.find_first_of("@#!$%&^*+=_/") != std::string::npos){
-        std::cerr <<  "HTPP/1.1 400 Bad Request" << std::endl;
-        exit(0);
-    }
-    if (str[0] == '.' || str[0] == '-' || str[str.length() - 1] == '.' || str[str.length() - 1] == '-'){
-        std::cerr <<  "HTPP/1.1 400 Bad Request" << std::endl;
-        exit(0);
-    }
-    Methode.SetHost(str);
+    
+}
+
+void parsingbodyrequest(std::string str, Request &Methode){
+    int pos;
+
+    pos = str.find("\r\n\r\n");
+    Methode.setBody(str.substr(0, pos));
 }
 
 // main for testing
@@ -68,30 +116,33 @@ int main(void) {
     int pos;
     std::string str;
     Request Methode;
-    str = "GET /index.html HTTP/1.1\n"
-          "Host: www.example.com\n"
-          "Connection: keep-alive\n"
-          "sec-ch-ua: \"Chromium\";v=\"116\", \"Not)A;Brand\";v=\"24\", \"Opera GX\";v=\"102\"\n"
-          "sec-ch-ua-mobile: ?0\n"
-          "sec-ch-ua-platform: \"Windows\"\n"
-          "Upgrade-Insecure-Requests: 1\n"
-          "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0\n"
-          "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\n"
-          "Sec-Fetch-Site: none\n"
-          "Sec-Fetch-Mode: navigate\n"
-          "Sec-Fetch-User: ?1\n"
-          "Sec-Fetch-Dest: document\n"
-          "Accept-Encoding: gzip, deflate, br\n"
-          "Accept-Language: en-US,en;q=0.9";
-    pos = str.find_first_of('\n');
+    str = "GET / HTTP/1.1\r\n"
+            "Host: localhost:8080\r\n"
+            "Connection: keep-alive\r\n"
+            "Upgrade-Insecure-Requests: 1\r\n"
+            "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
+            "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/604.5.6 (KHTML, like Gecko) Version/11.0.3 Safari/604.5.6\r\n"
+            "Accept-Language: en-us\r\n"
+            "DNT: 1\r\n"
+            "Accept-Encoding: gzip, deflate\r\n"
+            "\r\n"
+            "Usually GET requests don\'t have a body\r\n"
+            "But I don\'t care in this case :)";
+    pos = str.find("\r\n");
     requestline(str.substr(0, pos), Methode);
     // check the head Host if its valid;
     pos = str.find("Host:");
     if (str.find_first_of("Host:") != std::string::npos){
-        parsHeader(str.substr(pos, str.find('\n', pos) - pos), Methode);
+        herderparser(str.substr(pos, str.length() - pos), Methode);
     }
+    // body check;
+    pos = str.find("\r\n\r\n");
+    parsingbodyrequest(str.substr(pos + 4), Methode);
+    std::cout << "REQUEST LINE: " << std::endl;
     std::cout << Methode.getMethode()<< "$" << std::endl;
     std::cout << Methode.getUri() << "$"<< std::endl;
-    std::cout << Methode.getHost() << "$"<< std::endl;
+    Methode.printmap();
+    std::cout << "Body :" << std::endl;
+    std::cout << Methode.getBody() << std::endl;
     return 0;
 }

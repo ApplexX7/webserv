@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/09/24 16:32:51 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/09/25 16:21:23 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,12 +27,27 @@ Request &Request::operator=(const Request &ope){
     return (*this);
 }
 
-void Request::SetHost(std::string _Host){
-    this->Host = _Host;
+void Request::setHeaders(std::string &name, std::string &value){
+    if (!name.empty() && !value.empty()) {
+        this->headers[name] = value;
+    } else {
+        std::cerr << "Error: Header name or value is empty!" << std::endl;
+    }
 }
 
-std::string Request::getHost(){
-    return (this->Host);
+void Request::setBody(std::string _Body){
+    this->body = _Body;
+}
+
+void Request::printmap(){
+    std::cout << "HEADER  :" << std::endl;
+    for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it){
+        std::cout << it->first << " : " << it->second << std::endl;
+    }
+}
+
+std::string Request::getBody(){
+    return (this->body);
 }
 
 void Request::Setmethode(std::string _methode){
