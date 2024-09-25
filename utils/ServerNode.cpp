@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/25 16:55:27 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/25 17:07:27 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,23 +26,25 @@ void ServerNode::initializeServer( ListNode* server ) {
         trimedField = Parser::strTrim(fields[i]);
         if (trimedField.length() == 0)
             continue;
-        splitField = (Parser::strSplit(trimedField));
+        splitField = (Parser::strSplit(trimedField, ' '));
         if (splitField.size() == 1)
             throw Parser::ParsingException("Directive has no arguments " + splitField[0]);
         if (splitField[0] != "error_page" && this->fieldExists(splitField[0]))
             throw Parser::ParsingException("Duplicate directives for " + splitField[0]);
-        
-        if (splitField[0] == "error_page") {
-            // todo: check all are numbers except for last argument
-        }
 
         for (int j = 1; j < (int) splitField.size(); j++) {
-            if (j < (int) splitField.size() - 1
-            && !Parser::isNumber(splitField[j]))
-                throw Parser::ParsingException("Status code must be numeric");
-            if (j < (int) splitField.size() - 1
-            && (std::stol(splitField[j]) < 300 || std::stol(splitField[j]) > 599))
-                throw Parser::ParsingException("Status code must be between 300 and 599");
+
+            // check for status code format in case of error pages
+            if (splitField[0] == "error_page")
+            {
+                if (j < (int) splitField.size() - 1
+                && !Parser::isNumber(splitField[j]))
+                    throw Parser::ParsingException("Status code must be numeric");
+                if (j < (int) splitField.size() - 1
+                && (std::stol(splitField[j]) < 300 || std::stol(splitField[j]) > 599))
+                    throw Parser::ParsingException("Status code must be between 300 and 599");
+            }
+            
             this->addField(splitField[0], splitField[j]);
         }
 
@@ -52,7 +54,7 @@ void ServerNode::initializeServer( ListNode* server ) {
     while (child != NULL)
     {
         fields = child->getFields();
-        splitField = (Parser::strSplit(child->getContent()));
+        splitField = (Parser::strSplit(child->getContent(), ' '));
         if (splitField.size() != 2 || splitField[0] != "location")
             throw Parser::ParsingException("Expected location directive but got \"" + splitField[0] + "\"");
         
@@ -65,7 +67,7 @@ void ServerNode::initializeServer( ListNode* server ) {
             trimedField = Parser::strTrim(fields[i]);
             if (trimedField.length() == 0)
                 continue ;
-            splitField = (Parser::strSplit(trimedField));
+            splitField = (Parser::strSplit(trimedField, ' '));
             if (splitField.size() == 1)
                 throw Parser::ParsingException("Directive has no arguments " + splitField[0]);
             

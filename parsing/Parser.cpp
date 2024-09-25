@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/25 16:52:18 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/25 17:12:07 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,7 +217,7 @@ bool Parser::checkValidContent( std::string str ) {
     return st.empty();
 }
 
-std::vector<std::string> Parser::strSplit( std::string str ) {
+std::vector<std::string> Parser::strSplit( std::string str, char c ) {
     size_t start;
     size_t end;
     std::vector<std::string> strs;
@@ -225,12 +225,12 @@ std::vector<std::string> Parser::strSplit( std::string str ) {
     while (str.length() > 0)
     {
         start = 0;
-        while (start < str.length() && str[start] == ' ')
+        while (start < str.length() && str[start] == c)
             start++;
         if (start >= str.length())
             break;
         end = start;
-        while (end < str.length() && str[end] != ' ')
+        while (end < str.length() && str[end] != c)
             end++;
         strs.push_back(str.substr(start, end - start));
         // std::cout << str.substr(start, end - start) << std::endl;
@@ -270,8 +270,30 @@ void Parser::validateRoot( std::vector<std::string> values ) {
 }
 
 void Parser::validateListen( std::vector<std::string> values ) {
+
+    std::string listen;
+    std::vector<std::string> splitListen;
+
     if (values.size() != 1)
         throw Parser::ParsingException("Invalid number of arguments for \"listen\"");
+    
+    listen = values[0];
+    
+    // check if it has ':' in it, if so split it, 1st element shoud be numeric
+    if (listen.find(":") != listen.npos)
+    {
+        splitListen = Parser::strSplit(listen, ':');
+        if (splitListen.size() != 2 || listen[0] == ':' || listen[listen.size() - 1] == ':')
+            throw Parser::ParsingException("Invalid host:port");
+        if (!Parser::isNumber(splitListen[1]) || std::stoi(splitListen[1]) < 1 || std::stoi(splitListen[1]) > 65535)
+            throw Parser::ParsingException("Invalid port number");
+    }
+    else {
+        if (!Parser::isNumber(listen) || std::stoi(listen) < 1 || std::stoi(listen) > 65535)
+            throw Parser::ParsingException("Invalid port number");
+    }
+
+    // else check if whole port is numeric
 }
 
 void Parser::validateAllowedMethods( std::vector<std::string> values ) {
