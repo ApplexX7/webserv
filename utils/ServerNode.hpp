@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/25 08:20:26 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/25 17:19:08 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ class ServerNode {
         Field getField( std::string );
         bool fieldExists( std::string );
         bool locationExists( std::string );
+        bool locationFieldExists( std::string, std::string );
 };
 
 #endif

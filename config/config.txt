@@ -1,18 +1,18 @@
 server {
     listen hello:1000;
-    root ff;
     error_page 300 f;
     error_page 300 455 f;
+    root idnex.html;
+    root idnex.html;
 
     location /dsfdsf { 
-        root f;
+        root idnex.html;
     };
-    location / { root index.html; };
 }
 
 server
 {
-    root hello.html;
+    root hello;
     location / {
         root yes;
     }
