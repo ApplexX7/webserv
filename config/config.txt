@@ -1,10 +1,10 @@
 server {
-    listen 3000 500 4000;
+    listen 3000;
     root ff;
-    locaion /dsfdsf { 
-        root f f;
+    location /dsfdsf { 
+        root f;
     };
-    location / { root index.html;  };
+    location / { root index.html; };
 }
 
 server

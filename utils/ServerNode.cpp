@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/25 11:16:26 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/25 11:20:22 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ void ServerNode::initializeServer( ListNode* server ) {
             continue;
         splitField = (Parser::strSplit(trimedField));
         if (splitField.size() == 1)
-            throw Parser::ParsingException("Invalid number of arguments for " + splitField[0]);
+            throw Parser::ParsingException("Directive has no arguments " + splitField[0]);
         if (this->fieldExists(splitField[0]))
             throw Parser::ParsingException("Duplicate directives for " + splitField[0]);
         for (int j = 1; j < (int) splitField.size(); j++) {
@@ -56,7 +56,7 @@ void ServerNode::initializeServer( ListNode* server ) {
                 continue ;
             splitField = (Parser::strSplit(trimedField));
             if (splitField.size() == 1)
-                throw Parser::ParsingException("Invalid number of arguments for " + splitField[0]);
+                throw Parser::ParsingException("Directive has no arguments " + splitField[0]);
             
             for (int j = 1; j < (int) splitField.size(); j++) {
                 this->addLocationField(path, splitField[0], splitField[j]);

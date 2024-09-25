@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/25 11:13:35 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/25 11:18:49 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,7 +270,7 @@ void Parser::validateRoot( std::vector<std::string> values ) {
 }
 
 void Parser::validateListen( std::vector<std::string> values ) {
-    if (values.size() == 0)
+    if (values.size() != 1)
         throw Parser::ParsingException("Invalid number of arguments for \"listen\"");
 }
 
@@ -280,11 +280,11 @@ void Parser::validateAllowedMethods( std::vector<std::string> values ) {
 }
 
 void Parser::validateBodySize( std::vector<std::string> values ) {
-    if (values.size() == 0)
+    if (values.size() != 1)
         throw Parser::ParsingException("Invalid number of arguments for \"client_max_body_size\"");
 }
 
 void Parser::validateErrorPage( std::vector<std::string> values ) {
-    if (values.size() == 0)
+    if (values.size() < 2)
         throw Parser::ParsingException("Invalid number of arguments for \"error_page\"");
 }
