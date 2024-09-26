@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/26 08:18:02 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/26 08:54:11 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,10 @@ Webserv::Webserv( std::string configPath ) {
     std::vector<std::string> fields;
     ListNode* head;
     ListNode* tmp;
+    std::string listenValue;
+    std::string otherListenValue;
+    std::vector<std::string> serverNames;
+    std::vector<std::string> otherServerNames;
 
     if (Parser::checkValidContent(content) == false)
         throw Parser::ParsingException("Invalid braces in config file");
@@ -82,6 +86,31 @@ Webserv::Webserv( std::string configPath ) {
         while (tmp) {
             printServerNode(tmp);
             this->servers.push_back(new ServerNode(tmp));
+
+            // check servername conflicts
+            for (int i = 0; i < (int) this->servers.size() - 1; i++) {
+                // check if there's a server with the same host:port
+                listenValue = this->servers[this->servers.size() - 1]->getField("listen").getValues()[0];
+                otherListenValue = this->servers[i]->getField("listen").getValues()[0];
+                
+                
+                // same host:port
+                if (listenValue == otherListenValue) {
+                    
+                        // check server_names
+                        serverNames = this->servers[this->servers.size() - 1]->getField("server_name").getValues();
+                        otherServerNames = this->servers[i]->getField("server_name").getValues();
+                        
+                        for (int j = 0; j < (int) serverNames.size(); j++) {
+                            if (std::find(otherServerNames.begin(), otherServerNames.end(), serverNames[j]) != otherServerNames.end())
+                            {
+                                // conflicting server name
+                                std::cout << "[WARN] Conflicting server name \"" << serverNames[j] << "\" at " << listenValue << std::endl;
+                            }
+                        }
+                }
+            }
+
             tmp = tmp->getNext();
         }
         std::cout << "ALL GOOD" << std::endl;

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/26 08:36:23 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/26 08:56:59 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,13 +57,7 @@ void ServerNode::initializeServer( ListNode* server ) {
 
     // if server has no listen directive
     if (this->fields.find("listen") == this->fields.end())
-    {
         this->addField("listen", "0.0.0.0:8000");
-    }
-
-    // todo: check servername conflicts
-        // loop through all servers before
-            // check if there's a server with the same host:port
 
     // insert locations
     while (child != NULL)
