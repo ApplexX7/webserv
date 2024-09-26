@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/26 09:01:23 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/26 09:14:56 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,13 +133,14 @@ void setAllowedFields( ServerNode* server ) {
     server->allowedFields.push_back("listen");
     server->allowedFields.push_back("server_name");
     server->allowedFields.push_back("client_max_body_size");
-    server->allowedFields.push_back("upload_allowed");
     server->allowedFields.push_back("error_page");
 
     // allowed location fields
     server->allowedLocationFields.push_back("root");
     server->allowedLocationFields.push_back("client_max_body_size");
     server->allowedLocationFields.push_back("limit_except");
+    server->allowedLocationFields.push_back("autoindex");
+    server->allowedLocationFields.push_back("file_upload");
     server->allowedLocationFields.push_back("error_page");
     
 }

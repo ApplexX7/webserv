@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:05 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/25 17:07:13 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/26 09:06:48 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,8 @@ class Parser {
         static void validateErrorPage( std::vector<std::string> );
         static void validateListen( std::vector<std::string> );
         static void validateRoot( std::vector<std::string> );
+        static void validateAutoIndex( std::vector<std::string> );
+        static void validateFileUpload( std::vector<std::string> );
 
         // check types
         static bool isNumber( std::string );

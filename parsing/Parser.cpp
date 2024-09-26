@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/26 08:20:39 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/26 09:19:24 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -262,6 +262,10 @@ void Parser::validateField( std::string key, std::vector<std::string> values ) {
         Parser::validateBodySize(values);
     if (key == "error_page")
         Parser::validateErrorPage(values);
+    if (key == "autoindex")
+        Parser::validateAutoIndex(values);
+    if (key == "file_upload")
+        Parser::validateFileUpload(values);
 }
 
 void Parser::validateRoot( std::vector<std::string> values ) {
@@ -299,6 +303,13 @@ void Parser::validateListen( std::vector<std::string> values ) {
 void Parser::validateAllowedMethods( std::vector<std::string> values ) {
     if (values.size() == 0)
         throw Parser::ParsingException("Invalid number of arguments for \"limit_except\"");
+    for (int i = 0; i < (int) values.size(); i++)
+    {
+        if (values[i] != "GET"
+        &&  values[i] != "POST"
+        &&  values[i] != "DELETE")
+            throw Parser::ParsingException("Invalid method name \"" + values[i] + "\" for \"limit_except\", should be GET, POST or DELETE");
+    }
 }
 
 void Parser::validateBodySize( std::vector<std::string> values ) {
@@ -310,6 +321,22 @@ void Parser::validateErrorPage( std::vector<std::string> values ) {
     if (values.size() < 2)
         throw Parser::ParsingException("Invalid number of arguments for \"error_page\"");
 }
+
+void Parser::validateAutoIndex( std::vector<std::string> values ) {
+    if (values.size() != 1)
+        throw Parser::ParsingException("Invalid number of arguments for \"autoindex\"");
+    if (values[0] != "on" && values[0] != "off")
+        throw Parser::ParsingException("Invalid arguments for \"autoindex\", value should be 'on' or 'off'");
+}
+
+void Parser::validateFileUpload( std::vector<std::string> values ) {
+    if (values.size() != 1)
+        throw Parser::ParsingException("Invalid number of arguments for \"file_upload\"");
+    if (values[0] != "on" && values[0] != "off")
+        throw Parser::ParsingException("Invalid arguments for \"file_upload\", value should be 'on' or 'off'");
+}
+
+
 
 bool Parser::isNumber( std::string str ) {
     for (int i = 0; i < (int) str.length(); i++)
