@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/22 09:40:03 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/22 09:55:57 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/26 08:31:30 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,4 +21,8 @@ void Field::addValue( std::string value ) {
 
 std::vector<std::string> Field::getValues( void ) {
     return this->values;
+}
+
+void Field::updateValue( std::string newValue, int index ) {
+    this->values[index] = newValue;
 }

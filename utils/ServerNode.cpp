@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/25 17:29:37 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/26 08:36:23 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,13 +44,28 @@ void ServerNode::initializeServer( ListNode* server ) {
                 && (std::stol(splitField[j]) < 300 || std::stol(splitField[j]) > 599))
                     throw Parser::ParsingException("Status code must be between 300 and 599");
             }
-            
+
             this->addField(splitField[0], splitField[j]);
         }
 
-        Parser::validateField(splitField[0], this->getField(splitField[0]).getValues());
+        std::vector<std::string> values = this->getField(splitField[0]).getValues();
+
+        Parser::validateField(splitField[0], values);
+        if (splitField[0] == "listen" && values[0].find(":") == values[0].npos)
+            this->getField(splitField[0]).updateValue("0.0.0.0:" + values[0], 0);
     }
 
+    // if server has no listen directive
+    if (this->fields.find("listen") == this->fields.end())
+    {
+        this->addField("listen", "0.0.0.0:8000");
+    }
+
+    // todo: check servername conflicts
+        // loop through all servers before
+            // check if there's a server with the same host:port
+
+    // insert locations
     while (child != NULL)
     {
         fields = child->getFields();
@@ -105,6 +120,16 @@ void ServerNode::initializeServer( ListNode* server ) {
 // canonical form
 ServerNode::ServerNode( void ) {};
 
+ServerNode::ServerNode( ServerNode& cpy ) {
+    (void) cpy;
+};
+
+ServerNode& ServerNode::operator=( ServerNode& rhs ) {
+    return rhs;
+};
+
+ServerNode::~ServerNode( void ) {};
+
 void setAllowedFields( ServerNode* server ) {
     // allowed server fields
     server->allowedFields.push_back("root");
@@ -126,16 +151,6 @@ ServerNode::ServerNode( ListNode *server ) {
     setAllowedFields(this);
     initializeServer(server);
 };
-
-ServerNode::ServerNode( ServerNode& cpy ) {
-    (void) cpy;
-};
-
-ServerNode& ServerNode::operator=( ServerNode& rhs ) {
-    return rhs;
-};
-
-ServerNode::~ServerNode( void ) {};
 
 void ServerNode::addField( std::string key, std::string value) {
     if (std::find(
@@ -163,7 +178,7 @@ std::map<std::string, Location > ServerNode::getLocations( void ) {
     return this->locations;
 }
 
-Field ServerNode::getField( std::string key ) {
+Field& ServerNode::getField( std::string key ) {
     return this->fields[key];
 }
 

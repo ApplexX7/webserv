@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/22 09:40:14 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 09:38:15 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/26 08:25:31 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ class Field {
         Field( void );
 
         void addValue( std::string );
+        void updateValue( std::string, int );
         std::vector<std::string> getValues( void );
 };
 
