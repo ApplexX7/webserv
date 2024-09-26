@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/26 08:54:11 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/26 09:02:04 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,7 @@ Webserv::Webserv( std::string configPath ) {
     try
     {
         while (tmp) {
-            printServerNode(tmp);
+            // printServerNode(tmp);
             this->servers.push_back(new ServerNode(tmp));
 
             // check servername conflicts
@@ -96,7 +96,6 @@ Webserv::Webserv( std::string configPath ) {
                 
                 // same host:port
                 if (listenValue == otherListenValue) {
-                    
                         // check server_names
                         serverNames = this->servers[this->servers.size() - 1]->getField("server_name").getValues();
                         otherServerNames = this->servers[i]->getField("server_name").getValues();
