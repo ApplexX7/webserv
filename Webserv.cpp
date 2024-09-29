@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/29 10:05:05 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/29 10:17:09 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,7 +112,7 @@ void Webserv::init( std::string configPath ) {
 
             tmp = tmp->getNext();
         }
-        std::cout << "ALL GOOD" << std::endl;
+        // std::cout << "ALL GOOD" << std::endl;
     }
     catch(const std::exception& e)
     {
@@ -129,5 +129,11 @@ Webserv::~Webserv( void ) {
         delete this->servers[i];
     }
 
-    std::cout << "FREED" << std::endl;
+    // std::cout << "FREED" << std::endl;
+}
+
+void Webserv::listen( void ) {
+    for (int i = 0; i < (int) this->servers.size(); i++) {
+        this->servers[i]->listenForRequests();
+    }
 }

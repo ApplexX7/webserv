@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/29 09:58:14 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/29 11:13:55 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -200,4 +200,66 @@ bool ServerNode::locationFieldExists( std::string path, std::string key ) {
     if (fields.find(key) != fields.end())
         return true;
     return false;
+}
+
+void ServerNode::listenForRequests( void ) {
+    std::vector<std::string> splitListen;
+    int status;
+    struct addrinfo hints;
+    struct addrinfo *servinfo;
+    int sockfd;
+    socklen_t addr_size;
+    struct sockaddr_storage their_addr;
+    int new_fd;
+
+    splitListen = Parser::strSplit(this->fields["listen"].getValues()[0], ':');
+    Parser::ft_memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    // hints.ai_flags = AI_PASSIVE;
+    status = getaddrinfo(splitListen[0].data(), splitListen[1].data(), &hints, &servinfo);
+    sockfd = socket(PF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0)
+    {
+        std::cout << "Error opening socket: ";
+        std::cout << strerror(errno) << std::endl;
+        return ;
+    }
+
+    int optval = 1;
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+
+    if (bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) != 0)
+    {
+        std::cout << "Error binding socket: ";
+        std::cout << strerror(errno) << std::endl;
+        return ;
+    }
+    
+    if (listen(sockfd, 10) != 0)
+    {
+        std::cout << "Error listening on socket: ";
+        std::cout << strerror(errno) << std::endl;
+        return ;
+    }
+
+    addr_size = sizeof their_addr;
+    new_fd = 1;
+    while (new_fd > 0)
+    {
+        int bytes_read;
+        char buf[512];
+        new_fd = accept(sockfd, (struct sockaddr *) &their_addr, &addr_size);
+
+        // fcntl(sockfd, F_SETFL, O_NONBLOCK);
+
+        bytes_read = recv(new_fd, buf, 10, MSG_WAITALL);
+        buf[bytes_read] = 0;
+        std::cout << buf << std::endl;
+        // close(new_fd);
+    }
+
+    close(sockfd);
+
+    freeaddrinfo(servinfo);
 }

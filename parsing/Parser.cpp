@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/29 10:00:10 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/29 10:22:53 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,6 @@
 #include <fstream>
 #include <algorithm>
 #include <stack>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
 
 Parser::Parser( void ) {};
 
@@ -309,11 +306,9 @@ void Parser::validateListen( std::vector<std::string> values ) {
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
 
-    std::cout << splitListen[0].data() << " " << splitListen[1].data() << std::endl;
-
     status = getaddrinfo(splitListen[0].data(), splitListen[1].data(), &hints, &servinfo);
     if (status != 0) {
-        throw ParsingException(gai_strerror(status));
+        throw ParsingException("Error opening host " + splitListen[0]);
     }
 
     freeaddrinfo(servinfo);

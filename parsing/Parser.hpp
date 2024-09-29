@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:05 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/29 09:41:28 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/29 10:22:56 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,10 @@
 
 #include <iostream>
 #include "../utils/ListNode.hpp"
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
 class Parser {
     private:
