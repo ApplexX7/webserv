@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   webserv.hpp                                        :+:      :+:    :+:   */
+/*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:14:22 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 22:30:09 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/29 10:03:15 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,9 @@ class Webserv {
     
     public:
         Webserv( void );
-        Webserv( std::string );
         ~Webserv( void );
+
+        void init( std::string );
 };
 
 #endif

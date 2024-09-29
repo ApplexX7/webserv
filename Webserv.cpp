@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/29 09:33:05 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/29 10:05:05 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ void printServerNode(ListNode* server) {
     }
 }
 
-Webserv::Webserv( std::string configPath ) {
+void Webserv::init( std::string configPath ) {
     Parser parser(configPath);
     std::string content = parser.getContent();
     std::vector<std::string> fields;
@@ -122,6 +122,12 @@ Webserv::Webserv( std::string configPath ) {
 
 Webserv::~Webserv( void ) {
     ListNode::freeListNode(this->listHead);
+    
+    // free servers
+    for (int i = 0; i < (int) this->servers.size(); i++)
+    {
+        delete this->servers[i];
+    }
 
-    // todo: free servers
+    std::cout << "FREED" << std::endl;
 }
