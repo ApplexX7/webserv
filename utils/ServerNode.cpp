@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/26 09:14:56 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/29 09:58:14 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,9 +50,10 @@ void ServerNode::initializeServer( ListNode* server ) {
 
         std::vector<std::string> values = this->getField(splitField[0]).getValues();
 
-        Parser::validateField(splitField[0], values);
+        // Parser::validateField(splitField[0], values);
         if (splitField[0] == "listen" && values[0].find(":") == values[0].npos)
             this->getField(splitField[0]).updateValue("0.0.0.0:" + values[0], 0);
+        Parser::validateField(splitField[0], this->getField(splitField[0]).getValues());
     }
 
     // if server has no listen directive

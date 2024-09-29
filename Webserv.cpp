@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/26 09:02:04 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/29 09:33:05 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,6 +122,6 @@ Webserv::Webserv( std::string configPath ) {
 
 Webserv::~Webserv( void ) {
     ListNode::freeListNode(this->listHead);
-    
+
     // todo: free servers
 }

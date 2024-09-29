@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/26 09:19:24 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/29 10:00:10 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,9 @@
 #include <fstream>
 #include <algorithm>
 #include <stack>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
 Parser::Parser( void ) {};
 
@@ -277,6 +280,9 @@ void Parser::validateListen( std::vector<std::string> values ) {
 
     std::string listen;
     std::vector<std::string> splitListen;
+    int status;
+    struct addrinfo hints;
+    struct addrinfo *servinfo;
 
     if (values.size() != 1)
         throw Parser::ParsingException("Invalid number of arguments for \"listen\"");
@@ -297,7 +303,20 @@ void Parser::validateListen( std::vector<std::string> values ) {
             throw Parser::ParsingException("Invalid port number");
     }
 
-    // else check if whole port is numeric
+    // check host validity
+    Parser::ft_memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    std::cout << splitListen[0].data() << " " << splitListen[1].data() << std::endl;
+
+    status = getaddrinfo(splitListen[0].data(), splitListen[1].data(), &hints, &servinfo);
+    if (status != 0) {
+        throw ParsingException(gai_strerror(status));
+    }
+
+    freeaddrinfo(servinfo);
 }
 
 void Parser::validateAllowedMethods( std::vector<std::string> values ) {
@@ -308,7 +327,10 @@ void Parser::validateAllowedMethods( std::vector<std::string> values ) {
         if (values[i] != "GET"
         &&  values[i] != "POST"
         &&  values[i] != "DELETE")
-            throw Parser::ParsingException("Invalid method name \"" + values[i] + "\" for \"limit_except\", should be GET, POST or DELETE");
+            throw Parser::ParsingException
+            ("Invalid method name \"" + values[i]
+            + "\" for \"limit_except\", should be GET, POST or DELETE"
+            );
     }
 }
 
@@ -336,8 +358,6 @@ void Parser::validateFileUpload( std::vector<std::string> values ) {
         throw Parser::ParsingException("Invalid arguments for \"file_upload\", value should be 'on' or 'off'");
 }
 
-
-
 bool Parser::isNumber( std::string str ) {
     for (int i = 0; i < (int) str.length(); i++)
     {
@@ -345,4 +365,18 @@ bool Parser::isNumber( std::string str ) {
             return false;
     }
     return true;
+}
+
+void	*Parser::ft_memset(void *b, int c, size_t len)
+{
+	size_t	i;
+    unsigned char *p = (unsigned char *) b;
+
+	i = 0;
+	while (i < len)
+	{
+		p[i] = (unsigned char) c;
+		i++;
+	}
+	return (p);
 }
