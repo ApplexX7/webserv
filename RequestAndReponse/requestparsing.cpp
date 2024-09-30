@@ -6,19 +6,19 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:17:43 by mohilali          #+#    #+#             */
-/*   Updated: 2024/09/25 16:21:40 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/09/30 15:20:27 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "request.hpp"
+#include "Request.hpp"
+#include "Response.hpp"
 
 
-//request parsing
+//request-line parsing
 
 void requestline(std::string str, Request &Methode){
     if (std::count(str.begin(), str.end(), ' ') != 2){
-        std::cerr <<  "HTPP/1.1 400 Bad Request" << std::endl;
-        exit(0);
+          throw Response::ResponseException("HTTP/1.1 400 Bad Request\n");
     }
     if (str.find("GET") == 0)
         Methode.Setmethode("GET");
@@ -27,14 +27,13 @@ void requestline(std::string str, Request &Methode){
     else if (str.find("DELETE") == 0)
         Methode.Setmethode("DELETE");
     else{
-        std::cerr << "501 Not Implemented\n";
-        exit(0);
+        throw Response::ResponseException("HTTP/1.1 501 Not Implemented\n");
     }
+    //check path travel in URI
     int pos;
     pos = str.find_last_of(' ');
     if (str.substr(pos + 1, str.length()) != "HTTP/1.1"){
-        std::cerr << "505 HTTP version not Supported"<< std::endl;
-        exit(0);
+        throw Response::ResponseException("HTTP/1.1 505 HTTP Version Not Supported\n");
     }
     Methode.SetUri(str.substr(str.find(' ') + 1, pos - str.find(' ') -1 ));
 }
@@ -80,9 +79,7 @@ void herderparser(std::string str, Request &Methode){
             break;
         pos = line.find(':');
         if ((size_t)pos == std::string::npos){
-            std::cerr << "HTPP/1.1 400 Bad request"<< std::endl;
-            //changing exit later;
-            exit(0);
+              throw Response::ResponseException("HTTP/1.1 505 HTTP Version Not Supported\n");
         }
         name = line.substr(0, pos);
         value = line.substr(pos + 1);
@@ -90,15 +87,12 @@ void herderparser(std::string str, Request &Methode){
         int f = name.find(' ');
         int fi = name.find('\t');
         if ((size_t)f != std::string::npos || (size_t)fi != std::string::npos){
-            std::cerr << "HTPP/1.1 400 Bad request"<< std::endl;
-            exit(0);
+              throw Response::ResponseException("HTTP/1.1 400 Bad Request\n");
         }
         value.erase(std::remove_if(value.begin(), value.end(), ::isspace), value.end());
         if (value.empty() || name.empty()){
-            std::cerr << "HTPP/1.1 400 BAD request" << std::endl;
-            exit(0);
+            throw Response::ResponseException("HTTP/1.1 400 Bad Request\n");
         }
-        //remove isspace from the value;
         Methode.setHeaders(name, value);
     }
     
@@ -116,7 +110,7 @@ int main(void) {
     int pos;
     std::string str;
     Request Methode;
-    str = "GET / HTTP/1.1\r\n"
+    str = "GET /Users/mohilali/.brew/etc/nginx/nginx.conf HTTP/1.1\r\n"
             "Host: localhost:8080\r\n"
             "Connection: keep-alive\r\n"
             "Upgrade-Insecure-Requests: 1\r\n"
@@ -144,5 +138,8 @@ int main(void) {
     Methode.printmap();
     std::cout << "Body :" << std::endl;
     std::cout << Methode.getBody() << std::endl;
+
+    if (Methode.getMethode() == "GET")
+        GetMethode(Methode);
     return 0;
 }

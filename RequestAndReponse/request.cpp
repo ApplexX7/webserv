@@ -6,11 +6,11 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/09/25 16:21:23 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/09/30 12:01:21 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "request.hpp"
+#include "Request.hpp"
 
 Request::Request(){
 }
@@ -44,6 +44,11 @@ void Request::printmap(){
     for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it){
         std::cout << it->first << " : " << it->second << std::endl;
     }
+}
+
+
+std::string Request::getValue(std::string _Key){
+    return (this->headers[_Key]);
 }
 
 std::string Request::getBody(){
