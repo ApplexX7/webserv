@@ -1,38 +1,41 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Webserv.hpp                                        :+:      :+:    :+:   */
+/*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/09/05 08:14:22 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/30 10:43:33 by wbelfatm         ###   ########.fr       */
+/*   Created: 2024/09/30 15:11:02 by wbelfatm          #+#    #+#             */
+/*   Updated: 2024/09/30 15:46:36 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef WEBSERV_HPP
+#ifndef CLIENT_HPP
 
-# define WEBSERV_HPP
+# define CLIENT_HPP
 
-# include <iostream>
-# include <vector>
-# include "parsing/Parser.hpp"
-# include "utils/ServerNode.hpp"
-# include "utils/ListNode.hpp"
-# include <sys/poll.h>
+#include <iostream>
 
-
-class Webserv {
-    private:
-        ListNode* listHead;
-        std::vector<ServerNode*> servers;
-    
+class Client {
     public:
-        Webserv( void );
-        ~Webserv( void );
+        Client( void );
+        ~Client( void );
 
-        void init( std::string );
-        void listen( void );
+        std::string getMessage( void );
+        void setMessage( std::string );
+        void appendMessage( std::string );
+
+        int getFd( void );
+        void setFd( int );
+
+        
+
+    private:
+        std::string message;
+        int fd;
+
+        // Req
+        // Res
 };
 
 #endif

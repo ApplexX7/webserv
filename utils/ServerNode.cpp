@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/29 11:13:55 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/09/30 12:48:23 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,15 +202,12 @@ bool ServerNode::locationFieldExists( std::string path, std::string key ) {
     return false;
 }
 
-void ServerNode::listenForRequests( void ) {
+int ServerNode::getServerFd( void ) {
     std::vector<std::string> splitListen;
     int status;
     struct addrinfo hints;
     struct addrinfo *servinfo;
     int sockfd;
-    socklen_t addr_size;
-    struct sockaddr_storage their_addr;
-    int new_fd;
 
     splitListen = Parser::strSplit(this->fields["listen"].getValues()[0], ':');
     Parser::ft_memset(&hints, 0, sizeof(hints));
@@ -223,7 +220,7 @@ void ServerNode::listenForRequests( void ) {
     {
         std::cout << "Error opening socket: ";
         std::cout << strerror(errno) << std::endl;
-        return ;
+        return -1;
     }
 
     int optval = 1;
@@ -233,33 +230,16 @@ void ServerNode::listenForRequests( void ) {
     {
         std::cout << "Error binding socket: ";
         std::cout << strerror(errno) << std::endl;
-        return ;
+        return -1;
     }
-    
+
     if (listen(sockfd, 10) != 0)
     {
         std::cout << "Error listening on socket: ";
         std::cout << strerror(errno) << std::endl;
-        return ;
+        return -1;
     }
-
-    addr_size = sizeof their_addr;
-    new_fd = 1;
-    while (new_fd > 0)
-    {
-        int bytes_read;
-        char buf[512];
-        new_fd = accept(sockfd, (struct sockaddr *) &their_addr, &addr_size);
-
-        // fcntl(sockfd, F_SETFL, O_NONBLOCK);
-
-        bytes_read = recv(new_fd, buf, 10, MSG_WAITALL);
-        buf[bytes_read] = 0;
-        std::cout << buf << std::endl;
-        // close(new_fd);
-    }
-
-    close(sockfd);
-
     freeaddrinfo(servinfo);
+    // fcntl(sockfd, F_SETFL, O_NONBLOCK);
+    return (sockfd);
 }
