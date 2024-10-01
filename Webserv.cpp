@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/01 10:03:56 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/01 10:16:37 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,7 +235,7 @@ Hello, world!";
                     clients[fds[i].fd]->setMessage("");
 
                     // todo: check if connection is keep-alive
-                    // fds[i].events = POLLIN | POLLHUP;
+                    fds[i].events = POLLIN | POLLHUP;
 
                     delete clients[fds[i].fd];
                     close(fds[i].fd);

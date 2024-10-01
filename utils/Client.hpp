@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:11:02 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/01 09:11:03 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/01 10:24:06 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,9 @@ class Client {
         void setMessage( std::string );
         void appendMessage( std::string );
 
+        void setListen( std::string );
+        std::string getListen( void );
+
         int getFd( void );
         void setFd( int );
 
@@ -37,13 +40,15 @@ class Client {
 
     private:
         std::vector<ServerNode*> &servers;
+
         std::string message;
+        std::string listen;
         int fd;
         bool keepAlive;
         bool responseReady;
 
         // Req
-        // Res
+        // Res 
 };
 
 #endif
