@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/30 15:41:42 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/01 10:03:56 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,13 +141,16 @@ bool isServerFd(std::vector<int> serverFds, int fd) {
 void Webserv::listen( void ) {
     std::vector<int> serverFds;
     std::vector<int> clientFds;
+    std::string message;
+
+    std::map<int, Client*> clients;
     
     struct pollfd newPollFd;
     int size;
     struct sockaddr_storage their_addr;
     socklen_t addr_size;
     int new_fd;
-    char buf[1024];
+    char buf[CHUNK_SIZE];
 
     addr_size = sizeof(their_addr);
 
@@ -171,45 +174,73 @@ void Webserv::listen( void ) {
                 if (fds[i].revents & POLLIN
                 && isServerFd(serverFds, fds[i].fd))
                 {
-                    std::cout << "Event on " << fds[i].fd << "..." << std::endl;
                     new_fd = accept(fds[i].fd, (struct sockaddr *)&their_addr, &addr_size);
                     std::cout << "new connection on " << fds[i].fd << std::endl;
                     newPollFd.events = POLLIN | POLLHUP;
                     clientFds.push_back(new_fd);
                     newPollFd.fd = new_fd;
                     fds.push_back(newPollFd);
-                    break ;
+                    clients[new_fd] = new Client(this->servers, "", new_fd);
                 }
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLIN)
                 {
                     int bytes_read;
                     bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, MSG_EOF);
-                    
+
                     if (bytes_read == -1)
-                    {
                         std::cout << "error reading" << std::endl;
-                    }
 
                     else if (bytes_read < CHUNK_SIZE)
                     {
                         buf[bytes_read] = 0;
-                        std::cout << buf << std::endl;
-                        std::cout << "client finished writing" << std::endl;
+                        // std::cout << buf << std::endl;
+                        message.assign(buf);
+                        clients[fds[i].fd]->appendMessage(buf);
+                        std::cout << "client finished writing, full message:" << std::endl;
+                        std::cout << clients[fds[i].fd]->getMessage() << std::endl;
                         fds[i].events = POLLOUT;
+
+                        // todo: parse request and generate response using client.handle_request
                     }
                     else
                     {
                         buf[bytes_read] = 0;
-                        std::cout << buf << std::endl;
+                        // std::cout << buf << std::endl;
+                        message.assign(buf);
+                        clients[fds[i].fd]->appendMessage(buf);
                     }
                 }
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLOUT)
                 {
-                    // std::cout << "Client ready to receive" << std::endl;
-                    // send(fds[i].fd, "Received some data\n", 19, 0);
-                    fds[i].events = POLLIN | POLLHUP;
+                    std::cout << "Client ready to receive" << std::endl;
+
+                    // todo: send response
+
+                    std::string res = "HTTP/1.1 404 Not Found\r\n\
+Content-Length: 13\r\n\
+Content-Type: text/html\r\n\
+Last-Modified: Wed, 12 Aug 1998 15:03:50 GMT\r\n\
+Accept-Ranges: bytes\r\n\
+ETag: \"04f97692cbd1:377\"\r\n\
+Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
+\r\n\
+Hello, world!";
+                    
+                    std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
+
+                    
+                    // reset message 
+                    clients[fds[i].fd]->setMessage("");
+
+                    // todo: check if connection is keep-alive
+                    // fds[i].events = POLLIN | POLLHUP;
+
+                    delete clients[fds[i].fd];
+                    close(fds[i].fd);
+                    clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
+                    fds.erase(fds.begin() + i);
                 }
 
                 if(fds[i].revents & POLLHUP)

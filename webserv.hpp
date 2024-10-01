@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:14:22 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/30 10:43:33 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/01 09:13:34 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include "parsing/Parser.hpp"
 # include "utils/ServerNode.hpp"
 # include "utils/ListNode.hpp"
+# include "utils/Client.hpp"
 # include <sys/poll.h>
 
 
