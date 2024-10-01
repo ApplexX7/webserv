@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/30 10:21:47 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/01 10:43:57 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ class ServerNode {
     private:
         std::map<std::string, Field > fields;
         std::map<std::string,  Location> locations;
+        int fd;
 
     public:
         std::vector<std::string> allowedFields;
@@ -56,7 +57,11 @@ class ServerNode {
         bool locationExists( std::string );
         bool locationFieldExists( std::string, std::string );
 
-        int getServerFd( void );
+        int generateServerFd( void );
+        int getFd( void );
+        void setFd( int );
+
+        std::string getListenField( void );
 };
 
 #endif

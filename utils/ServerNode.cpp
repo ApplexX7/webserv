@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/30 12:48:23 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/01 10:44:58 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,7 +202,7 @@ bool ServerNode::locationFieldExists( std::string path, std::string key ) {
     return false;
 }
 
-int ServerNode::getServerFd( void ) {
+int ServerNode::generateServerFd( void ) {
     std::vector<std::string> splitListen;
     int status;
     struct addrinfo hints;
@@ -240,6 +240,20 @@ int ServerNode::getServerFd( void ) {
         return -1;
     }
     freeaddrinfo(servinfo);
-    // fcntl(sockfd, F_SETFL, O_NONBLOCK);
+    fcntl(sockfd, F_SETFL, O_NONBLOCK);
+    this->fd = sockfd;
     return (sockfd);
+}
+
+int ServerNode::getFd( void ) {
+    return this->fd;
+}
+
+void ServerNode::setFd( int fd ) {
+    this->fd = fd;
+}
+
+std::string ServerNode::getListenField( void ) {
+    std::string listen = this->getField("listen").getValues()[0];
+    return listen;
 }

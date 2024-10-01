@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:14:22 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/01 10:10:20 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/01 10:43:34 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ class Webserv {
 
         void init( std::string );
         void listen( void );
+        ServerNode *getServerByFd( int );
 };
 
 #endif

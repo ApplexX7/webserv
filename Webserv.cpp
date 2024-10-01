@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/01 10:16:37 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/01 10:47:29 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,7 +155,7 @@ void Webserv::listen( void ) {
     addr_size = sizeof(their_addr);
 
     for (int i = 0; i < (int) this->servers.size(); i++) {
-        serverFds.push_back(this->servers[i]->getServerFd());
+        serverFds.push_back(this->servers[i]->generateServerFd());
     }
 
     size = serverFds.size();
@@ -181,6 +181,7 @@ void Webserv::listen( void ) {
                     newPollFd.fd = new_fd;
                     fds.push_back(newPollFd);
                     clients[new_fd] = new Client(this->servers, "", new_fd);
+                    clients[new_fd]->setListen(this->getServerByFd(fds[i].fd)->getListenField());
                 }
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLIN)
@@ -217,7 +218,6 @@ void Webserv::listen( void ) {
                     std::cout << "Client ready to receive" << std::endl;
 
                     // todo: send response
-
                     std::string res = "HTTP/1.1 404 Not Found\r\n\
 Content-Length: 13\r\n\
 Content-Type: text/html\r\n\
@@ -228,14 +228,14 @@ Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
 \r\n\
 Hello, world!";
                     
-                    std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
+                    // std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
 
                     
                     // reset message 
                     clients[fds[i].fd]->setMessage("");
-
+                    std::cout << clients[fds[i].fd]->getListen() << std::endl;
                     // todo: check if connection is keep-alive
-                    fds[i].events = POLLIN | POLLHUP;
+                    // fds[i].events = POLLIN | POLLHUP;
 
                     delete clients[fds[i].fd];
                     close(fds[i].fd);
@@ -251,4 +251,12 @@ Hello, world!";
             }
         }
     }
+}
+
+ServerNode *Webserv::getServerByFd( int fd ) {
+    for (int i = 0; i < (int) this->servers.size(); i++) {
+        if (this->servers[i]->getFd() == fd)
+            return (this->servers[i]);
+    }
+    return NULL;
 }
