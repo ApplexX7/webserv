@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/09/30 14:58:26 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/07 10:45:50 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,8 @@
 #define REPONSE_HPP
 
 #include <ctime>
-#include "Request.hpp"
+#include "../Request/Request.hpp"
 #include <exception>
-
 //status Response
     //information Response
 #define CONTINUE 100
@@ -45,9 +44,12 @@
 
 class Response{
     private:
+        int StatusCode;
         std::string StatusLine;
+        std::string FileName;
         std::map<std::string, std::string> ResponseMeth;
         std::map<std::string, std::string> MIMeType;
+        std::string BodyResponse;
     public:
         Response();
         Response(const Response &Obj);
@@ -55,22 +57,15 @@ class Response{
         ~Response();
 
         //seters and geters
+        void setFileName(std::string);
+        std::string getFileName( void );
         void setMap(std::string _name, std::string _Value);
         void setStatusLine(std::string _Status);
         std::string getStatusLine();
-        std::map<std::string, std::string> getMap() const;
+        std::map<std::string, std::string> getMap( void ) const;
         std::string getMIMeType(std::string _Key);
-
-        class ResponseException: public std::exception {
-            private:
-                std::string error;
-            public:
-                ResponseException(const std::string& msg);
-                virtual const char *what() const throw();
-                virtual ~ResponseException() throw();
-        };
+        void SetStatusCode(int _StatusCode);
+        int GetStatusCode( void );
 };
-
-void  GetMethode(Request &Methode);
 
 #endif

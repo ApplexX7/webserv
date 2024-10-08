@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerNode.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/01 10:43:57 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/07 12:09:04 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ class ServerNode {
         std::map<std::string, Field > getFields( void );
     
         void addLocationField( std::string, std::string, std::string);
-        std::map<std::string, Location > getLocations( void );
+        std::map<std::string, Location > &getLocations( void );
 
         Field& getField( std::string );
         bool fieldExists( std::string );

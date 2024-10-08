@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:17:43 by mohilali          #+#    #+#             */
-/*   Updated: 2024/09/30 15:20:27 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/01 11:21:52 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,6 @@ void herderparser(std::string str, Request &Methode){
     }
     
 }
-
 void parsingbodyrequest(std::string str, Request &Methode){
     int pos;
 
@@ -109,7 +108,7 @@ void parsingbodyrequest(std::string str, Request &Methode){
 int main(void) {
     int pos;
     std::string str;
-    Request Methode;
+    Request ClientMessage;
     str = "GET /Users/mohilali/.brew/etc/nginx/nginx.conf HTTP/1.1\r\n"
             "Host: localhost:8080\r\n"
             "Connection: keep-alive\r\n"
@@ -122,24 +121,24 @@ int main(void) {
             "\r\n"
             "Usually GET requests don\'t have a body\r\n"
             "But I don\'t care in this case :)";
-    pos = str.find("\r\n");
-    requestline(str.substr(0, pos), Methode);
-    // check the head Host if its valid;
-    pos = str.find("Host:");
-    if (str.find_first_of("Host:") != std::string::npos){
-        herderparser(str.substr(pos, str.length() - pos), Methode);
-    }
-    // body check;
-    pos = str.find("\r\n\r\n");
-    parsingbodyrequest(str.substr(pos + 4), Methode);
-    std::cout << "REQUEST LINE: " << std::endl;
-    std::cout << Methode.getMethode()<< "$" << std::endl;
-    std::cout << Methode.getUri() << "$"<< std::endl;
-    Methode.printmap();
-    std::cout << "Body :" << std::endl;
-    std::cout << Methode.getBody() << std::endl;
+    // pos = str.find("\r\n");
+    // requestline(str.substr(0, pos), Methode);
+    // // check the head Host if its valid;
+    // pos = str.find("Host:");
+    // if (str.find_first_of("Host:") != std::string::npos){
+    //     herderparser(str.substr(pos, str.length() - pos), Methode);
+    // }
+    // // body check;
+    // pos = str.find("\r\n\r\n");
+    // parsingbodyrequest(str.substr(pos + 4), Methode);
+    // std::cout << "REQUEST LINE: " << std::endl;
+    // std::cout << Methode.getMethode()<< "$" << std::endl;
+    // std::cout << Methode.getUri() << "$"<< std::endl;
+    // Methode.printmap();
+    // std::cout << "Body :" << std::endl;
+    // std::cout << Methode.getBody() << std::endl;
 
-    if (Methode.getMethode() == "GET")
-        GetMethode(Methode);
+    // if (Methode.getMethode() == "GET")
+    //     GetMethode(Methode);
     return 0;
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerNode.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/01 10:44:58 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/07 12:08:36 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,7 +173,7 @@ std::map<std::string, Field > ServerNode::getFields( void ) {
     return this->fields;
 }
 
-std::map<std::string, Location > ServerNode::getLocations( void ) {
+std::map<std::string, Location >& ServerNode::getLocations( void ) {
     return this->locations;
 }
 

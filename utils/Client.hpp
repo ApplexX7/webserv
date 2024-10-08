@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:11:02 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/01 10:24:06 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/07 13:36:17 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,13 @@
 
 # define CLIENT_HPP
 
+class Request;
 #include <iostream>
 #include "ServerNode.hpp"
+#include "../Request/Request.hpp"
+#include "../Response/Response.hpp"
+
+class Response;
 
 class Client {
     public:
@@ -38,17 +43,21 @@ class Client {
 
         std::vector<ServerNode*> &getServers( void );
 
+
+        Request &getRequest( void );
+        Response &getResponse( void );
+
     private:
         std::vector<ServerNode*> &servers;
-
         std::string message;
         std::string listen;
         int fd;
         bool keepAlive;
         bool responseReady;
-
         // Req
+        Request *RequestMessage;
         // Res 
+        Response *ResponseMessage;
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/09/30 14:36:10 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/07 17:57:57 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 
 Response::Response(){
+	this->StatusCode = 200;
 	this->MIMeType[".html"] = "text/html; charset=UTF-8";
 	this->MIMeType[".css"] = "text/css";
 	this->MIMeType[".js"] = "application/javascript";
@@ -36,12 +37,14 @@ std::string Response::getStatusLine(){
 	return (this->StatusLine);
 }
 
-const char *Response::ResponseException::what() const throw(){
-	return error.c_str();
+int Response::GetStatusCode(){
+	return (this->StatusCode);
 }
 
-Response::ResponseException::ResponseException(const std::string &msg) : error(msg){};
-Response::ResponseException::~ResponseException() throw(){};
+void Response::SetStatusCode(int _StatusCode){
+	std::cout << this->StatusCode << std::endl;
+	this->StatusCode = _StatusCode;
+}
 
 void Response::setMap(std::string _name, std::string _Value){
 	this->ResponseMeth[_name] = _Value;
