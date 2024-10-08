@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/08 16:03:16 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/08 16:32:03 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,6 +173,13 @@ void Webserv::listen( void ) {
         if (poll(fds.data(), fds.size(), 100) > 0) {
             for (int i = 0; i < (int) fds.size(); i++)
             {
+
+                if(fds[i].revents & POLLHUP)
+                {
+                    fds.erase(fds.begin() + i);
+                    std::cout << "client disconnected " << fds[i].fd << std::endl;
+                }
+
                 if (fds[i].revents & POLLIN
                 && isServerFd(serverFds, fds[i].fd))
                 {
@@ -231,15 +238,7 @@ void Webserv::listen( void ) {
                     std::cout << "Client ready to receive" << std::endl;
 
                     // todo: send response
-                    std::string res = "HTTP/1.1 404 Not Found\r\n\
-Content-Length: 13\r\n\
-Content-Type: text/html\r\n\
-Last-Modified: Wed, 12 Aug 1998 15:03:50 GMT\r\n\
-Accept-Ranges: bytes\r\n\
-ETag: \"04f97692cbd1:377\"\r\n\
-Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
-\r\n\
-hello there " + std::to_string(fds[i].fd);
+                    std::string res = clients[fds[i].fd]->getResponse().createGetResponse();
                     
                     std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
                     // reset message 
@@ -253,20 +252,16 @@ hello there " + std::to_string(fds[i].fd);
                         fds[i].events = POLLIN | POLLHUP;
                     }
                     else {
-                        // delete clients[fds[i].fd];
+                        delete clients[fds[i].fd];
                         close(fds[i].fd);
                         clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
-                        // fds.erase(fds.begin() + i);
+                        fds.erase(fds.begin() + i);
                     }
 
 
                 }
 
-                if(fds[i].revents & POLLHUP)
-                {
-                    fds.erase(fds.begin() + i);
-                    std::cout << "client disconnected " << fds[i].fd << std::endl;
-                }
+                
             }
         }
     }

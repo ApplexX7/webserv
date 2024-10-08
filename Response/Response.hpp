@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/07 10:45:50 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/08 16:09:05 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,9 @@ class Response{
         std::string getMIMeType(std::string _Key);
         void SetStatusCode(int _StatusCode);
         int GetStatusCode( void );
+
+        // response handlers
+        std::string createGetResponse( void );
 };
 
 #endif

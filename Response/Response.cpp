@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/07 17:57:57 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/08 16:28:15 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,18 @@ std::string Response::getMIMeType(std::string _Key){
 		std::cerr << "Expection: Key not found" << e.what() << std::endl;
 		return "";
 	}
+}
+
+std::string Response::createGetResponse( void ) {
+	return "HTTP/1.1 404 Not Found\r\n\
+Content-Length: 11\r\n\
+Content-Type: text/html\r\n\
+Last-Modified: Wed, 12 Aug 1998 15:03:50 GMT\r\n\
+Accept-Ranges: bytes\r\n\
+ETag: \"04f97692cbd1:377\"\r\n\
+Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
+\r\n\
+hello there";
 }
 
 Response::~Response(){
