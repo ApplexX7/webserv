@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/08 10:28:30 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/08 11:24:24 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,9 @@ void Request::setHeaders(std::string &name, std::string &value){
 	} else {
 		std::cerr << "Error: Header name or value is empty!" << std::endl;
 	}
+	std:: cout << "******"<< "*****" << std::endl;
+	std::cout << name << " : " << value << std::endl;
+	std:: cout << "******"<< "*****" << std::endl;
 }
 
 void Request::setBody(std::string _Body){
@@ -46,41 +49,41 @@ void Request::printmap(){
 	}
 }
 
-int Request::CheckServerHostName(Client & ClientData){
+int Request::CheckserverhostName(Client & ClientData){
     size_t i;
     //find the listenning server
     for (i = 0; i < ClientData.getServers().size(); i++){
-        if (ClientData.getServers()[i]->getListenField() == ClientData.getRequest().getPort()){
+        if (ClientData.getServers()[i]->getListenField() == ClientData.getRequest().getport()){
             for(size_t j = 0; j < ClientData.getServers()[i]->getFields()["server_name"].getValues().size(); j++){
-                if (ClientData.getServers()[i]->getFields()["server_name"].getValues()[j] ==  ClientData.getRequest().getHostName()){
-                    ClientData.getRequest().setServerNode(ClientData.getServers()[i]);
+                if (ClientData.getServers()[i]->getFields()["server_name"].getValues()[j] ==  ClientData.getRequest().gethostName()){
+                    ClientData.getRequest().setserverNode(ClientData.getServers()[i]);
                     return (0);
                 }
             }
-            ClientData.getRequest().setServerNode(ClientData.getServers()[0]);
+            ClientData.getRequest().setserverNode(ClientData.getServers()[0]);
 			return (0);
         }
     }
 	return 1;
 }
 
-std::string Request::getPathName( void ){
-	return (this->PathName);
+std::string Request::getpathName( void ){
+	return (this->pathName);
 }
 
-void Request::setPathName(std::string _Name){
-	this->PathName = _Name;
+void Request::setpathName(std::string _Name){
+	this->pathName = _Name;
 }
 
-int Request::ValidMethode(std::string &_Methode){
+int Request::Validmethode(std::string &_Methode){
 	if (_Methode == "GET"){
-		this->Methode = _Methode;
+		this->methode = _Methode;
 	}
 	else if (_Methode == "POST"){
-		this->Methode = _Methode;
+		this->methode = _Methode;
 	}
 	else if (_Methode == "DELETE"){
-		this->Methode = _Methode;
+		this->methode = _Methode;
 	}
 	else
 		return (1);
@@ -88,7 +91,7 @@ int Request::ValidMethode(std::string &_Methode){
 }
 
 int Request::ParseRequestLine(std::string &RqLine, Client &ClientData){
-	std::vector<strign> RequestLineChunks;
+	std::vector<std::string> RequestLineChunks;
 	std::stringstream str(RqLine);
 	std::string token;
 	size_t pos;
@@ -108,14 +111,14 @@ int Request::ParseRequestLine(std::string &RqLine, Client &ClientData){
 		ClientData.getResponse().SetStatusCode(400);
 		return (1);
 	}
-	for (int i = 0; i < RequestLineChunks.size(); i++){
+	for (size_t i = 0; i < RequestLineChunks.size(); i++){
 		if (RequestLineChunks[i].empty()){
 			ClientData.getResponse().SetStatusCode(400);
 			return (1);
 		}
 	}
 	//valide methode;
-	if (this->ValidMethode(RequestLineChunks[0])){
+	if (this->Validmethode(RequestLineChunks[0])){
 		ClientData.getResponse().SetStatusCode(501);
 		return (1);
 	}
@@ -123,7 +126,7 @@ int Request::ParseRequestLine(std::string &RqLine, Client &ClientData){
 	pos = RequestLineChunks[1].find("?");
 	if (pos != std::string::npos){
 		this->Uri = RequestLineChunks[1].substr(0, pos);
-		this->Querystring = RequestLineChunks[1].substr(pos + 1);
+		this->quertyString = RequestLineChunks[1].substr(pos + 1);
 	}
 	else{
 		this->Uri = RequestLineChunks[1];
@@ -136,10 +139,10 @@ int Request::ParseRequestLine(std::string &RqLine, Client &ClientData){
 	return (0);
 }
 
-int Request::FindLocationtobeUsed(){
+int Request::findLocationtobeUsed(){
 	std::string LongestMatch = "";
-	for (std::map<std::string, Location>::iterator it = this->Server->getLocations().begin;
-		it != this->Server->getLocations.end(); it++){
+	for (std::map<std::string, Location>::iterator it = this->server->getLocations().begin();
+		it != this->server->getLocations().end(); it++){
 
 			if (this->getUri().find(it->first) == 0){
 				if (it->first.length() > LongestMatch.length()){
@@ -148,10 +151,10 @@ int Request::FindLocationtobeUsed(){
 		}
 	}
 	if (!LongestMatch.empty()){
-		this->LocationName = LongestMatch;
+		this->locationName = LongestMatch;
 		return (0);
 	}
-	this->LocationName = "";
+	this->locationName = "";
 	return (1);
 }
 
@@ -166,64 +169,38 @@ std::string Request::FindHost(std::string HostLine){
 		pos = Host.find(":");
 		if (pos != std::string::npos){
 			Host = Host.substr(0, pos);
-			this->Port = Host.substr(pos + 1);
+			this->port = Host.substr(pos + 1);
 		}
 		else
-			this->Port = "DEFAULT"; // temporary;
+			this->port = "DEFAULT"; // temporary;
 		return (Host);
 	}
 	return ("");
 }
 
-int Request::ParsingTheRequest(Client &ClientData){	
+int Request::ParsingTheRequest(Client &ClientData){
 	size_t pos;
-	std::string Host;
-	std::stringstream Message(ClientData.getMessage());
+	std::string name;
+	std::string Value;
 	std::string ChunkLine;
+	std::stringstream Message(ClientData.getMessage());
 
 	std::getline(Message, ChunkLine, '\r');
 	Message.ignore(1);
-	if (!this->ParseRequestLine(ChunkLine, ClientData)){
+	if (this->ParseRequestLine(ChunkLine, ClientData)){
 		return (1);
-	}
-	std::getline(Message, ChunkLine, '\r');
-	Message.ignore(1);
-	this->HostName = this->FindHost(ChunkLine);
-	if (this->HostName.empty()){
-		ClientData.getResponse().SetStatusCode(400);
-		return (1);
-	}
-	// find the listenning server
-	if (this->CheckServerHostName(ClientData)){
-		std::cerr << "Error : Unknown Server"<< std::endl;
-		return (1);
-	}
-	//Find Location to be used;
-	if (!this->FindLocationtobeUsed(ClientData)){
-		this->Location = true;
-	}
-
-	// parsing Headers
-	std::getline(Message, ChunkLine, '\r\n\r\n');
-	if (parsetheRestoftheheaders(ChunkLine)){
-		
 	}
 	// headers parsing;
-	std::string name;
-	std::string line;
-	std::string Value;
-	std::istringstream HeadersParser(Message.substr(Message.find("\r\n")));
-
-	while (std::getline(HeadersParser, line)){
-		if (line == "\r")
+	while (std::getline(Message, ChunkLine)){
+		if (ChunkLine == "\r")
 			break;
-		pos = line.find(':');
+		pos = ChunkLine.find(':');
 		if (pos == std::string::npos){
 			ClientData.getResponse().SetStatusCode(400);
 			return 0;
 		}
-		name = line.substr(0, pos);
-		Value = line.substr(pos + 1);
+		name = ChunkLine.substr(0, pos);
+		Value = ChunkLine.substr(pos + 1);
 		size_t spa = name.find(' ');
 		size_t tab = name.find('\t');
 		if (spa != std::string::npos || tab != std::string::npos){
@@ -238,40 +215,38 @@ int Request::ParsingTheRequest(Client &ClientData){
 	}
 	if (this->methode == "GET"){
 		// this->CheckDirectory(ClientData);
+		//pass to the  getresponse
 		return (0);
 	}
 	else if (this->methode == "POST"){
-		//readbody;
-		pos = Message.find("\r\n\r\n");
-		size_t end = Message.find("\r\n\r\n", pos + 4);
-		this->body = Message.substr(pos + 4, end);
-		// parsing the body for the port Methode
+		//
+		// this->ParsePostBody();
 	}
 	return 0;
 }
 
-void Request::setServerNode(ServerNode *_ServerNode){
-	this->Server = _ServerNode;
+void Request::setserverNode(ServerNode *_ServerNode){
+	this->server = _ServerNode;
 }
 
-ServerNode& Request::getServerNode() const{
-	return *this->Server;
+ServerNode& Request::getserverNode() const{
+	return *this->server;
 }
 
-void Request::setPort(std::string _Port){
-	this->Port =  _Port;
+void Request::setport(std::string _Port){
+	this->port =  _Port;
 }
 
-std::string Request::getPort(){
-	return (this->Port);
+std::string Request::getport(){
+	return (this->port);
 }
 
-std::string Request::getHostName(){
-	return (this->HostName);
+std::string Request::gethostName(){
+	return (this->hostName);
 }
 
-void Request::setHostName(std::string _HostName){
-	this->HostName = _HostName;
+void Request::sethostName(std::string _HostName){
+	this->hostName = _HostName;
 }
 
 std::string Request::getValue(std::string _Key){
@@ -285,7 +260,7 @@ std::string Request::getBody(){
 void Request::Setmethode(std::string _methode){
 	this->methode = _methode;
 }
-std::string Request::getMethode(){
+std::string Request::getmethode(){
 	return (this->methode);
 }
 
@@ -307,7 +282,7 @@ void Request::SetUri(std::string _Uri){
 	}
 	else{
 		this->Uri = _Uri.substr(0, pos);
-		this->querystring = _Uri.substr(pos + 1);
+		this->quertyString = _Uri.substr(pos + 1);
 	}
 }
 Request::~Request(){

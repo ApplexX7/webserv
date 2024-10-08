@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/07 21:48:43 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/08 11:10:36 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,14 +28,14 @@ class Client;
 
 class Request{
     private:
-        bool Location;
-        std::string LocationName;
-        std::string PathName;
-        std::string Querystring;
-        ServerNode *Server;
-        std::string Port;
-        std::string HostName;
-        std::string Methode;
+        bool location;
+        std::string locationName;
+        std::string pathName;
+        std::string quertyString;
+        ServerNode *server;
+        std::string port;
+        std::string hostName;
+        std::string methode;
         std::string Uri;
         std::map<std::string,std::string> headers;
         std::string body;
@@ -44,32 +44,34 @@ class Request{
         Request(const Request &obj);
         Request& operator=(const Request &ope);
         ~Request();
-        void setPathName(std::string _Name);
-        std::string getPathName( void );
+        void setpathName(std::string _Name);
+        std::string getpathName( void );
         void setBody(std::string _Body);
         void setHeaders(std::string &name, std::string &value);
         void Setmethode(std::string _metode);
-        void setPort(std::string _Port);
-        void setServerNode(ServerNode *_ServerNode);
-        void setLocationName();
-        int ParseRequestLine(std::string Message, Client &ClientData);
+        void setport(std::string _port);
+        void setserverNode(ServerNode *_serverNode);
+        void setlocationName();
+        int ParseRequestLine(std::string &Message, Client &ClientData);
         int ParsingRequestHeaders(std::string RequestHeader);
-        std::string getLocationName();
-        ServerNode &getServerNode() const;
-        int ValidMethode(std::string &Methode);
+        std::string getlocationName();
+        ServerNode &getserverNode() const;
+        int Validmethode(std::string &methode);
         std::string FindHost(std::string HostLine);
-        std::string FindLocationtobeUsed(Client &ClientData);
-        //checkHostName
-        int CheckServerHostName(Client& ClientData);
+
+        int findLocationtobeUsed();
+        //checkhostName
+        int CheckserverhostName(Client& ClientData);
         //GET parser function
         int CheckDirectory(Client &ClientData);
         
-        void setHostName(std::string _HostName);
-        
-        std::string  getPort();
-        std::string getHostName();
+        void sethostName(std::string _hostName);
+        // POST parse Body
+        // int ParsePostBody();
+        std::string  getport();
+        std::string gethostName();
         std::string getValue(std::string _Key);
-        std::string getMethode();
+        std::string getmethode();
         std::string getUri();
         std::string getBody();
 
