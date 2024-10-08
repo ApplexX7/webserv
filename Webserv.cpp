@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/07 17:56:01 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/08 13:38:17 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,6 +138,8 @@ bool isServerFd(std::vector<int> serverFds, int fd) {
     return (std::find(serverFds.begin(), serverFds.end(), fd) != serverFds.end());
 }
 
+
+
 void Webserv::listen( void ) {
     std::vector<int> serverFds;
     std::vector<int> clientFds;
@@ -199,9 +201,14 @@ void Webserv::listen( void ) {
                         message.assign(buf);
                         clients[fds[i].fd]->appendMessage(buf);
                         std::cout << "client finished writing, full message:" << std::endl;
+
                         std::cout << clients[fds[i].fd]->getMessage() << std::endl;
                         clients[fds[i].fd]->getRequest().ParsingTheRequest(*clients[fds[i].fd]);
-                        printf("*************   %d   \n", clients[fds[i].fd]->getResponse().GetStatusCode());
+
+                        clients[fds[i].fd]->findParentServer();
+
+                        std::cout << "Parsing headers finished" << std::endl;
+
                         fds[i].events = POLLOUT;
 
                         // todo: parse request and generate response using client.handle_request
@@ -235,7 +242,8 @@ Hello, world!";
                     
                     // reset message 
                     clients[fds[i].fd]->setMessage("");
-                    std::cout << clients[fds[i].fd]->getListen() << std::endl;
+
+
                     // todo: check if connection is keep-alive
                     // fds[i].events = POLLIN | POLLHUP;
 

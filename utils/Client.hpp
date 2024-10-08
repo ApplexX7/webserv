@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:11:02 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/07 13:36:17 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/08 13:40:44 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,21 +43,26 @@ class Client {
 
         std::vector<ServerNode*> &getServers( void );
 
+        void findParentServer( void );
+        ServerNode& getParentServer( void );
 
         Request &getRequest( void );
         Response &getResponse( void );
 
     private:
         std::vector<ServerNode*> &servers;
+        ServerNode* parentServer;
         std::string message;
         std::string listen;
         int fd;
         bool keepAlive;
         bool responseReady;
+
         // Req
-        Request *RequestMessage;
+        Request *requestMessage;
+    
         // Res 
-        Response *ResponseMessage;
+        Response *responseMessage;
 };
 
 #endif
