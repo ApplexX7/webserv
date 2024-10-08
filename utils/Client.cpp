@@ -6,18 +6,25 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:12:11 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/08 13:53:51 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/08 16:01:39 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client( std::vector<ServerNode*>& servers): servers(servers), keepAlive(false), requestMessage(), responseMessage() {};
-
-Client::Client( std::vector<ServerNode*>& servers, std::string message, int fd):
-servers(servers), message(message), fd(fd), keepAlive(false){
+Client::Client( std::vector<ServerNode*>& servers):
+servers(servers),
+keepAlive(false) {
     this->responseMessage = new Response();
     this->requestMessage = new Request();
+    this->parentServer = NULL;
+};
+
+Client::Client( std::vector<ServerNode*>& servers, std::string message, int fd):
+servers(servers), message(message), fd(fd), keepAlive(false) {
+    this->responseMessage = new Response();
+    this->requestMessage = new Request();
+     this->parentServer = NULL;
 }
 
 Client::~Client( void ) {
@@ -83,10 +90,12 @@ void Client::findParentServer( void ) {
 
     for (int i = 0; i < (int) servers.size(); i++) {
         serverListen = servers[i]->getField("listen").getValues()[0];
-
+        
+        
         if (serverListen == this->listen) {
+            // std::cout << "|" << serverListen << "| |" << this->listen << "|" <<std::endl;
             if (this->parentServer == NULL) {
-                // set default server
+                // std::cout << "default found on " << serverListen << std::endl;
                 this->parentServer = servers[i];
             }
 
@@ -95,19 +104,20 @@ void Client::findParentServer( void ) {
             for (int j = 0; j < (int) serverNames.size(); j++) {
                 if (host == serverNames[j]) {
                     // match found
+                    // std::cout << "Matched with " << serverListen << " on " << host << std::endl;
                     this->parentServer = servers[i];
                     matched = true;
                     break ;
                 }
             }
-
-            if (matched)
-                break ;
         }
-        
+        if (matched)
+            break ;
     }
 }
 
 ServerNode& Client::getParentServer( void ) {
+    if (this->parentServer == NULL)
+        std::cout << "server is null" << std::endl;
     return *(this->parentServer);
 }

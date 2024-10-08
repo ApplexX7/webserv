@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/08 13:38:17 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/08 16:03:16 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,8 +207,12 @@ void Webserv::listen( void ) {
 
                         clients[fds[i].fd]->findParentServer();
 
-                        std::cout << "Parsing headers finished" << std::endl;
+                        // std::vector<std::string> vals = clients[fds[i].fd]->getParentServer().getField("listen").getValues();
 
+                        // std::cout << "Parent server " << (clients[fds[i].fd]->getParentServer().getField("listen").getValues() != NULL ? "YES" : "None") << std::endl;
+                        clients[fds[i].fd]->getParentServer();
+
+                        
                         fds[i].events = POLLOUT;
 
                         // todo: parse request and generate response using client.handle_request
@@ -235,22 +239,27 @@ Accept-Ranges: bytes\r\n\
 ETag: \"04f97692cbd1:377\"\r\n\
 Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
 \r\n\
-Hello, world!";
+hello there " + std::to_string(fds[i].fd);
                     
-                    // std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
-
-                    
+                    std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
                     // reset message 
                     clients[fds[i].fd]->setMessage("");
 
+                    std::string connection = clients[fds[i].fd]->getRequest().getValue("Connection");
 
                     // todo: check if connection is keep-alive
-                    // fds[i].events = POLLIN | POLLHUP;
 
-                    delete clients[fds[i].fd];
-                    close(fds[i].fd);
-                    clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
-                    fds.erase(fds.begin() + i);
+                    if (connection == "keep-alive") {
+                        fds[i].events = POLLIN | POLLHUP;
+                    }
+                    else {
+                        // delete clients[fds[i].fd];
+                        close(fds[i].fd);
+                        clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
+                        // fds.erase(fds.begin() + i);
+                    }
+
+
                 }
 
                 if(fds[i].revents & POLLHUP)
