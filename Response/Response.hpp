@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/07 10:45:50 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/08 13:25:36 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,40 +16,15 @@
 #include <ctime>
 #include "../Request/Request.hpp"
 #include <exception>
-//status Response
-    //information Response
-#define CONTINUE 100
-#define SWITCHING_PRO 101
-#define PROCESSING 102
-#define EARLY_HINTS 103
-    // Successful response
-#define SUCCREQUEST 200
-#define CREATED 201
-#define ACCEPTED 202
-#define NOCONTENT 204
-    //client error response
-#define BADREQUEST 400
-#define UNAUTHORIZED 401
-#define FORBIDDEN 403
-#define NOTFOUND 404
-#define NOTALLOWEDMETHOD 405
-#define NOTACCEPTABLE 406
-#define NOTINPLEMETED 500
-
-
-  
-
-
-#define SERVER webserve/1.1
 
 class Response{
     private:
-        int StatusCode;
-        std::string StatusLine;
-        std::string FileName;
-        std::map<std::string, std::string> ResponseMeth;
+        int statusCode;
+        std::string statusLine;
+        std::string fileName;
+        std::map<int, std::string> statusMaps;
         std::map<std::string, std::string> MIMeType;
-        std::string BodyResponse;
+        std::string bodyResponse;
     public:
         Response();
         Response(const Response &Obj);
@@ -58,6 +33,7 @@ class Response{
 
         //seters and geters
         void setFileName(std::string);
+        void setStatusMaps();
         std::string getFileName( void );
         void setMap(std::string _name, std::string _Value);
         void setStatusLine(std::string _Status);

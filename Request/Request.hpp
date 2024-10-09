@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/08 11:10:36 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/09 12:15:45 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@ class Client;
 
 class Request{
     private:
-        bool location;
         std::string locationName;
         std::string pathName;
         std::string quertyString;
@@ -39,6 +38,13 @@ class Request{
         std::string Uri;
         std::map<std::string,std::string> headers;
         std::string body;
+
+        // for Post Body
+        int contentLenght;
+        std::string contentType;
+        std::string startofBoundary;
+        std::string endofBoundary;
+        std::string TransferCoding;
     public:
         Request();
         Request(const Request &obj);
@@ -67,7 +73,9 @@ class Request{
         
         void sethostName(std::string _hostName);
         // POST parse Body
-        // int ParsePostBody();
+        int ParsePostHeaders();
+
+    
         std::string  getport();
         std::string gethostName();
         std::string getValue(std::string _Key);

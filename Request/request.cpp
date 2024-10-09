@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/08 11:24:24 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/09 12:23:31 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,9 +33,6 @@ void Request::setHeaders(std::string &name, std::string &value){
 	} else {
 		std::cerr << "Error: Header name or value is empty!" << std::endl;
 	}
-	std:: cout << "******"<< "*****" << std::endl;
-	std::cout << name << " : " << value << std::endl;
-	std:: cout << "******"<< "*****" << std::endl;
 }
 
 void Request::setBody(std::string _Body){
@@ -219,9 +216,9 @@ int Request::ParsingTheRequest(Client &ClientData){
 		return (0);
 	}
 	else if (this->methode == "POST"){
-		//
-		// this->ParsePostBody();
+		this->ParsePostHeaders();
 	}
+	// body part
 	return 0;
 }
 
@@ -250,7 +247,12 @@ void Request::sethostName(std::string _HostName){
 }
 
 std::string Request::getValue(std::string _Key){
-	return (this->headers[_Key]);
+	std::map<std::string, std::string>::iterator it = this->headers.find(_Key);
+	if (it != this->headers.end()){
+		return (this->headers[_Key]);
+	}
+	else
+		return ("")
 }
 
 std::string Request::getBody(){
@@ -286,5 +288,4 @@ void Request::SetUri(std::string _Uri){
 	}
 }
 Request::~Request(){
-	
 }

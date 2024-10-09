@@ -6,29 +6,37 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/07 17:57:57 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/08 14:00:56 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 
-
-Response::Response(){
-	this->StatusCode = 200;
-	this->MIMeType[".html"] = "text/html; charset=UTF-8";
-	this->MIMeType[".css"] = "text/css";
-	this->MIMeType[".js"] = "application/javascript";
-	this->MIMeType[".jpg"] = "image/jpeg";
-	this->MIMeType[".jpeg"] = "image/jpeg";
-	this->MIMeType[".png"] = "image/png";
-	this->MIMeType[".gif"] = "image/gif";
-	this->MIMeType[".json"] = "application/json";
-	this->MIMeType[".xml"] = "application/xml";
-	this->MIMeType[".txt"] = "text/plain";
+void Response::setStatusMaps(){
+	this->statusMaps[200] = "OK";
+	this->statusMaps[201] = "Created";
+	this->statusMaps[400] = "Bad Request";
+	this->statusMaps[401] = "Unauthorized";
+	this->statusMaps[403] = "Forbidden";
+	this->statusMaps[404] = "Not Found";
+	this->statusMaps[204] = "No Content";
+	this->statusMaps[405] = "Method Not Allowed";
+	this->statusMaps[413] = "Payload too Large";
+	this->statusMaps[414] = "URI Too Long";
+	this->statusMaps[415] = "Unsupported Media Type";
+	this->statusMaps[416] = "Range Not Satisfiable";
+	this->statusMaps[501] = "Not Implemented";
+	this->statusMaps[505] = "HTTP Version Not Supported";
+	this->statusMaps[422] = "Unprocessable Entity";
 }
 
 
-
+Response::Response(){
+	this->statusCode = 200;
+	this->statusLine = "";
+	this->bodyResponse = "";
+	this->setStatusMaps();
+}
 void    Response::setStatusLine(std::string _Status){
 	this->StatusLine = _Status;
 }
@@ -68,13 +76,7 @@ std::map<std::string, std::string> Response::getMap() const {
 }
 
 std::string Response::getMIMeType(std::string _Key){
-	
-	try{
 		return (this->MIMeType.at(_Key));
-	} catch (const std::out_of_range& e){
-		std::cerr << "Expection: Key not found" << e.what() << std::endl;
-		return "";
-	}
 }
 
 Response::~Response(){
