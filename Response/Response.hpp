@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/08 13:25:36 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/09 12:31:10 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,9 @@ class Response{
         std::string getMIMeType(std::string _Key);
         void SetStatusCode(int _StatusCode);
         int GetStatusCode( void );
+
+        // response handlers
+        std::string createGetResponse( void );
 };
 
 #endif

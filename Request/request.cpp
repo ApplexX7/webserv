@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/09 12:23:31 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/09 12:32:20 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,9 @@ void Request::setHeaders(std::string &name, std::string &value){
 	} else {
 		std::cerr << "Error: Header name or value is empty!" << std::endl;
 	}
+	// std:: cout << "******"<< "*****" << std::endl;
+	// std::cout << name << " : " << value << std::endl;
+	// std:: cout << "******"<< "*****" << std::endl;
 }
 
 void Request::setBody(std::string _Body){
@@ -40,10 +43,10 @@ void Request::setBody(std::string _Body){
 }
 
 void Request::printmap(){
-	std::cout << "HEADER  :" << std::endl;
-	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it){
-		std::cout << it->first << " : " << it->second << std::endl;
-	}
+	// std::cout << "HEADER  :" << std::endl;
+	// for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it){
+	// 	std::cout << it->first << " : " << it->second << std::endl;
+	// }
 }
 
 int Request::CheckserverhostName(Client & ClientData){
@@ -287,5 +290,9 @@ void Request::SetUri(std::string _Uri){
 		this->quertyString = _Uri.substr(pos + 1);
 	}
 }
-Request::~Request(){
+
+std::map<std::string,std::string> Request::getHeaders( void ) {
+	return this->headers;
 }
+
+Request::~Request() {}

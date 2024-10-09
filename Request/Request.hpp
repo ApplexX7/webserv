@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/09 12:15:45 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/09 12:29:04 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ class Request{
         std::map<std::string,std::string> headers;
         std::string body;
 
-        // for Post Body
+
         int contentLenght;
         std::string contentType;
         std::string startofBoundary;
@@ -50,6 +50,7 @@ class Request{
         Request(const Request &obj);
         Request& operator=(const Request &ope);
         ~Request();
+
         void setpathName(std::string _Name);
         std::string getpathName( void );
         void setBody(std::string _Body);
@@ -60,6 +61,7 @@ class Request{
         void setlocationName();
         int ParseRequestLine(std::string &Message, Client &ClientData);
         int ParsingRequestHeaders(std::string RequestHeader);
+
         std::string getlocationName();
         ServerNode &getserverNode() const;
         int Validmethode(std::string &methode);
@@ -82,9 +84,11 @@ class Request{
         std::string getmethode();
         std::string getUri();
         std::string getBody();
+        std::map<std::string,std::string> getHeaders( void );
 
         //parsing the request;
         int ParsingTheRequest(Client& ClientData);
+    
         // for debugging
         void printmap();
         void SetUri(std::string _Uri);
