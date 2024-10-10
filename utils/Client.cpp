@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:12:11 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/08 16:01:39 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 20:26:39 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ Client::~Client( void ) {
     delete this->requestMessage;
 };
 
-std::string Client::getMessage( void ) {
+std::string& Client::getMessage( void ){
     return this->message;
 }
 

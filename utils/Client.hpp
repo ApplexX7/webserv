@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:11:02 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/08 13:40:44 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 20:26:44 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ class Client {
         Client( std::vector<ServerNode*>&, std::string, int );
         ~Client( void );
 
-        std::string getMessage( void );
+        std::string &getMessage( void );
         void setMessage( std::string );
         void appendMessage( std::string );
 

@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 13:05:35 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/10 19:59:56 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,12 @@
 
 class Client;
 
-
+enum TypeTransf{
+    NONE,
+    BOUNDARY,
+    FIXEDSIZE,
+    ENCODING,
+};
 
 class Request{
     private:
@@ -44,6 +49,7 @@ class Request{
 
         // for the Post Methode
         int contentLenght;
+        TypeTransf bodyType;
         std::string contentType;
         std::string startofBoundary;
         std::string endofBoundary;
@@ -54,9 +60,10 @@ class Request{
         Request& operator=(const Request &ope);
         ~Request();
 
+
+        int requestParserStart(Client &clientData);
         void setpathName(std::string _Name);
         std::string getpathName( void );
-        void setBody(std::string _Body);
         void setHeaders(std::string &name, std::string &value);
         void Setmethode(std::string _metode);
         void setport(std::string _port);
@@ -80,6 +87,7 @@ class Request{
         // POST parse Body
         int ParsePostHeaders();
         int parseBodytype();
+        int parseBodyTypeBuffer(std::string &bufferedBody);
     
         std::string  getport();
         std::string gethostName();

@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 13:25:23 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/10 21:21:09 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 Request::Request(){
 	this->compliteHeaderparser = false;
+	this->bodyType = NONE;
 }
 
 Request::Request(const Request &obj){
@@ -37,10 +38,6 @@ void Request::setHeaders(std::string &name, std::string &value){
 	// std:: cout << "******"<< "*****" << std::endl;
 	// std::cout << name << " : " << value << std::endl;
 	// std:: cout << "******"<< "*****" << std::endl;
-}
-
-void Request::setBody(std::string _Body){
-	this->body = _Body;
 }
 
 void Request::printmap(){
@@ -160,23 +157,19 @@ int Request::findLocationtobeUsed(){
 }
 
 std::string Request::FindHost(std::string HostLine){
-	size_t pos;
-	std::string Host;
-
-	pos = HostLine.find("Host: ");
-	if (pos != std::string::npos){
-		Host = HostLine.substr(pos + 1);
-		Host.erase(std::remove_if(Host.begin(), Host.end(), ::isspace), Host.end());
-		pos = Host.find(":");
-		if (pos != std::string::npos){
-			Host = Host.substr(0, pos);
-			this->port = Host.substr(pos + 1);
-		}
-		else
-			this->port = "DEFAULT"; // temporary;
-		return (Host);
-	}
-	return ("");
+    size_t pos = HostLine.find("Host:");
+    if (pos != std::string::npos){
+        std::string hostPort = HostLine.substr(pos + 5);
+        hostPort.erase(std::remove_if(hostPort.begin(), hostPort.end(), ::isspace), hostPort.end());
+        size_t colonPos = hostPort.find(":");
+        if (colonPos != std::string::npos){
+            this->port = hostPort.substr(colonPos + 1);
+            return hostPort.substr(0, colonPos);
+        }
+        this->port = "DEFAULT";
+        return hostPort;
+    }
+    return "";
 }
 
 int Request::ParsingTheRequest(Client &ClientData){
@@ -186,53 +179,71 @@ int Request::ParsingTheRequest(Client &ClientData){
 	std::string ChunkLine;
 	std::stringstream Message(ClientData.getMessage());
 
-	if (!this->compliteHeaderparser){
-		std::getline(Message, ChunkLine, '\r');
-		Message.ignore(1);
-		if (this->ParseRequestLine(ChunkLine, ClientData)){
+	std::getline(Message, ChunkLine, '\r');
+	Message.ignore(1);
+	if (this->ParseRequestLine(ChunkLine, ClientData)){
+		return (1);
+	}
+	// headers parsing;
+	while (std::getline(Message, ChunkLine)){
+		if (ChunkLine == "\r" || ChunkLine.empty())
+			break;
+		pos = ChunkLine.find(':');
+		if (pos == std::string::npos){
+			ClientData.getResponse().SetStatusCode(400);
+			return 0;
+		}
+		name = ChunkLine.substr(0, pos);
+		Value = ChunkLine.substr(pos + 1);
+		size_t spa = name.find(' ');
+		size_t tab = name.find('\t');
+		if (spa != std::string::npos || tab != std::string::npos){
+			ClientData.getResponse().SetStatusCode(400);
+			return (0);
+		}
+		Value.erase(std::remove_if(Value.begin(),Value.end(), ::isspace), Value.end());
+		if (Value.empty() || name.empty()){
+			ClientData.getResponse().SetStatusCode(400);
 			return (1);
 		}
-		// headers parsing;
-		while (std::getline(Message, ChunkLine)){
-			if (ChunkLine == "\r")
-				break;
-			pos = ChunkLine.find(':');
-			if (pos == std::string::npos){
-				ClientData.getResponse().SetStatusCode(400);
-				return 0;
-			}
-			name = ChunkLine.substr(0, pos);
-			Value = ChunkLine.substr(pos + 1);
-			size_t spa = name.find(' ');
-			size_t tab = name.find('\t');
-			if (spa != std::string::npos || tab != std::string::npos){
-				ClientData.getResponse().SetStatusCode(400);
-				return (0);
-			}
-			Value.erase(std::remove_if(Value.begin(),Value.end(), ::isspace), Value.end());
-			if (Value.empty() || name.empty()){
-				ClientData.getResponse().SetStatusCode(400);
-			}
-			this->setHeaders(name, Value);
-		}
-		if (ClientData.getMessage().find("\r\n\r\n")){
-			std::string str = Message.str();
-			if (!str.empty() && str.find("\r\n\r\n")){
-				this->bodybuffer += str.erase(str.find("\r\n\r\n"));
-			}
-			this->compliteHeaderparser = true;
-		}
+		this->setHeaders(name, Value);
+	}
+	size_t headerEnd = ClientData.getMessage().find("\r\n\r\n");
+	if (headerEnd != std::string::npos){
+    	this->compliteHeaderparser= true;
 	}
 	if (this->methode == "GET" && this->compliteHeaderparser){
 		// this->CheckDirectory(ClientData);
-		//pass to the  getresponse
+		//pass to the  get response
 		return (0);
 	}
 	else if (this->methode == "POST" && this->compliteHeaderparser){
-		this->ParsePostHeaders();
+		if (this->ParsePostHeaders())
+			return (1);
 	}
-	// body part
 	return 0;
+}
+
+int Request::requestParserStart(Client &clientData){
+	// parse tell the  body;
+	if (!this->compliteHeaderparser && this->ParsingTheRequest(clientData)){
+		// problem in teh request pass to the repsonse
+		return (1);
+	}
+	// waiting to  teh body get complite
+	if (this->methode == "POST" && this->compliteHeaderparser){
+		size_t pos = clientData.getMessage().find("\r\n\r\n");
+		if (pos != std::string::npos){
+ 			this->bodybuffer += clientData.getMessage().substr(pos + 4);
+		}
+		if (this->parseBodyTypeBuffer(this->bodybuffer)){
+			//complite the body parser;
+			std::cout << "Complite the body  read\n\n\n\n\n " << std::endl;
+			return (1); // the body complite
+		}
+		return (0);
+	}
+	return (0);
 }
 
 void Request::setserverNode(ServerNode *_ServerNode){
@@ -269,7 +280,7 @@ std::string Request::getValue(std::string _Key){
 }
 
 std::string Request::getBody(){
-	return (this->body);
+	return (this->bodybuffer);
 }
 
 void Request::Setmethode(std::string _methode){

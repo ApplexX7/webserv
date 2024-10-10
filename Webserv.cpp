@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/08 16:32:03 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 20:43:21 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,7 +210,7 @@ void Webserv::listen( void ) {
                         std::cout << "client finished writing, full message:" << std::endl;
 
                         std::cout << clients[fds[i].fd]->getMessage() << std::endl;
-                        clients[fds[i].fd]->getRequest().ParsingTheRequest(*clients[fds[i].fd]);
+                        clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
 
                         clients[fds[i].fd]->findParentServer();
 
@@ -218,10 +218,7 @@ void Webserv::listen( void ) {
 
                         // std::cout << "Parent server " << (clients[fds[i].fd]->getParentServer().getField("listen").getValues() != NULL ? "YES" : "None") << std::endl;
                         clients[fds[i].fd]->getParentServer();
-
-                        
                         fds[i].events = POLLOUT;
-
                         // todo: parse request and generate response using client.handle_request
                     }
                     else
