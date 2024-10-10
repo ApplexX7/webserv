@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 11:05:48 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/10 17:20:40 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,10 @@
 #include <exception>
 
 enum {
-    BOUNDARY;
-    FIXEDSIZE;
-    ENCODING;
-}
+    BOUNDARY,
+    FIXEDSIZE,
+    ENCODING,
+};
 
 class Response{
     private:
