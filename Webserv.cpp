@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/10 12:13:21 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 13:41:11 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -240,7 +240,7 @@ void Webserv::listen( void ) {
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLOUT)
                 {
-                    std::cout << "Client ready to receive" << std::endl;
+                    // std::cout << "Client ready to receive" << std::endl;
 
                     clients[fds[i].fd]->findParentServer();
 
@@ -254,16 +254,22 @@ void Webserv::listen( void ) {
                     std::string connection = clients[fds[i].fd]->getRequest().getValue("Connection");
 
                     // todo: check if connection is keep-alive
-
-                    if (connection == "keep-alive") {
-                        fds[i].events = POLLIN | POLLHUP;
+                    
+                    if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
+                        clients[fds[i].fd]->getResponse().setStatus(IDLE);
+                        std::cout << "HERE" << std::endl;
+                        if (connection == "keep-alive") {
+                            fds[i].events = POLLIN | POLLHUP;
+                        }
+                        else {
+                            delete clients[fds[i].fd];
+                            close(fds[i].fd);
+                            clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
+                            fds.erase(fds.begin() + i);
+                        }
+                        
                     }
-                    else {
-                        delete clients[fds[i].fd];
-                        close(fds[i].fd);
-                        clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
-                        fds.erase(fds.begin() + i);
-                    }
+                    
 
 
                 }

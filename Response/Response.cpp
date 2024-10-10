@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 13:27:03 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 13:45:24 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,10 +114,7 @@ bool Response::checkPath( std::string path ) const {
 
 std::string readFileContent( std::ifstream file ) {
 	char buf[1025];
-	
-
 	file.read(buf, 1024);
-	
 	buf[file.gcount()] = 0;
 	std::string content(buf);
 	return content;
@@ -163,12 +160,22 @@ Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
 	}
 	if (!this->file.is_open()) {
 		this->file.open(fullPath);
-		
+
 		// todo: check if open failed
 	}
+
+	// read from file
+	char buf[1025];
+	file.read(buf, 1024);
+	buf[file.gcount()] = 0;
+	std::string con(buf);
+
 	
-	content = readFileContent(this->file);
-	return content;
+	if (con.length() != 1024) {
+		this->status = FINISHED;
+		this->file.close();
+	}
+	return con;
 }
 
 Response::~Response(){
