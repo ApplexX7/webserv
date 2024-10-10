@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/07 09:49:44 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/09 12:23:43 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/10 17:22:21 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,5 +31,6 @@ int Request::ParsePostHeaders(){
 		this->contentLenght = 0;
 
 	this->TransferCoding = getValue("Transfer-Coding");
+	return 0;
 }
 

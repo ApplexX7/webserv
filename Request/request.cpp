@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/09 12:32:20 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/10 17:30:06 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -255,7 +255,7 @@ std::string Request::getValue(std::string _Key){
 		return (this->headers[_Key]);
 	}
 	else
-		return ("")
+		return ("");
 }
 
 std::string Request::getBody(){
