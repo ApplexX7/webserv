@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 12:17:43 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 13:27:03 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ Response::Response(){
 	this->MIMeType[".json"] = "application/json";
 	this->MIMeType[".xml"] = "application/xml";
 	this->MIMeType[".txt"] = "text/plain";
+	this->status = IDLE;
 }
 
 
@@ -111,24 +112,23 @@ bool Response::checkPath( std::string path ) const {
 	}
 }
 
-std::string readFileContent( std::string path ) {
-	std::ifstream file;
-	std::string content;
-	std::string line;
+std::string readFileContent( std::ifstream file ) {
+	char buf[1025];
+	
 
-	file.open(path);
-
-	if (!file.is_open()) {
-		return "Error opening file " + path;
-	}
-
-	content = "";
-    while (std::getline(file, line))
-    {
-        content += line;
-        content += "\n";
-    }
+	file.read(buf, 1024);
+	
+	buf[file.gcount()] = 0;
+	std::string content(buf);
 	return content;
+}
+
+t_response_status Response::getStatus( void ) const {
+	return this->status;
+}
+
+void Response::setStatus(t_response_status status) {
+	this->status = status;
 }
 
 std::string Response::createGetResponse( void ) {
@@ -144,19 +144,31 @@ Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
 	std::string content = "";
 	std::string path = this->client->getRequest().getUri();
 	std::string fullPath = this->getFullPath(path);
+	struct stat fileStat;
 
 	// todo: get request path and check permissions
 	std::cout << "\npath: " << path << std::endl;
 
-	if (this->checkPath(fullPath)) {
-		content = readFileContent(fullPath);
+	if (this->status == IDLE) {
+		if (this->checkPath(fullPath)) {
+			stat(fullPath.data(), &fileStat);
+			this->status = ONGOING;
+			return (httpCode + "Content-length: " + std::to_string(fileStat.st_size) + restHeader);
+		}
+		else {
+			content = "Page not found on " + path;
+			httpCode = "HTTP/1.1 404 Not Found\r\n";
+			return (httpCode + "Content-length: " + std::to_string(content.length()) + restHeader + content);
+		}
 	}
-	else {
-		content = "Page not found on " + path;
-		httpCode = "HTTP/1.1 404 Not Found\r\n";
+	if (!this->file.is_open()) {
+		this->file.open(fullPath);
+		
+		// todo: check if open failed
 	}
-
-	return (httpCode + "Content-length: " + std::to_string(content.length()) + restHeader + content);
+	
+	content = readFileContent(this->file);
+	return content;
 }
 
 Response::~Response(){

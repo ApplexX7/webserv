@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 12:04:08 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 13:15:36 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include "../Request/Request.hpp"
 #include "../utils/Client.hpp"
 #include <exception>
+#include <sys/stat.h>
 //status Response
 
 //information Response
@@ -43,14 +44,19 @@
 
 #define SERVER webserve/1.1
   
-
-
+typedef enum e_response_status {
+    IDLE,
+    ONGOING,
+    FINISHED
+} t_response_status;
 
 class Client;
 
 class Response {
     private:
         int StatusCode;
+        t_response_status status;
+        std::ifstream file;
         std::string StatusLine;
         std::string FileName;
         std::map<std::string, std::string> ResponseMeth;
@@ -77,6 +83,8 @@ class Response {
         std::string getMIMeType(std::string _Key);
         void SetStatusCode(int _StatusCode);
         int GetStatusCode( void );
+        t_response_status getStatus( void ) const;
+        void setStatus( t_response_status );
 
         Client* getClient( void );
         void setClient( Client * );
