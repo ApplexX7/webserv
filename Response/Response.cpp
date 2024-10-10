@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 13:45:24 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 13:53:55 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,10 +149,21 @@ Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
 	if (this->status == IDLE) {
 		if (this->checkPath(fullPath)) {
 			stat(fullPath.data(), &fileStat);
-			this->status = ONGOING;
-			return (httpCode + "Content-length: " + std::to_string(fileStat.st_size) + restHeader);
+			
+			if (S_ISDIR(fileStat.st_mode)) {
+				// todo: read directory content and provide links for inner files/dirs
+
+				content = "This is a directory";
+				this->status = FINISHED;
+				return (httpCode + "Content-length: " + std::to_string(content.length()) + restHeader + content);
+			}
+			else {
+				this->status = ONGOING;
+				return (httpCode + "Content-length: " + std::to_string(fileStat.st_size) + restHeader);
+			}
 		}
 		else {
+			this->status = FINISHED;
 			content = "Page not found on " + path;
 			httpCode = "HTTP/1.1 404 Not Found\r\n";
 			return (httpCode + "Content-length: " + std::to_string(content.length()) + restHeader + content);
@@ -160,7 +171,6 @@ Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
 	}
 	if (!this->file.is_open()) {
 		this->file.open(fullPath);
-
 		// todo: check if open failed
 	}
 
