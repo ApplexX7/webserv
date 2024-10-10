@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/08 16:32:03 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 11:04:50 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,8 +176,11 @@ void Webserv::listen( void ) {
 
                 if(fds[i].revents & POLLHUP)
                 {
-                    fds.erase(fds.begin() + i);
                     std::cout << "client disconnected " << fds[i].fd << std::endl;
+                    delete clients[fds[i].fd];
+                    close(fds[i].fd);
+                    clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
+                    fds.erase(fds.begin() + i);
                 }
 
                 if (fds[i].revents & POLLIN
@@ -207,18 +210,19 @@ void Webserv::listen( void ) {
                         // std::cout << buf << std::endl;
                         message.assign(buf);
                         clients[fds[i].fd]->appendMessage(buf);
-                        std::cout << "client finished writing, full message:" << std::endl;
+                        std::cout << "client finished writing" << std::endl;
 
-                        std::cout << clients[fds[i].fd]->getMessage() << std::endl;
+                        // std::cout << clients[fds[i].fd]->getMessage() << std::endl;
                         clients[fds[i].fd]->getRequest().ParsingTheRequest(*clients[fds[i].fd]);
 
-                        clients[fds[i].fd]->findParentServer();
-
+                        
+                        
+    
                         // std::vector<std::string> vals = clients[fds[i].fd]->getParentServer().getField("listen").getValues();
 
                         // std::cout << "Parent server " << (clients[fds[i].fd]->getParentServer().getField("listen").getValues() != NULL ? "YES" : "None") << std::endl;
-                        clients[fds[i].fd]->getParentServer();
-
+                        // std::cout << clients[fds[i].fd]->getParentServer().getLocations().size() << std::endl;
+                        
                         
                         fds[i].events = POLLOUT;
 
@@ -236,6 +240,8 @@ void Webserv::listen( void ) {
                 && fds[i].revents & POLLOUT)
                 {
                     std::cout << "Client ready to receive" << std::endl;
+
+                    clients[fds[i].fd]->findParentServer();
 
                     // todo: send response
                     std::string res = clients[fds[i].fd]->getResponse().createGetResponse();

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerNode.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/07 12:08:36 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/10 10:57:41 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,11 +57,16 @@ void ServerNode::initializeServer( ListNode* server ) {
     }
 
     // if server has no listen directive
-    if (this->fields.find("listen") == this->fields.end())
+    if (!this->fieldExists("listen"))
         this->addField("listen", "0.0.0.0:8000");
     
-    if (this->fields.find("server_name") == this->fields.end())
+    // if server has no server_name
+    if (!this->fieldExists("server_name"))
         this->addField("server_name", "");
+
+    // if server has no root
+    if (!this->fieldExists("root"))
+        this->addField("root", "/Users/wbelfatm/Desktop/webserv/www");
 
     // insert locations
     while (child != NULL)
@@ -194,7 +199,6 @@ bool ServerNode::locationExists( std::string path ) {
 }
 
 bool ServerNode::locationFieldExists( std::string path, std::string key ) {
-    
     std::map<std::string, Field > fields =  this->locations[path].getFields();
 
     if (fields.find(key) != fields.end())

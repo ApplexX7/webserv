@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:12:11 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/08 16:01:39 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 10:05:39 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,21 +15,23 @@
 Client::Client( std::vector<ServerNode*>& servers):
 servers(servers),
 keepAlive(false) {
-    this->responseMessage = new Response();
-    this->requestMessage = new Request();
+    this->response = new Response();
+    this->request = new Request();
+    this->response->setClient(this);
     this->parentServer = NULL;
 };
 
 Client::Client( std::vector<ServerNode*>& servers, std::string message, int fd):
 servers(servers), message(message), fd(fd), keepAlive(false) {
-    this->responseMessage = new Response();
-    this->requestMessage = new Request();
+    this->response = new Response();
+    this->request = new Request();
+    this->response->setClient(this);
      this->parentServer = NULL;
 }
 
 Client::~Client( void ) {
-    delete this->responseMessage;
-    delete this->requestMessage;
+    delete this->response;
+    delete this->request;
 };
 
 std::string Client::getMessage( void ) {
@@ -58,11 +60,11 @@ bool Client::isResponseReady( void ) {
 }
 
 Response& Client::getResponse( void ){
-    return (*this->responseMessage);
+    return (*this->response);
 }
 
 Request& Client::getRequest( void ){
-    return (*this->requestMessage);
+    return (*this->request);
 }
 
 bool Client::isKeepAlive( void ) {

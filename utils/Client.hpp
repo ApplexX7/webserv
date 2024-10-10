@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:11:02 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/08 13:40:44 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 10:05:15 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,10 +59,10 @@ class Client {
         bool responseReady;
 
         // Req
-        Request *requestMessage;
+        Request *request;
     
         // Res 
-        Response *responseMessage;
+        Response *response;
 };
 
 #endif
