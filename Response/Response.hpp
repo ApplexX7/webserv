@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 13:15:36 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 14:07:27 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include "../utils/Client.hpp"
 #include <exception>
 #include <sys/stat.h>
+#include <dirent.h>
 //status Response
 
 //information Response

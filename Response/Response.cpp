@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 13:53:55 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 14:29:16 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,7 +128,34 @@ void Response::setStatus(t_response_status status) {
 	this->status = status;
 }
 
+std::string getDirectoryLinks(std::string path, std::string uri) {
+	DIR *dir = opendir(path.data());
+	struct dirent *entry;
+	std::string res = "<ul>";
+	std::string tmp;
+
+	if (!dir)
+		return "Error opening directory";
+	entry = readdir(dir);
+	while (entry) {
+		tmp = entry->d_name;
+		std::cout << "uri: " << uri << std::endl;
+		if (uri.length() == 0 || uri == "/") {
+			res += "<li><a href=\"/" + tmp + "\">";
+		}
+		else
+			res += "<li><a href=\"" + uri + "/" + tmp + "\">";
+		res += tmp;
+		res += "</a></li>";
+		entry = readdir(dir);
+	}
+	return res + "</ul>";
+}
+
 std::string Response::createGetResponse( void ) {
+
+	// todo: add response header generator
+	 
 	std::string httpCode = "HTTP/1.1 200 Success\r\n";
 	std::string restHeader = "\r\n\
 Content-Type: text/html\r\n\
@@ -144,16 +171,13 @@ Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
 	struct stat fileStat;
 
 	// todo: get request path and check permissions
-	std::cout << "\npath: " << path << std::endl;
 
 	if (this->status == IDLE) {
 		if (this->checkPath(fullPath)) {
 			stat(fullPath.data(), &fileStat);
-			
-			if (S_ISDIR(fileStat.st_mode)) {
-				// todo: read directory content and provide links for inner files/dirs
 
-				content = "This is a directory";
+			if (S_ISDIR(fileStat.st_mode)) {
+				content = getDirectoryLinks(fullPath, path);
 				this->status = FINISHED;
 				return (httpCode + "Content-length: " + std::to_string(content.length()) + restHeader + content);
 			}
@@ -174,13 +198,13 @@ Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
 		// todo: check if open failed
 	}
 
+	//todo: extract file reading logic
 	// read from file
 	char buf[1025];
 	file.read(buf, 1024);
 	buf[file.gcount()] = 0;
 	std::string con(buf);
 
-	
 	if (con.length() != 1024) {
 		this->status = FINISHED;
 		this->file.close();
