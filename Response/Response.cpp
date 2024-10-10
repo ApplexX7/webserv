@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/09 12:31:16 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/10 10:29:00 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,41 +38,30 @@ Response::Response(){
 	this->setStatusMaps();
 }
 void    Response::setStatusLine(std::string _Status){
-	this->StatusLine = _Status;
+	this->statusLine = _Status;
 }
 
 std::string Response::getStatusLine(){
-	return (this->StatusLine);
+	return (this->statusLine);
 }
 
 int Response::GetStatusCode(){
-	return (this->StatusCode);
+	return (this->statusCode);
 }
 
 void Response::SetStatusCode(int _StatusCode){
-	std::cout << this->StatusCode << std::endl;
-	this->StatusCode = _StatusCode;
-}
-
-void Response::setMap(std::string _name, std::string _Value){
-	this->ResponseMeth[_name] = _Value;
+	this->statusCode = _StatusCode;
 }
 
 Response::Response(const Response &Obj){
 	this->MIMeType = Obj.MIMeType;
-	this->ResponseMeth = Obj.ResponseMeth;
 }
 
 Response& Response::operator=(const Response &Obj){
 	if (this != &Obj){
-		this->ResponseMeth = Obj.ResponseMeth;
 		this->MIMeType = Obj.MIMeType;
 	}
 	return (*this);
-}
-
-std::map<std::string, std::string> Response::getMap() const {
-	return (this->ResponseMeth);
 }
 
 std::string Response::getMIMeType(std::string _Key){

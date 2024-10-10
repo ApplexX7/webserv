@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/09 12:29:04 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/10 13:05:35 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,11 @@
 
 class Client;
 
+
+
 class Request{
     private:
+        bool compliteHeaderparser;
         std::string locationName;
         std::string pathName;
         std::string quertyString;
@@ -37,9 +40,9 @@ class Request{
         std::string methode;
         std::string Uri;
         std::map<std::string,std::string> headers;
-        std::string body;
+        std::string bodybuffer;
 
-
+        // for the Post Methode
         int contentLenght;
         std::string contentType;
         std::string startofBoundary;
@@ -76,7 +79,7 @@ class Request{
         void sethostName(std::string _hostName);
         // POST parse Body
         int ParsePostHeaders();
-
+        int parseBodytype();
     
         std::string  getport();
         std::string gethostName();

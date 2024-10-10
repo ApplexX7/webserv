@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/07 09:49:44 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/09 12:23:43 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/10 12:21:19 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,5 +31,12 @@ int Request::ParsePostHeaders(){
 		this->contentLenght = 0;
 
 	this->TransferCoding = getValue("Transfer-Coding");
+	return (0);
 }
 
+int Request::parseBodytype(){
+	size_t buffersize = this->body.size;
+
+	for (int i =0; i < buffersize; i++){
+		
+}
