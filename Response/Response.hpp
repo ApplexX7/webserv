@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 10:26:19 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 12:04:08 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,8 @@ class Response {
         Client *client;
 
         bool checkPath( std::string ) const;
-        
+        std::string getFullPath( std::string ) const;
+
     public:
         Response();
         Response(const Response &Obj);

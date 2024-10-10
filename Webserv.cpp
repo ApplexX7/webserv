@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/10 11:04:50 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 12:13:21 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,13 +174,14 @@ void Webserv::listen( void ) {
             for (int i = 0; i < (int) fds.size(); i++)
             {
 
-                if(fds[i].revents & POLLHUP)
+                if (fds[i].revents & POLLHUP)
                 {
                     std::cout << "client disconnected " << fds[i].fd << std::endl;
                     delete clients[fds[i].fd];
                     close(fds[i].fd);
                     clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
                     fds.erase(fds.begin() + i);
+                    continue ;
                 }
 
                 if (fds[i].revents & POLLIN

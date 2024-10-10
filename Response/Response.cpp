@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 11:01:27 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/10 12:17:43 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,6 @@ std::map<std::string, std::string> Response::getMap() const {
 }
 
 std::string Response::getMIMeType(std::string _Key){
-	
 	try{
 		return (this->MIMeType.at(_Key));
 	} catch (const std::out_of_range& e) {
@@ -85,24 +84,51 @@ void Response::setClient( Client *client ) {
 	this->client = client;
 }
 
-bool Response::checkPath( std::string path ) const {
+std::string Response::getFullPath( std::string path ) const {
 	ServerNode &server = this->client->getParentServer();
 	std::map<std::string, Location> locations = server.getLocations();
 	std::string root;
-	
+	std::string fullPath;
 
-	if (locations.find(path) == locations.end()) {
-		// todo: check parent root
+	if (locations.find(path) == locations.end()) 
 		root = server.getField("root").getValues()[0];
-		std::cout << "\nusing " << root << std::endl;
-		return false;
-	}
-	else {
-		// todo check location root
+	else
 		root = locations[path].getField("root").getValues()[0];
-		std::cout << "\nusing " << root << std::endl;
+	fullPath = root + path;
+	return fullPath;
+}
+
+bool Response::checkPath( std::string path ) const {
+	std::cout << "Searching on: " << path << std::endl;
+
+	if (access(path.data(), F_OK) == 0) {
+		// file exists
 		return true;
 	}
+	else {
+		// doesn't exist
+		return false;
+	}
+}
+
+std::string readFileContent( std::string path ) {
+	std::ifstream file;
+	std::string content;
+	std::string line;
+
+	file.open(path);
+
+	if (!file.is_open()) {
+		return "Error opening file " + path;
+	}
+
+	content = "";
+    while (std::getline(file, line))
+    {
+        content += line;
+        content += "\n";
+    }
+	return content;
 }
 
 std::string Response::createGetResponse( void ) {
@@ -117,22 +143,20 @@ Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
 
 	std::string content = "";
 	std::string path = this->client->getRequest().getUri();
+	std::string fullPath = this->getFullPath(path);
 
 	// todo: get request path and check permissions
-
 	std::cout << "\npath: " << path << std::endl;
 
-	if (this->checkPath(path)) {
-		content = "Successful request on ";
+	if (this->checkPath(fullPath)) {
+		content = readFileContent(fullPath);
 	}
 	else {
-		content = "Page not found on ";
+		content = "Page not found on " + path;
+		httpCode = "HTTP/1.1 404 Not Found\r\n";
 	}
 
-	content += path;
-
 	return (httpCode + "Content-length: " + std::to_string(content.length()) + restHeader + content);
-;
 }
 
 Response::~Response(){
