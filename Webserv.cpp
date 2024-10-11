@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/11 20:56:43 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 21:06:21 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,7 +204,7 @@ void Webserv::listen( void ) {
                         exit(0);
                     }
 
-                    else if (bytes_read < CHUNK_SIZE)
+                    else if (bytes_read < CHUNK_SIZE - 1)
                     {
                         buf[bytes_read] = 0;
                         // std::cout << buf << std::endl;
@@ -215,6 +215,8 @@ void Webserv::listen( void ) {
                         std::cout << "\n\n\n";
                         std::cout << clients[fds[i].fd]->getMessage() << std::endl;
                         std::cout << "\n\n\n";
+
+                        
                         clients[fds[i].fd]->getRequest().ParsingTheRequest(*clients[fds[i].fd]);
 
                         
