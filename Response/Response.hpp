@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/11 13:09:25 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 20:52:48 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,6 +119,7 @@ class Response {
         std::string getStatusText( void );
         std::string getFileChunk( void );
         bool checkAllowedMethod( std::string );
+        void reset( void );
 
         // response handlers
         std::string constructHeader( void );

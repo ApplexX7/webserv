@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/11 18:29:27 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 20:54:00 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -354,6 +354,13 @@ bool Response::checkAllowedMethod( std::string path ) {
 	return true;
 }
 
+void Response::reset( void ) {
+	this->contentLength = 0;
+	this->contentType = "text/html; charset=UTF-8";
+	this->fileName = "";
+	this->statusCode = SUCCESS;
+	this->status = IDLE;
+}
 
 std::string Response::createGetResponse( void ) {
  	// todo: check method is allowed
@@ -368,25 +375,28 @@ std::string Response::createGetResponse( void ) {
 			if not in on IDLE, read file and send
 		*/
 
-		if (this->status == IDLE) {
-			this->checkAllowedMethod(path);
-			this->getFullPath(path);
-			if (this->fileName == "") {
-				this->body = getDirectoryLinks(this->path, path);
-				this->contentLength = body.length();
-				this->status = FINISHED;
+		if (this->statusCode == SUCCESS) {
+			if (this->status == IDLE) {
+				this->checkAllowedMethod(path);
+				this->getFullPath(path);
+				if (this->fileName == "") {
+					this->body = getDirectoryLinks(this->path, path);
+					this->contentLength = body.length();
+					this->status = FINISHED;
+				}
+				else {
+					this->status = ONGOING;
+					this->body = "";
+				}
+
 			}
 			else {
-				this->status = ONGOING;
-				this->body = "";
+				// read from file
+				chunk = this->getFileChunk();
+				return chunk;
 			}
+		}
 
-		}
-		else {
-			// read from file
-			chunk = this->getFileChunk();
-			return chunk;
-		}
 
 	} catch (ResponseException e) {
 		this->status = FINISHED;

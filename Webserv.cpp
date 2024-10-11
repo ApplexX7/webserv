@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/11 18:30:21 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 20:56:43 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,7 +170,6 @@ void Webserv::listen( void ) {
         if (poll(fds.data(), fds.size(), 100) > 0) {
             for (int i = 0; i < (int) fds.size(); i++)
             {
-
                 if (fds[i].revents & POLLHUP)
                 {
                     std::cout << "client disconnected " << fds[i].fd << std::endl;
@@ -197,10 +196,13 @@ void Webserv::listen( void ) {
                 && fds[i].revents & POLLIN)
                 {
                     int bytes_read;
-                    bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, MSG_EOF);
+                    bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE - 1, MSG_EOF);
 
                     if (bytes_read == -1)
+                    {
                         std::cout << "error reading" << std::endl;
+                        exit(0);
+                    }
 
                     else if (bytes_read < CHUNK_SIZE)
                     {
@@ -210,7 +212,9 @@ void Webserv::listen( void ) {
                         clients[fds[i].fd]->appendMessage(buf);
                         std::cout << "client finished writing" << std::endl;
 
-                        // std::cout << clients[fds[i].fd]->getMessage() << std::endl;
+                        std::cout << "\n\n\n";
+                        std::cout << clients[fds[i].fd]->getMessage() << std::endl;
+                        std::cout << "\n\n\n";
                         clients[fds[i].fd]->getRequest().ParsingTheRequest(*clients[fds[i].fd]);
 
                         
@@ -253,9 +257,10 @@ void Webserv::listen( void ) {
                     // todo: check if connection is keep-alive
                     
                     if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
-                        clients[fds[i].fd]->getResponse().setStatus(IDLE);
-                        if (connection == "keep-alive") {
+                        if (connection == "keep-alive"
+                        && clients[fds[i].fd]->getResponse().getStatusCode() < 400) {
                             fds[i].events = POLLIN | POLLHUP;
+                            clients[fds[i].fd]->getResponse().reset();
                         }
                         else {
                             delete clients[fds[i].fd];
@@ -271,6 +276,7 @@ void Webserv::listen( void ) {
             }
         }
     }
+    std::cout << "\n\nCoucou\n\n" << std::endl;
 }
 
 ServerNode *Webserv::getServerByFd( int fd ) {
