@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/11 11:00:51 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 11:29:19 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ class Response {
         std::map<std::string, std::string> mimeTypes;
         std::string body;
         std::string contentType;
+        Location *location;
 
         std::string path;
 
@@ -117,6 +118,19 @@ class Response {
         // response handlers
         std::string constructHeader( void );
         std::string createGetResponse( void );
+
+        // exceptions
+        class ResponseException: public std::exception {
+            private:
+                std::string message;
+
+            public:
+                ResponseException(std::string);
+
+                virtual const char* what() const throw();
+
+                virtual ~ResponseException() throw();
+        };
 };
 
 #endif

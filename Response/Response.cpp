@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/11 11:06:36 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 11:36:40 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ Response::Response(){
 	this->mimeTypes[".txt"] = "text/plain";
 	this->status = IDLE;
 	initializeStatusTexts(this->statusTexts);
+	this->location = NULL;
 }
 
 
@@ -113,32 +114,71 @@ void Response::setClient( Client *client ) {
 std::string Response::getFullPath( std::string path ) {
 	ServerNode &server = this->client->getParentServer();
 	std::map<std::string, Location> locations = server.getLocations();
+	Location *location = NULL; 
 	std::string root;
 	std::string fullPath;
+	struct stat fileStat;
+	bool autoIndex = true;
 
 	if (locations.find(path) == locations.end()) 
 		root = server.getField("root").getValues()[0];
 	else
+	{
+		location = &locations[path];
 		root = locations[path].getField("root").getValues()[0];
+	}
 	fullPath = root + path;
+
+	std::cout << "FULL PATH: " << fullPath << std::endl;
+
 	this->setPath(fullPath);
+
+	this->checkPath();
+
+	if (this->statusCode != SUCCESS)
+		return fullPath;
+
+	stat(fullPath.data(), &fileStat);
+
+	/*
+		check file type (dir/regular)
+			if dir
+				check autoindex, if so, append index.html to path
+				otherwise return dirs listing
+			if file, nothing to be done
+	*/
+
+	if (S_ISDIR(fileStat.st_mode)) {
+		// is dir
+		if (location) {
+			// path matches a location
+			autoIndex = location->getField("autoindex").getValues()[0] == "on";
+		}
+		else {
+			autoIndex = server.getField("autoindex").getValues()[0] == "on";
+		}
+
+		if (autoIndex) {
+			fullPath += "index.html";
+		}
+	}
+	this->setPath(fullPath);
+	this->checkPath();
 	return fullPath;
 }
 
 bool Response::checkPath( void ) {
 	std::cout << "Searching on: " << this->path << std::endl;
 
-	//todo: set appropriate status code
-
 	if (access(this->path.data(), F_OK) != 0) {
 
 		// doesn't exist
 		this->statusCode = NOT_FOUND;
-		return false;
+		throw ResponseException("Page Not Found");
 	}
 	if (access(this->path.data(), R_OK) != 0) {
 		this->statusCode = FORBIDDEN;
-		return false;
+		throw ResponseException("Permission Denied");
 	}
 	return true;
 }
@@ -236,65 +276,73 @@ std::string Response::constructHeader( void ) {
 }
 
 std::string Response::createGetResponse( void ) {
-
 	// todo: add response header generator
 	this->status = FINISHED;
-	return this->constructHeader();
-	 
-	std::string httpCode = "HTTP/1.1 200 Success\r\n";
-	std::string restHeader = "\r\n\
-Content-Type: text/html\r\n\
-Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
-\r\n";
+	// return this->constructHeader();
 
  	// todo: check method is allowed
 
-	std::string content = "";
 	std::string path = this->client->getRequest().getUri();
-	std::string fullPath = this->getFullPath(path);
 
-	struct stat fileStat;
-
-	// todo: get request path and check permissions
-	if (this->status == IDLE) {
-		if (this->checkPath()) {
-			stat(fullPath.data(), &fileStat);
-
-			if (S_ISDIR(fileStat.st_mode)) {
-				content = getDirectoryLinks(fullPath, path);
-				this->status = FINISHED;
-				return (httpCode + "Content-length: " + std::to_string(content.length()) + restHeader + content);
-			}
-			else {
-				this->status = ONGOING;
-				return (httpCode + "Content-length: " + std::to_string(fileStat.st_size) + restHeader);
-			}
-		}
-		else {
-			this->status = FINISHED;
-			content = "Page not found on " + path;
-			httpCode = "HTTP/1.1 404 Not Found\r\n";
-			return (httpCode + "Content-length: " + std::to_string(content.length()) + restHeader + content);
-		}
-	}
-	if (!this->file.is_open()) {
-		this->file.open(fullPath);
-		// todo: check if open failed
+	try {
+		this->getFullPath(path);
+	} catch (ResponseException e) {
+		std::cout << "Something went wrong with response: " << e.what() << std::endl;
+		// this->body = "" + e.what();
 	}
 
-	//todo: extract file reading logic
-	// read from file
-	char buf[1025];
-	file.read(buf, 1024);
-	buf[file.gcount()] = 0;
-	std::string con(buf);
+	return this->constructHeader();
+	
+	// struct stat fileStat;
 
-	if (con.length() != 1024) {
-		this->status = FINISHED;
-		this->file.close();
-	}
-	return con;
+	// // todo: get request path and check permissions
+	// if (this->status == IDLE) {
+	// 	if (this->checkPath()) {
+	// 		stat(fullPath.data(), &fileStat);
+
+	// 		if (S_ISDIR(fileStat.st_mode)) {
+	// 			content = getDirectoryLinks(fullPath, path);
+	// 			this->status = FINISHED;
+	// 			return (httpCode + "Content-length: " + std::to_string(content.length()) + restHeader + content);
+	// 		}
+	// 		else {
+	// 			this->status = ONGOING;
+	// 			return (httpCode + "Content-length: " + std::to_string(fileStat.st_size) + restHeader);
+	// 		}
+	// 	}
+	// 	else {
+	// 		this->status = FINISHED;
+	// 		content = "Page not found on " + path;
+	// 		httpCode = "HTTP/1.1 404 Not Found\r\n";
+	// 		return (httpCode + "Content-length: " + std::to_string(content.length()) + restHeader + content);
+	// 	}
+	// }
+	// if (!this->file.is_open()) {
+	// 	this->file.open(fullPath);
+	// 	// todo: check if open failed
+	// }
+
+	// //todo: extract file reading logic
+	// // read from file
+	// char buf[1025];
+	// file.read(buf, 1024);
+	// buf[file.gcount()] = 0;
+	// std::string con(buf);
+
+	// if (con.length() != 1024) {
+	// 	this->status = FINISHED;
+	// 	this->file.close();
+	// }
+	// return con;
 }
 
 Response::~Response(){
 }
+
+const char* Response::ResponseException::what() const throw() {
+    return message.c_str();
+};
+
+Response::ResponseException::ResponseException(std::string msg): message(msg) {};
+
+Response::ResponseException::~ResponseException() throw() {};
