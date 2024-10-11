@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/11 09:42:19 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 12:45:06 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -243,8 +243,8 @@ void Webserv::listen( void ) {
 
                     // todo: send response
                     std::string res = clients[fds[i].fd]->getResponse().createGetResponse();
-                    
-                    std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
+                    send(fds[i].fd, res.data(), res.size(), MSG_SEND);
+                    // std::cout << "sent: " <<  << std::endl;
                     // reset message 
                     clients[fds[i].fd]->setMessage("");
 
@@ -254,7 +254,6 @@ void Webserv::listen( void ) {
                     
                     if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
                         clients[fds[i].fd]->getResponse().setStatus(IDLE);
-                        std::cout << "HERE" << std::endl;
                         if (connection == "keep-alive") {
                             fds[i].events = POLLIN | POLLHUP;
                         }

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/11 11:58:02 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 12:23:15 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,9 @@ class Response {
         std::string getContentType( void ) const;
         void setContentType( std::string );
 
+        // helpers
         std::string getStatusText( void );
+        std::string getFileChunk( void );
 
         // response handlers
         std::string constructHeader( void );

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:12:11 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/10 10:05:39 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 12:44:58 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,9 @@ bool Client::isResponseReady( void ) {
 
 Response& Client::getResponse( void ){
     return (*this->response);
+}
+
+void Client::resetResponse( void ) {
 }
 
 Request& Client::getRequest( void ){

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/11 12:19:15 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 12:47:41 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,8 +163,13 @@ std::string Response::getFullPath( std::string path ) {
 	this->setPath(fullPath);
 	this->checkPath();
 	stat(fullPath.data(), &fileStat);
-	this->contentLength = fileStat.st_size;
-	this->extractFileName();
+	if (!S_ISDIR(fileStat.st_mode)) {
+		this->contentLength = fileStat.st_size;
+		this->extractFileName();
+	}
+	else {
+		this->fileName = "";
+	}
 	std::cout << "Filename : " << this->fileName << std::endl;
 	return fullPath;
 }
@@ -191,14 +196,6 @@ std::string Response::getPath( void ) const {
 
 void Response::setPath( std::string path ) {
 	this->path = path;
-}
-
-std::string readFileContent( std::ifstream file ) {
-	char buf[1025];
-	file.read(buf, 1024);
-	buf[file.gcount()] = 0;
-	std::string content(buf);
-	return content;
 }
 
 t_response_status Response::getStatus( void ) const {
@@ -285,17 +282,45 @@ std::string Response::constructHeader( void ) {
 	header += "Content-Type: " + this->contentType + "\r\n";
 	header += "Date: " + getDateResponse() + "\r\n";
 	header += "\r\n";
+
+	if (this->body != "") {
+		header += body;
+	}
 	std::cout << header << std::endl;
 	return header;
 }
 
-std::string Response::createGetResponse( void ) {
-	// todo: add response header generator
-	// this->status = FINISHED;
+std::string Response::getFileChunk( void ) {
+	char buf[1025];
 
+	if (!this->file.is_open()) {
+		this->file.open(this->path);
+		
+		if (!this->file.is_open())
+		{
+			this->status = FINISHED;
+			throw ResponseException("Couldn't open file");
+		}
+	}
+
+	file.read(buf, 1024);
+	buf[file.gcount()] = 0;
+	std::string chunk(buf);
+
+	if (chunk.length() != 1024) {
+		this->status = FINISHED;
+		this->file.close();
+	}
+	return chunk;
+}
+
+
+
+std::string Response::createGetResponse( void ) {
  	// todo: check method is allowed
 
 	std::string path = this->client->getRequest().getUri();
+	std::string chunk;
 
 	try {
 
@@ -306,87 +331,28 @@ std::string Response::createGetResponse( void ) {
 
 		if (this->status == IDLE) {
 			this->getFullPath(path);
-
-			// todo: if dir, handle it here
 			if (this->fileName == "") {
-				std::cout << "DIRECTORY here" << std::endl;
-				this->contentLength = 0;
+				this->body = getDirectoryLinks(this->path, path);
+				this->contentLength = body.length();
 				this->status = FINISHED;
 			}
 			else {
 				this->status = ONGOING;
+				this->body = "";
 			}
 
 		}
 		else {
-			// todo: send file content
 			// read from file
-
-			if (!this->file.is_open()) {
-				this->file.open(this->path);
-				// todo: check if open failed
-			}
-
-			char buf[1025];
-			file.read(buf, 1024);
-			buf[file.gcount()] = 0;
-			std::string con(buf);
-
-			if (con.length() != 1024) {
-				this->status = FINISHED;
-				this->file.close();
-			}
-			return con;
+			chunk = this->getFileChunk();
+			return chunk;
 		}
 
 	} catch (ResponseException e) {
 		std::cout << "Something went wrong with response: " << e.what() << std::endl;
-		// this->body = "" + e.what();
 	}
 
 	return this->constructHeader();
-	
-	// struct stat fileStat;
-
-	// // todo: get request path and check permissions
-	// if (this->status == IDLE) {
-	// 	if (this->checkPath()) {
-	// 		stat(fullPath.data(), &fileStat);
-
-	// 		if (S_ISDIR(fileStat.st_mode)) {
-	// 			content = getDirectoryLinks(fullPath, path);
-	// 			this->status = FINISHED;
-	// 			return (httpCode + "Content-length: " + std::to_string(content.length()) + restHeader + content);
-	// 		}
-	// 		else {
-	// 			this->status = ONGOING;
-	// 			return (httpCode + "Content-length: " + std::to_string(fileStat.st_size) + restHeader);
-	// 		}
-	// 	}
-	// 	else {
-	// 		this->status = FINISHED;
-	// 		content = "Page not found on " + path;
-	// 		httpCode = "HTTP/1.1 404 Not Found\r\n";
-	// 		return (httpCode + "Content-length: " + std::to_string(content.length()) + restHeader + content);
-	// 	}
-	// }
-	// if (!this->file.is_open()) {
-	// 	this->file.open(fullPath);
-	// 	// todo: check if open failed
-	// }
-
-	// //todo: extract file reading logic
-	// // read from file
-	// char buf[1025];
-	// file.read(buf, 1024);
-	// buf[file.gcount()] = 0;
-	// std::string con(buf);
-
-	// if (con.length() != 1024) {
-	// 	this->status = FINISHED;
-	// 	this->file.close();
-	// }
-	// return con;
 }
 
 Response::~Response(){
