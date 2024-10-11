@@ -6,13 +6,16 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/07 14:15:55 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 22:03:05 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 09:42:41 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ListNode.hpp"
 
-ListNode::ListNode( void ) {};
+ListNode::ListNode( void ) {
+    this->child = NULL;
+    this->next = NULL;
+};
 
 ListNode::ListNode( std::string content )
 {

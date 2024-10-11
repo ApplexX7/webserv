@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   request.cpp                                        :+:      :+:    :+:   */
+/*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/08 13:27:14 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 10:24:23 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,29 +97,29 @@ int Request::ParseRequestLine(std::string &RqLine, Client &ClientData){
 	size_t pos;
 
 	if (RqLine.empty()){
-		ClientData.getResponse().SetStatusCode(400);
+		ClientData.getResponse().setStatusCode(400);
 		return (1);
 	}
 	if (std::count(RqLine.begin(), RqLine.end(), ' ') != 2){
-		ClientData.getResponse().SetStatusCode(400);
+		ClientData.getResponse().setStatusCode(400);
 		return (1);
 	}
 	while (std::getline(str, token, ' ')){
 		RequestLineChunks.push_back(token);
 	}
 	if (RequestLineChunks.size() != 3){
-		ClientData.getResponse().SetStatusCode(400);
+		ClientData.getResponse().setStatusCode(400);
 		return (1);
 	}
 	for (size_t i = 0; i < RequestLineChunks.size(); i++){
 		if (RequestLineChunks[i].empty()){
-			ClientData.getResponse().SetStatusCode(400);
+			ClientData.getResponse().setStatusCode(400);
 			return (1);
 		}
 	}
 	//valide methode;
 	if (this->Validmethode(RequestLineChunks[0])){
-		ClientData.getResponse().SetStatusCode(501);
+		ClientData.getResponse().setStatusCode(501);
 		return (1);
 	}
 	// check the Uri
@@ -133,7 +133,7 @@ int Request::ParseRequestLine(std::string &RqLine, Client &ClientData){
 	}
 	// checkk HTTPS VERSION;
 	if (RequestLineChunks[2] != "HTTP/1.1"){
-		ClientData.getResponse().SetStatusCode(505);
+		ClientData.getResponse().setStatusCode(505);
 		return (1);
 	}
 	return (0);
@@ -196,7 +196,7 @@ int Request::ParsingTheRequest(Client &ClientData){
 			break;
 		pos = ChunkLine.find(':');
 		if (pos == std::string::npos){
-			ClientData.getResponse().SetStatusCode(400);
+			ClientData.getResponse().setStatusCode(400);
 			return 0;
 		}
 		name = ChunkLine.substr(0, pos);
@@ -204,12 +204,12 @@ int Request::ParsingTheRequest(Client &ClientData){
 		size_t spa = name.find(' ');
 		size_t tab = name.find('\t');
 		if (spa != std::string::npos || tab != std::string::npos){
-			ClientData.getResponse().SetStatusCode(400);
+			ClientData.getResponse().setStatusCode(400);
 			return (0);
 		}
 		Value.erase(std::remove_if(Value.begin(),Value.end(), ::isspace), Value.end());
 		if (Value.empty() || name.empty()){
-			ClientData.getResponse().SetStatusCode(400);
+			ClientData.getResponse().setStatusCode(400);
 		}
 		this->setHeaders(name, Value);
 	}

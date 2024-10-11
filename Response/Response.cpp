@@ -6,26 +6,51 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 14:47:12 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 11:06:36 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 
+void initializeStatusTexts(std::map<int, std::string>& statusTexts) {
+	// 1xx
+	statusTexts[CONTINUE] = "Continue";
+	statusTexts[SWITCHING_PROTOCOLS] = "Switching Protocols";
+
+	// 2xx
+	statusTexts[SUCCESS] = "OK";
+	statusTexts[CREATED] = "Created";
+	statusTexts[ACCEPTED] = "Accepted";
+	statusTexts[NO_CONTENT] = "No Content";
+
+	// 4xx
+	statusTexts[BAD_REQUEST] = "Bad Request";
+	statusTexts[UNAUTHORIZED] = "Unauthorized";
+	statusTexts[FORBIDDEN] = "Forbidden";
+	statusTexts[NOT_FOUND] = "Not Found";
+	statusTexts[METHOD_NOT_ALLOWED] = "Method Not Allowed";
+	statusTexts[NOT_ACCEPTABLE] = "Not Acceptable";
+	statusTexts[REQUEST_TIMEOUT] = "Request Timeout";
+	
+	// 5xx
+	statusTexts[INTERNAL_SERVER_ERROR] = "Internal Server Error";
+}
 
 Response::Response(){
-	this->StatusCode = 200;
-	this->MIMeType[".html"] = "text/html; charset=UTF-8";
-	this->MIMeType[".css"] = "text/css";
-	this->MIMeType[".js"] = "application/javascript";
-	this->MIMeType[".jpg"] = "image/jpeg";
-	this->MIMeType[".jpeg"] = "image/jpeg";
-	this->MIMeType[".png"] = "image/png";
-	this->MIMeType[".gif"] = "image/gif";
-	this->MIMeType[".json"] = "application/json";
-	this->MIMeType[".xml"] = "application/xml";
-	this->MIMeType[".txt"] = "text/plain";
+	this->statusCode = 200;
+	this->contentType = "text/html; charset=UTF-8";
+	this->mimeTypes[".html"] = "text/html; charset=UTF-8";
+	this->mimeTypes[".css"] = "text/css";
+	this->mimeTypes[".js"] = "application/javascript";
+	this->mimeTypes[".jpg"] = "image/jpeg";
+	this->mimeTypes[".jpeg"] = "image/jpeg";
+	this->mimeTypes[".png"] = "image/png";
+	this->mimeTypes[".gif"] = "image/gif";
+	this->mimeTypes[".json"] = "application/json";
+	this->mimeTypes[".xml"] = "application/xml";
+	this->mimeTypes[".txt"] = "text/plain";
 	this->status = IDLE;
+	initializeStatusTexts(this->statusTexts);
 }
 
 
@@ -38,13 +63,13 @@ std::string Response::getStatusLine(){
 	return (this->StatusLine);
 }
 
-int Response::GetStatusCode(){
-	return (this->StatusCode);
+int Response::getStatusCode(){
+	return (this->statusCode);
 }
 
-void Response::SetStatusCode(int _StatusCode){
-	std::cout << this->StatusCode << std::endl;
-	this->StatusCode = _StatusCode;
+void Response::setStatusCode(int statusCode){
+	std::cout << this->statusCode << std::endl;
+	this->statusCode = statusCode;
 }
 
 void Response::setMap(std::string _name, std::string _Value){
@@ -52,14 +77,14 @@ void Response::setMap(std::string _name, std::string _Value){
 }
 
 Response::Response(const Response &Obj){
-	this->MIMeType = Obj.MIMeType;
+	this->mimeTypes = Obj.mimeTypes;
 	this->ResponseMeth = Obj.ResponseMeth;
 }
 
 Response& Response::operator=(const Response &Obj){
 	if (this != &Obj){
 		this->ResponseMeth = Obj.ResponseMeth;
-		this->MIMeType = Obj.MIMeType;
+		this->mimeTypes = Obj.mimeTypes;
 	}
 	return (*this);
 }
@@ -68,9 +93,9 @@ std::map<std::string, std::string> Response::getMap() const {
 	return (this->ResponseMeth);
 }
 
-std::string Response::getMIMeType(std::string _Key){
+std::string Response::getMimeType(std::string _Key){
 	try{
-		return (this->MIMeType.at(_Key));
+		return (this->mimeTypes.at(_Key));
 	} catch (const std::out_of_range& e) {
 		std::cerr << "Expection: Key not found" << e.what() << std::endl;
 		return "";
@@ -85,7 +110,7 @@ void Response::setClient( Client *client ) {
 	this->client = client;
 }
 
-std::string Response::getFullPath( std::string path ) const {
+std::string Response::getFullPath( std::string path ) {
 	ServerNode &server = this->client->getParentServer();
 	std::map<std::string, Location> locations = server.getLocations();
 	std::string root;
@@ -96,20 +121,34 @@ std::string Response::getFullPath( std::string path ) const {
 	else
 		root = locations[path].getField("root").getValues()[0];
 	fullPath = root + path;
+	this->setPath(fullPath);
 	return fullPath;
 }
 
-bool Response::checkPath( std::string path ) const {
-	std::cout << "Searching on: " << path << std::endl;
+bool Response::checkPath( void ) {
+	std::cout << "Searching on: " << this->path << std::endl;
 
-	if (access(path.data(), F_OK) == 0) {
-		// file exists
-		return true;
-	}
-	else {
+	//todo: set appropriate status code
+
+	if (access(this->path.data(), F_OK) != 0) {
+
 		// doesn't exist
+		this->statusCode = NOT_FOUND;
 		return false;
 	}
+	if (access(this->path.data(), R_OK) != 0) {
+		this->statusCode = FORBIDDEN;
+		return false;
+	}
+	return true;
+}
+
+std::string Response::getPath( void ) const {
+	return this->path;
+}
+
+void Response::setPath( std::string path ) {
+	this->path = path;
 }
 
 std::string readFileContent( std::ifstream file ) {
@@ -126,6 +165,26 @@ t_response_status Response::getStatus( void ) const {
 
 void Response::setStatus(t_response_status status) {
 	this->status = status;
+}
+
+std::string Response::getBody( void ) const {
+	return this->body;
+}
+
+void Response::setBody( std::string body ) {
+	this->body = body;
+}
+
+std::string Response::getContentType( void ) const {
+	return this->contentType;
+}
+
+void Response::setContentType( std::string contentType ) {
+	this->contentType = contentType;
+}
+
+std::string Response::getStatusText( void ) {
+	return this->statusTexts[this->statusCode];
 }
 
 std::string getDirectoryLinks(std::string path, std::string uri) {
@@ -152,28 +211,53 @@ std::string getDirectoryLinks(std::string path, std::string uri) {
 	return res + "</ul>";
 }
 
+std::string getDateReaponse(){
+	char buffer[100];
+	time_t rawtime;
+	time(&rawtime);
+
+	struct tm*  Info = gmtime(&rawtime);
+	std::strftime(buffer, 100, "%a %d %b %Y %H:%M:%S GMT", Info);
+	return ((std::string) buffer);
+}
+
+std::string Response::constructHeader( void ) {
+	// todo: create res header
+	
+	std::string header = "HTTP/1.1 ";
+
+	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
+	header += "Content-Length: 0\r\n";
+	header += "Content-Type: " + this->contentType + "\r\n";
+	header += "Date: " + getDateReaponse() + "\r\n";
+	header += "\r\n";
+	std::cout << header << std::endl;
+	return header;
+}
+
 std::string Response::createGetResponse( void ) {
 
 	// todo: add response header generator
+	this->status = FINISHED;
+	return this->constructHeader();
 	 
 	std::string httpCode = "HTTP/1.1 200 Success\r\n";
 	std::string restHeader = "\r\n\
 Content-Type: text/html\r\n\
-Last-Modified: Wed, 12 Aug 1998 15:03:50 GMT\r\n\
-Accept-Ranges: bytes\r\n\
-ETag: \"04f97692cbd1:377\"\r\n\
 Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
 \r\n";
+
+ 	// todo: check method is allowed
 
 	std::string content = "";
 	std::string path = this->client->getRequest().getUri();
 	std::string fullPath = this->getFullPath(path);
+
 	struct stat fileStat;
 
 	// todo: get request path and check permissions
-
 	if (this->status == IDLE) {
-		if (this->checkPath(fullPath)) {
+		if (this->checkPath()) {
 			stat(fullPath.data(), &fileStat);
 
 			if (S_ISDIR(fileStat.st_mode)) {

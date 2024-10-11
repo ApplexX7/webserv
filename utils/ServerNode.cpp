@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/10 14:35:05 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 09:47:36 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,12 @@ void ServerNode::initializeServer( ListNode* server ) {
     // if server has no root
     if (!this->fieldExists("root"))
         this->addField("root", "");
+    
+    // if server has no autoindex
+    if (!this->fieldExists("autoindex"))
+        this->addField("autoindex", "on");
+
+    
 
     // insert locations
     while (child != NULL)
@@ -140,6 +146,7 @@ void setAllowedFields( ServerNode* server ) {
     server->allowedFields.push_back("server_name");
     server->allowedFields.push_back("client_max_body_size");
     server->allowedFields.push_back("error_page");
+    server->allowedFields.push_back("autoindex");
 
     // allowed location fields
     server->allowedLocationFields.push_back("root");

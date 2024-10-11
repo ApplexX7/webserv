@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 14:07:27 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 11:00:51 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,24 +23,27 @@
 
 //information Response
 #define CONTINUE 100
-#define SWITCHING_PRO 101
+#define SWITCHING_PROTOCOLS 101
 #define PROCESSING 102
 #define EARLY_HINTS 103
 
 // Successful response
-#define SUCCREQUEST 200
+#define SUCCESS 200
 #define CREATED 201
 #define ACCEPTED 202
-#define NOCONTENT 204
+#define NO_CONTENT 204
 
 //client error response
-#define BADREQUEST 400
+#define BAD_REQUEST 400
 #define UNAUTHORIZED 401
 #define FORBIDDEN 403
-#define NOTFOUND 404
-#define NOTALLOWEDMETHOD 405
-#define NOTACCEPTABLE 406
-#define NOTINPLEMETED 500
+#define NOT_FOUND 404
+#define METHOD_NOT_ALLOWED 405
+#define NOT_ACCEPTABLE 406
+#define REQUEST_TIMEOUT 408
+
+// server errors
+#define INTERNAL_SERVER_ERROR 500
 
 
 #define SERVER webserve/1.1
@@ -55,18 +58,23 @@ class Client;
 
 class Response {
     private:
-        int StatusCode;
+        int statusCode;
+        std::map<int, std::string> statusTexts;
         t_response_status status;
         std::ifstream file;
         std::string StatusLine;
         std::string FileName;
         std::map<std::string, std::string> ResponseMeth;
-        std::map<std::string, std::string> MIMeType;
-        std::string bodyResponse;
+        std::map<std::string, std::string> mimeTypes;
+        std::string body;
+        std::string contentType;
+
+        std::string path;
+
         Client *client;
 
-        bool checkPath( std::string ) const;
-        std::string getFullPath( std::string ) const;
+        bool checkPath( void );
+        std::string getFullPath( std::string );
 
     public:
         Response();
@@ -77,20 +85,37 @@ class Response {
         //seters and geters
         void setFileName(std::string);
         std::string getFileName( void );
-        void setMap(std::string _name, std::string _Value);
-        void setStatusLine(std::string _Status);
+
+        std::string getBody( void ) const;
+        void setBody( std::string );
+        
         std::string getStatusLine();
+        void setStatusLine(std::string _Status);
+        
         std::map<std::string, std::string> getMap( void ) const;
-        std::string getMIMeType(std::string _Key);
-        void SetStatusCode(int _StatusCode);
-        int GetStatusCode( void );
+        void setMap(std::string _name, std::string _Value);
+        
+        std::string getMimeType(std::string _Key);
+        
+        int getStatusCode( void );
+        void setStatusCode( int );
+        
         t_response_status getStatus( void ) const;
         void setStatus( t_response_status );
 
         Client* getClient( void );
         void setClient( Client * );
 
+        std::string getPath( void ) const;
+        void setPath( std::string );
+        
+        std::string getContentType( void ) const;
+        void setContentType( std::string );
+
+        std::string getStatusText( void );
+
         // response handlers
+        std::string constructHeader( void );
         std::string createGetResponse( void );
 };
 

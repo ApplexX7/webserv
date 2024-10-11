@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   GetMethode.cpp                                     :+:      :+:    :+:   */
+/*   helper_for_reponse.cpp                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 17:34:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/09/30 15:12:06 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/11 10:12:57 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,14 +25,14 @@ std::string getDateReaponse(){
 	return ((std::string) buffer);
 }
 
-std::string getMIMEtype(std::string type, Response &Prepa){
+std::string getMimetype(std::string type, Response &Prepa){
 	int pos;
 	std::string str;
 
 	pos = type.find('.');
 	str = type.substr(pos);
 
-	str = Prepa.getMIMeType(str);
+	str = Prepa.getMimeType(str);
 	if (str.empty()){
 		std::cerr << "Error not supported file type" << std::endl;
 		return "";
@@ -65,11 +65,12 @@ void FResponse(Response &Prepa, Request &Methode){
 void generateresponse(Response &Prepa, Request &Methode, struct stat file){
 	time_t lastModifaction;
 	std::ostringstream oss;
+	
 	Prepa.setMap("Date", getDateReaponse());
 	Prepa.setMap("Connection", Methode.getValue("Connection"));
 	lastModifaction = file.st_mtime;
 	Prepa.setMap("Last-Modified", strtok(ctime(&lastModifaction), "\n"));
-	Prepa.setMap("Content-Type", getMIMEtype(Methode.getUri(), Prepa));
+	Prepa.setMap("Content-Type", getMimetype(Methode.getUri(), Prepa));
 	Prepa.setMap("Server", "Webserv/1.1");
 	oss << file.st_size;
 	Prepa.setMap("Content-Lenght", oss.str());
@@ -86,7 +87,7 @@ void  GetMethode(Request &Methode){
 	Response Preparingrequest;
 
 	if (Methode.getUri() == "/"){
-		//get the default page
+		// get the default page
 	}
 	else{
 		if (stat(Methode.getUri().c_str(), &file) != 0){
