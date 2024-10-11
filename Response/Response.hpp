@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/11 12:23:15 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 13:09:25 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@
 
 
 #define SERVER webserve/1.1
-  
+
 typedef enum e_response_status {
     IDLE,
     ONGOING,
@@ -118,6 +118,7 @@ class Response {
         // helpers
         std::string getStatusText( void );
         std::string getFileChunk( void );
+        bool checkAllowedMethod( std::string );
 
         // response handlers
         std::string constructHeader( void );

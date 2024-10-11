@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/11 12:45:06 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 13:15:16 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -263,11 +263,8 @@ void Webserv::listen( void ) {
                             clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
                             fds.erase(fds.begin() + i);
                         }
-                        
+                           
                     }
-                    
-
-
                 }
 
                 

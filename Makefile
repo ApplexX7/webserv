@@ -6,11 +6,11 @@
 #    By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/09/05 08:03:16 by wbelfatm          #+#    #+#              #
-#    Updated: 2024/10/11 09:44:22 by wbelfatm         ###   ########.fr        #
+#    Updated: 2024/10/11 13:12:21 by wbelfatm         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-CFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g
+CFLAGS = -Wall -Wextra -Werror -std=c++98 #-fsanitize=address -g
 SRC = main.cpp Webserv.cpp parsing/Parser.cpp utils/ListNode.cpp utils/ServerNode.cpp \
 	  utils/Field.cpp utils/Location.cpp utils/Client.cpp \
 	  Request/Request.cpp Request/GetMethode.cpp Request/PostMethode.cpp \

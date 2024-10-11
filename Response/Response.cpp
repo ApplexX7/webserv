@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/11 12:47:41 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 13:11:54 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ int Response::getStatusCode(){
 }
 
 void Response::setStatusCode(int statusCode){
-	std::cout << this->statusCode << std::endl;
+	// std::cout << this->statusCode << std::endl;
 	this->statusCode = statusCode;
 }
 
@@ -274,7 +274,6 @@ std::string getDateResponse(){
 }
 
 std::string Response::constructHeader( void ) {
-	// todo: create res header
 	std::string header = "HTTP/1.1 ";
 
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
@@ -314,6 +313,31 @@ std::string Response::getFileChunk( void ) {
 	return chunk;
 }
 
+bool Response::checkAllowedMethod( std::string path ) {
+	ServerNode &server = this->client->getParentServer();
+	std::map<std::string, Location> locations = server.getLocations();
+	Location *location = NULL;
+	std::string method = this->client->getRequest().getmethode();
+	std::vector<std::string> allowedMethods;
+
+	if (locations.find(path) != locations.end()) {
+		location = &locations[path];
+	}
+
+	if (!location)
+		return true;
+
+	allowedMethods = location->getField("limit_except").getValues();
+
+	std::cout << method << " " << allowedMethods.size() << std::endl;
+	if (allowedMethods.size() == 0)
+		return true;
+	if (std::find(allowedMethods.begin(), allowedMethods.end(), method) == allowedMethods.end()) {
+		this->statusCode = METHOD_NOT_ALLOWED;
+		throw ResponseException("Method not allowed");
+	}
+	return true;
+}
 
 
 std::string Response::createGetResponse( void ) {
@@ -330,6 +354,7 @@ std::string Response::createGetResponse( void ) {
 		*/
 
 		if (this->status == IDLE) {
+			this->checkAllowedMethod(path);
 			this->getFullPath(path);
 			if (this->fileName == "") {
 				this->body = getDirectoryLinks(this->path, path);
@@ -349,6 +374,7 @@ std::string Response::createGetResponse( void ) {
 		}
 
 	} catch (ResponseException e) {
+		this->status = FINISHED;
 		std::cout << "Something went wrong with response: " << e.what() << std::endl;
 	}
 

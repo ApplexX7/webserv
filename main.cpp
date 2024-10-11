@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:04:58 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/11 09:44:18 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 13:12:17 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ void leaks() {
 
 int main(int argc, char **argv)
 {
-    // atexit(leaks);
+    atexit(leaks);
 
     if (argc != 2)
     {
