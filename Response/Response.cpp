@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/11 11:45:43 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 12:19:15 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,8 @@ Response::Response(){
 	this->status = IDLE;
 	initializeStatusTexts(this->statusTexts);
 	this->location = NULL;
+	this->body = "";
+	this->contentLength = 0;
 }
 
 
@@ -155,12 +157,13 @@ std::string Response::getFullPath( std::string path ) {
 			autoIndex = server.getField("autoindex").getValues()[0] == "on";
 		}
 
-		if (autoIndex) {
+		if (autoIndex)
 			fullPath += "index.html";
-		}
 	}
 	this->setPath(fullPath);
 	this->checkPath();
+	stat(fullPath.data(), &fileStat);
+	this->contentLength = fileStat.st_size;
 	this->extractFileName();
 	std::cout << "Filename : " << this->fileName << std::endl;
 	return fullPath;
@@ -250,7 +253,7 @@ std::string getDirectoryLinks(std::string path, std::string uri) {
 	entry = readdir(dir);
 	while (entry) {
 		tmp = entry->d_name;
-		std::cout << "uri: " << uri << std::endl;
+		// std::cout << "uri: " << uri << std::endl;
 		if (uri.length() == 0 || uri == "/") {
 			res += "<li><a href=\"/" + tmp + "\">";
 		}
@@ -263,7 +266,7 @@ std::string getDirectoryLinks(std::string path, std::string uri) {
 	return res + "</ul>";
 }
 
-std::string getDateReaponse(){
+std::string getDateResponse(){
 	char buffer[100];
 	time_t rawtime;
 	time(&rawtime);
@@ -275,13 +278,12 @@ std::string getDateReaponse(){
 
 std::string Response::constructHeader( void ) {
 	// todo: create res header
-	
 	std::string header = "HTTP/1.1 ";
 
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
-	header += "Content-Length: 0\r\n";
+	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
 	header += "Content-Type: " + this->contentType + "\r\n";
-	header += "Date: " + getDateReaponse() + "\r\n";
+	header += "Date: " + getDateResponse() + "\r\n";
 	header += "\r\n";
 	std::cout << header << std::endl;
 	return header;
@@ -289,15 +291,54 @@ std::string Response::constructHeader( void ) {
 
 std::string Response::createGetResponse( void ) {
 	// todo: add response header generator
-	this->status = FINISHED;
-	// return this->constructHeader();
+	// this->status = FINISHED;
 
  	// todo: check method is allowed
 
 	std::string path = this->client->getRequest().getUri();
 
 	try {
-		this->getFullPath(path);
+
+		/* 
+			only check full path is res on IDLE
+			if not in on IDLE, read file and send
+		*/
+
+		if (this->status == IDLE) {
+			this->getFullPath(path);
+
+			// todo: if dir, handle it here
+			if (this->fileName == "") {
+				std::cout << "DIRECTORY here" << std::endl;
+				this->contentLength = 0;
+				this->status = FINISHED;
+			}
+			else {
+				this->status = ONGOING;
+			}
+
+		}
+		else {
+			// todo: send file content
+			// read from file
+
+			if (!this->file.is_open()) {
+				this->file.open(this->path);
+				// todo: check if open failed
+			}
+
+			char buf[1025];
+			file.read(buf, 1024);
+			buf[file.gcount()] = 0;
+			std::string con(buf);
+
+			if (con.length() != 1024) {
+				this->status = FINISHED;
+				this->file.close();
+			}
+			return con;
+		}
+
 	} catch (ResponseException e) {
 		std::cout << "Something went wrong with response: " << e.what() << std::endl;
 		// this->body = "" + e.what();
