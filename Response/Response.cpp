@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/11 13:11:54 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 18:19:36 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -250,14 +250,16 @@ std::string getDirectoryLinks(std::string path, std::string uri) {
 	entry = readdir(dir);
 	while (entry) {
 		tmp = entry->d_name;
-		// std::cout << "uri: " << uri << std::endl;
-		if (uri.length() == 0 || uri == "/") {
-			res += "<li><a href=\"/" + tmp + "\">";
+		
+		if (tmp[0] != '.') {
+			if (uri.length() == 0 || uri == "/") {
+				res += "<li><a href=\"/" + tmp + "\">";
+			}
+			else
+				res += "<li><a href=\"" + uri + "/" + tmp + "\">";
+			res += tmp;
+			res += "</a></li>";
 		}
-		else
-			res += "<li><a href=\"" + uri + "/" + tmp + "\">";
-		res += tmp;
-		res += "</a></li>";
 		entry = readdir(dir);
 	}
 	return res + "</ul>";

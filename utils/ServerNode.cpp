@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/11 11:50:14 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 18:17:22 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ void ServerNode::initializeServer( ListNode* server ) {
 
     // if server has no root
     if (!this->fieldExists("root"))
-        this->addField("root", "/Users/wbelfatm/Desktop/webserv/www");
+        this->addField("root", "/Users/pro/Desktop/webserv/www");
     
     // if server has no autoindex
     if (!this->fieldExists("autoindex"))
@@ -213,7 +213,6 @@ bool ServerNode::locationFieldExists( std::string path, std::string key ) {
 
 int ServerNode::generateServerFd( void ) {
     std::vector<std::string> splitListen;
-    int status;
     struct addrinfo hints;
     struct addrinfo *servinfo;
     int sockfd;
@@ -223,7 +222,7 @@ int ServerNode::generateServerFd( void ) {
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     // hints.ai_flags = AI_PASSIVE;
-    status = getaddrinfo(splitListen[0].data(), splitListen[1].data(), &hints, &servinfo);
+    getaddrinfo(splitListen[0].data(), splitListen[1].data(), &hints, &servinfo);
     sockfd = socket(PF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
     {
