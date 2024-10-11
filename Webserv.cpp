@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/11 13:15:16 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 18:30:21 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -243,8 +243,8 @@ void Webserv::listen( void ) {
 
                     // todo: send response
                     std::string res = clients[fds[i].fd]->getResponse().createGetResponse();
-                    send(fds[i].fd, res.data(), res.size(), MSG_SEND);
-                    // std::cout << "sent: " <<  << std::endl;
+                    // send(fds[i].fd, res.data(), res.size(), MSG_SEND);
+                    std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
                     // reset message 
                     clients[fds[i].fd]->setMessage("");
 

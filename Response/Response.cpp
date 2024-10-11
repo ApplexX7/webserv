@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/11 18:19:36 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 18:29:27 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -228,6 +228,7 @@ std::string Response::getStatusText( void ) {
 
 void Response::extractFileName( void ) {
 	std::string path = this->path;
+	std::string extension;
 	int start = path.length() - 1;
 
 	for (int i = start; i >= 0; i--) {
@@ -237,6 +238,18 @@ void Response::extractFileName( void ) {
 		}
 	}
 	this->fileName = path.substr(start, path.length());
+	start = this->fileName.length() - 1;
+	for (int i = start; i >= 0; i--) {
+		if (this->fileName[i] == '.')
+		{
+			start = i;
+			break;
+		}
+	}
+	extension = this->fileName.substr(start, this->fileName.length());
+	if (this->mimeTypes.find(extension) != this->mimeTypes.end())
+		this->contentType = this->mimeTypes[extension];
+	std::cout << this->contentType << std::endl;
 }
 
 std::string getDirectoryLinks(std::string path, std::string uri) {
