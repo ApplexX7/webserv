@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/11 11:36:40 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 11:45:43 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,9 +135,6 @@ std::string Response::getFullPath( std::string path ) {
 
 	this->checkPath();
 
-	if (this->statusCode != SUCCESS)
-		return fullPath;
-
 	stat(fullPath.data(), &fileStat);
 
 	/*
@@ -164,6 +161,8 @@ std::string Response::getFullPath( std::string path ) {
 	}
 	this->setPath(fullPath);
 	this->checkPath();
+	this->extractFileName();
+	std::cout << "Filename : " << this->fileName << std::endl;
 	return fullPath;
 }
 
@@ -225,6 +224,19 @@ void Response::setContentType( std::string contentType ) {
 
 std::string Response::getStatusText( void ) {
 	return this->statusTexts[this->statusCode];
+}
+
+void Response::extractFileName( void ) {
+	std::string path = this->path;
+	int start = path.length() - 1;
+
+	for (int i = start; i >= 0; i--) {
+		if (path[i] == '/') {
+			start = i + 1;
+			break ;
+		}
+	}
+	this->fileName = path.substr(start, path.length());
 }
 
 std::string getDirectoryLinks(std::string path, std::string uri) {
