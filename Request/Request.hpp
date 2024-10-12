@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 19:59:56 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/12 15:23:48 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,11 @@ class Request{
         ServerNode &getserverNode() const;
         int Validmethode(std::string &methode);
         std::string FindHost(std::string HostLine);
-
+        TypeTransf getTheBodyType();
+        std::string getcontentType();
+        std::string getStartBoundary();
+        std::string getEndofBoundary();
+        std::string getTransferCoding();
         int findLocationtobeUsed();
         //checkhostName
         int CheckserverhostName(Client& ClientData);
@@ -94,7 +98,7 @@ class Request{
         std::string getValue(std::string _Key);
         std::string getmethode();
         std::string getUri();
-        std::string getBody();
+        std::string &getBody();
         std::map<std::string,std::string> getHeaders( void );
 
         //parsing the request;

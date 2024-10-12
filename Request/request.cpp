@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 21:21:09 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/12 15:42:36 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,6 +224,8 @@ int Request::ParsingTheRequest(Client &ClientData){
 	return 0;
 }
 
+
+// this funct need to be modified later
 int Request::requestParserStart(Client &clientData){
 	// parse tell the  body;
 	if (!this->compliteHeaderparser && this->ParsingTheRequest(clientData)){
@@ -238,12 +240,33 @@ int Request::requestParserStart(Client &clientData){
 		}
 		if (this->parseBodyTypeBuffer(this->bodybuffer)){
 			//complite the body parser;
+			// std::cout << this->bodyType << std::endl;
 			std::cout << "Complite the body  read\n\n\n\n\n " << std::endl;
+			if (clientData.getResponse().postBodyResponse(clientData)){
+				return (1);
+			}
 			return (1); // the body complite
 		}
 		return (0);
 	}
 	return (0);
+}
+
+
+std::string Request::getTransferCoding(){
+	return (this->TransferCoding);
+}
+
+std::string Request::getEndofBoundary(){
+	return (this->startofBoundary);
+}
+
+std::string Request::getStartBoundary(){
+	return (this->startofBoundary);
+}
+
+TypeTransf  Request::getTheBodyType(){
+	return (this->bodyType);
 }
 
 void Request::setserverNode(ServerNode *_ServerNode){
@@ -279,7 +302,7 @@ std::string Request::getValue(std::string _Key){
 		return ("");
 }
 
-std::string Request::getBody(){
+std::string& Request::getBody(){
 	return (this->bodybuffer);
 }
 
