@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:12:11 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/11 12:44:58 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/12 17:34:18 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ std::string Client::getMessage( void ) {
 }
 
 void Client::setMessage( std::string message ) {
+    std::cout << "RESETTING MESSAGE" << std::endl;
     this->message = message;
 }
 

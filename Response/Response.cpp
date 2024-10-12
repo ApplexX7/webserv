@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/12 13:37:24 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/12 17:31:18 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -413,7 +413,6 @@ std::string Response::createGetResponse( void ) {
 					this->status = ONGOING;
 					this->body = "";
 				}
-
 			}
 			else {
 				// read from file
@@ -426,6 +425,7 @@ std::string Response::createGetResponse( void ) {
 				// else
 				// 	chunk = this->constructHeader();
 				
+				std::cout << "Returning chunk" << std::endl;
 				return chunk;
 			}
 		}
@@ -435,7 +435,7 @@ std::string Response::createGetResponse( void ) {
 		this->status = FINISHED;
 		std::cout << "Something went wrong with response: " << e.what() << std::endl;
 	}
-	std::cout << "Produce HEADER " << std::endl;
+	std::cout << "Producing HEADER " << std::endl;
 	
 	return this->constructHeader();
 }
