@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/12 17:31:18 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/12 20:52:03 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ void initializeStatusTexts(std::map<int, std::string>& statusTexts) {
 	statusTexts[CREATED] = "Created";
 	statusTexts[ACCEPTED] = "Accepted";
 	statusTexts[NO_CONTENT] = "No Content";
+	statusTexts[PARTIAL_CONTENT] = "Partial Content";
 
 	// 4xx
 	statusTexts[BAD_REQUEST] = "Bad Request";
@@ -59,6 +60,7 @@ Response::Response(){
 	this->body = "";
 	this->contentLength = 0;
 	this->bytesSent = 0;
+	this->rangeStart = 0;
 }
 
 
@@ -304,23 +306,22 @@ std::string Response::constructHeader( void ) {
 
 	// header += "206 Partial Content\r\n";
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
-	// if (this->contentType == "video/mp4") {	
-	// 	header += "Content-Length: 1024\r\n";
-	// }
-	// else
 	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
 	header += "Content-Type: " + this->contentType + "\r\n";
 	header += "Connection: keep-alive\r\n";
-	// header += "Content-Range: " + std::to_string(start) + "-" + std::to_string(end) + "/" + std::to_string(this->contentLength) + "\r\n";
+	if (this->statusCode == PARTIAL_CONTENT && this->rangeStart != 0)
+	{
+		unsigned long totalSize = this->rangeStart + this->contentLength;
+		header += "Content-Range: bytes " + std::to_string(this->rangeStart) 
+		+ "-" + std::to_string(totalSize - 1) + "/" + std::to_string(totalSize) + "\r\n";
+	}
 	header += "Accept-Ranges: bytes\r\n";
 	header += "Date: " + getDateResponse() + "\r\n";
 	header += "\r\n";
 
-	if (this->body != "") {
-		header += " BODY: " + body;
-	}
+	
 	// std::cout << this->bytesSent << " / " << this->contentLength << std::endl;
-	// std::cout << "HEADER: \n" + header << std::endl;
+	std::cout << "HEADER: \n" + header << std::endl;
 	return header;
 }
 
@@ -329,6 +330,8 @@ std::string Response::getFileChunk( void ) {
 
 	if (!this->file.is_open()) {
 		this->file.open(this->path, std::ios::binary);
+		this->file.seekg(this->rangeStart, std::ios::beg);
+		std::cout << "\n\nrange start: " << this->rangeStart << std::endl;
 		
 		if (!this->file.is_open())
 		{
@@ -381,10 +384,36 @@ void Response::reset( void ) {
 	std::cout << "\n\nRESET\n\n" << std::endl;
 	this->contentLength = 0;
 	this->bytesSent = 0;
+	this->rangeStart = 0;
 	this->contentType = "text/html; charset=UTF-8";
 	this->fileName = "";
 	this->statusCode = SUCCESS;
 	this->status = IDLE;
+	this->file.close();
+}
+
+void Response::extractRange( void ) {
+	std::string rangeHeader = this->client->getRequest().getValue("Range");
+	std::string range;
+	int start = 0;
+	int end = rangeHeader.length() - 1;
+
+	if (rangeHeader.length() == 0)
+		return ;
+
+	for (int i = 0; i < (int) rangeHeader.length(); i++) {
+		if (std::isdigit(rangeHeader[i]))
+		{
+			start = i;
+			break ;
+		}
+	}
+	range = rangeHeader.substr(start, end - 1);
+	range.erase(range.length() - 1);
+	if (range != "0")
+		this->statusCode = PARTIAL_CONTENT;
+	this->rangeStart = std::stoul(range);
+	this->contentLength -= this->rangeStart;
 }
 
 std::string Response::createGetResponse( void ) {
@@ -410,6 +439,7 @@ std::string Response::createGetResponse( void ) {
 					this->status = FINISHED;
 				}
 				else {
+					this->extractRange();
 					this->status = ONGOING;
 					this->body = "";
 				}
@@ -418,14 +448,6 @@ std::string Response::createGetResponse( void ) {
 				// read from file
 
 				chunk = this->getFileChunk();
-				// if (this->contentType == "video/mp4" && this->bytesSent > 0)
-				// {
-				// 	chunk = this->constructHeader() + chunk;
-				// }
-				// else
-				// 	chunk = this->constructHeader();
-				
-				std::cout << "Returning chunk" << std::endl;
 				return chunk;
 			}
 		}
@@ -435,7 +457,7 @@ std::string Response::createGetResponse( void ) {
 		this->status = FINISHED;
 		std::cout << "Something went wrong with response: " << e.what() << std::endl;
 	}
-	std::cout << "Producing HEADER " << std::endl;
+	// std::cout << "Producing HEADER " << std::endl;
 	
 	return this->constructHeader();
 }

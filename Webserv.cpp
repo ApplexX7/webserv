@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/12 17:40:09 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/12 20:11:40 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,7 +167,7 @@ void Webserv::listen( void ) {
     }
 
     while (1) {
-        if (poll(fds.data(), fds.size(), 100) > 0) {
+        if (poll(fds.data(), fds.size(), 500) > 0) {
             for (int i = 0; i < (int) fds.size(); i++)
             {
                 if (fds[i].revents & POLLHUP)
@@ -198,7 +198,7 @@ void Webserv::listen( void ) {
                     int bytes_read;
                     bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, MSG_EOF);
 
-                    std::cout << "BYTES READ: " << bytes_read << std::endl;
+                    // std::cout << "BYTES READ: " << bytes_read << std::endl;
 
                     if (bytes_read == -1)
                     {
@@ -215,11 +215,12 @@ void Webserv::listen( void ) {
                         // std::cout << "client finished writing" << std::endl;
 
                         // std::cout << "\n\n\n";
-                        // std::cout << clients[fds[i].fd]->getMessage() << std::endl;
+                        std::cout << clients[fds[i].fd]->getMessage() << std::endl;
                         // std::cout << "\n\n\n";
 
                         
-                        std::cout << "REQUEST VALID: " << clients[fds[i].fd]->getRequest().ParsingTheRequest(*clients[fds[i].fd]) << std::endl;
+                        // std::cout << "REQUEST VALID: " << clients[fds[i].fd]->getRequest().ParsingTheRequest(*clients[fds[i].fd]) << std::endl;
+                        clients[fds[i].fd]->getRequest().ParsingTheRequest(*clients[fds[i].fd]);
 
                         // std::vector<std::string> vals = clients[fds[i].fd]->getParentServer().getField("listen").getValues();
 
@@ -257,8 +258,8 @@ void Webserv::listen( void ) {
 
                     
 
-                    // send(fds[i].fd, res.data(), res.size(), MSG_SEND);
-                    std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
+                    send(fds[i].fd, res.data(), res.size(), MSG_SEND);
+                    // std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
 
                     // reset message 
                     clients[fds[i].fd]->setMessage("");
@@ -270,7 +271,7 @@ void Webserv::listen( void ) {
                     // std::cout << "\n\nCoucou\n\n" << std::endl;
 
                     if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
-                        std::cout << "ENDED SENDING" << std::endl;
+                        // std::cout << "ENDED SENDING" << std::endl;
                         if (connection == "keep-alive"
                         && clients[fds[i].fd]->getResponse().getStatusCode() < 400) {
                             fds[i].events = POLLIN | POLLHUP;

@@ -1,5 +1,6 @@
 {
   "files.associations": {
+    "*.cpp": "cpp",
     "__bit_reference": "cpp",
     "__config": "cpp",
     "__debug": "cpp",
@@ -71,7 +72,9 @@
     "__verbose_abort": "cpp",
     "clocale": "cpp",
     "execution": "cpp",
-    "variant": "cpp"
+    "variant": "cpp",
+    "print": "cpp",
+    "queue": "cpp"
   },
   "C_Cpp.errorSquiggles": "disabled",
   "cSpell.words": [

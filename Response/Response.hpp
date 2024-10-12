@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/12 08:33:30 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/12 20:40:53 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@
 #define CREATED 201
 #define ACCEPTED 202
 #define NO_CONTENT 204
+#define PARTIAL_CONTENT 206
 
 //client error response
 #define BAD_REQUEST 400
@@ -70,9 +71,10 @@ class Response {
         std::map<std::string, std::string> mimeTypes;
         std::string body;
         std::string contentType;
-        int contentLength;
-        int bytesSent;
+        unsigned long contentLength;
+        unsigned long bytesSent;
         Location *location;
+        unsigned long rangeStart;
 
         std::string path;
 
@@ -123,6 +125,7 @@ class Response {
         std::string getFileChunk( void );
         bool checkAllowedMethod( std::string );
         void reset( void );
+        void extractRange( void );
 
         // response handlers
         std::string constructHeader( void );
