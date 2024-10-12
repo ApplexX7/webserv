@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/11 20:52:48 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/12 08:33:30 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 #include <exception>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <fstream>
+
 //status Response
 
 //information Response
@@ -69,6 +71,7 @@ class Response {
         std::string body;
         std::string contentType;
         int contentLength;
+        int bytesSent;
         Location *location;
 
         std::string path;

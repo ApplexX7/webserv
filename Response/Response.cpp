@@ -6,11 +6,13 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/11 20:54:00 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/12 11:48:48 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
+
+#define CHUNK_SIZE 1024
 
 void initializeStatusTexts(std::map<int, std::string>& statusTexts) {
 	// 1xx
@@ -49,11 +51,14 @@ Response::Response(){
 	this->mimeTypes[".json"] = "application/json";
 	this->mimeTypes[".xml"] = "application/xml";
 	this->mimeTypes[".txt"] = "text/plain";
+	this->mimeTypes[".mp4"] = "video/mp4";
+	this->mimeTypes[".pdf"] = "application/pdf";
 	this->status = IDLE;
 	initializeStatusTexts(this->statusTexts);
 	this->location = NULL;
 	this->body = "";
 	this->contentLength = 0;
+	this->bytesSent = 0;
 }
 
 
@@ -148,6 +153,7 @@ std::string Response::getFullPath( std::string path ) {
 	*/
 
 	if (S_ISDIR(fileStat.st_mode)) {
+		
 		// is dir
 		if (location) {
 			// path matches a location
@@ -156,6 +162,9 @@ std::string Response::getFullPath( std::string path ) {
 		else {
 			autoIndex = server.getField("autoindex").getValues()[0] == "on";
 		}
+
+		if (path[path.length() - 1] != '/')
+			fullPath += "/";
 
 		if (autoIndex)
 			fullPath += "index.html";
@@ -290,25 +299,35 @@ std::string getDateResponse(){
 
 std::string Response::constructHeader( void ) {
 	std::string header = "HTTP/1.1 ";
+	// int start = this->bytesSent;
+	// int end = start + 1023;
 
+	// header += "206 Partial Content\r\n";
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
+	// if (this->contentType == "video/mp4") {	
+	// 	header += "Content-Length: 1024\r\n";
+	// }
+	// else
 	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
 	header += "Content-Type: " + this->contentType + "\r\n";
+	header += "Connection: keep-alive\r\n";
+	// header += "Content-Range: " + std::to_string(start) + "-" + std::to_string(end) + "/" + std::to_string(this->contentLength) + "\r\n";
+	header += "Accept-Ranges: bytes\r\n";
 	header += "Date: " + getDateResponse() + "\r\n";
 	header += "\r\n";
 
 	if (this->body != "") {
-		header += body;
+		header += " BODY: " + body;
 	}
-	std::cout << header << std::endl;
+	std::cout << "HEADER: \n" + header << std::endl;
 	return header;
 }
 
 std::string Response::getFileChunk( void ) {
-	char buf[1025];
+	std::vector<char> buff(CHUNK_SIZE + 1);
 
 	if (!this->file.is_open()) {
-		this->file.open(this->path);
+		this->file.open(this->path, std::ios::binary);
 		
 		if (!this->file.is_open())
 		{
@@ -317,11 +336,15 @@ std::string Response::getFileChunk( void ) {
 		}
 	}
 
-	file.read(buf, 1024);
-	buf[file.gcount()] = 0;
-	std::string chunk(buf);
+	file.read(buff.data(), CHUNK_SIZE);
+	
+	std::streamsize bytesRead = this->file.gcount();
 
-	if (chunk.length() != 1024) {
+	std::string chunk(buff.data(), bytesRead);
+
+	this->bytesSent += bytesRead;
+
+	if (this->bytesSent == this->contentLength) {
 		this->status = FINISHED;
 		this->file.close();
 	}
@@ -355,7 +378,9 @@ bool Response::checkAllowedMethod( std::string path ) {
 }
 
 void Response::reset( void ) {
+	std::cout << "\n\nRESET\n\n" << std::endl;
 	this->contentLength = 0;
+	this->bytesSent = 0;
 	this->contentType = "text/html; charset=UTF-8";
 	this->fileName = "";
 	this->statusCode = SUCCESS;
@@ -392,7 +417,15 @@ std::string Response::createGetResponse( void ) {
 			}
 			else {
 				// read from file
+
 				chunk = this->getFileChunk();
+				// if (this->contentType == "video/mp4" && this->bytesSent > 0)
+				// {
+				// 	chunk = this->constructHeader() + chunk;
+				// }
+				// else
+				// 	chunk = this->constructHeader();
+				
 				return chunk;
 			}
 		}

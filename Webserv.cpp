@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/11 21:06:21 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/12 12:12:36 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -226,11 +226,16 @@ void Webserv::listen( void ) {
 
                         // std::cout << "Parent server " << (clients[fds[i].fd]->getParentServer().getField("listen").getValues() != NULL ? "YES" : "None") << std::endl;
                         // std::cout << clients[fds[i].fd]->getParentServer().getLocations().size() << std::endl;
-                        
-                        
+
                         fds[i].events = POLLOUT;
 
-                        // todo: parse request and generate response using client.handle_request
+                        
+
+                        // if (clients[fds[i].fd]->getResponse().getContentType() == "video/mp4")
+                        // {
+                        //     fds[i].events = POLLOUT | POLLIN;
+                            
+                        // }
                     }
                     else
                     {
@@ -249,15 +254,27 @@ void Webserv::listen( void ) {
 
                     // todo: send response
                     std::string res = clients[fds[i].fd]->getResponse().createGetResponse();
+                    std::string header = clients[fds[i].fd]->getResponse().constructHeader();
+
+                    if (clients[fds[i].fd]->getResponse().getContentType() == "video/mp4")
+                    {
+                        fds[i].events = POLLOUT | POLLIN;
+                        // std::cout << "sent header: " << send(fds[i].fd, header.data(), header.size(), MSG_SEND) << std::endl;
+                        
+                    }
+
                     // send(fds[i].fd, res.data(), res.size(), MSG_SEND);
                     std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
+                    
                     // reset message 
                     clients[fds[i].fd]->setMessage("");
 
                     std::string connection = clients[fds[i].fd]->getRequest().getValue("Connection");
 
                     // todo: check if connection is keep-alive
-                    
+
+                    std::cout << "\n\nCoucou\n\n" << std::endl;
+
                     if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
                         if (connection == "keep-alive"
                         && clients[fds[i].fd]->getResponse().getStatusCode() < 400) {
