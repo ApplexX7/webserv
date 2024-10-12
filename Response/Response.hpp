@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/12 20:41:45 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/12 22:46:37 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,9 +54,10 @@ class Response{
 		int GetStatusCode( void );
 		// Post Response;
 		int postBodyResponse(Client &clientData);
+		int parseBoundaryPart(std::string body, Client & clientDatat);
 		int parseChunckedType(std::string &body, Client & clientdata);
 		int parseChunkedPart(std::string chunk, Client &clientdata);
-		int parseBodyHeaders(std::string header, Client &clientdata);
+		int parseBodyHeaders(std::string header);
 		int openFile(Client &clientDatat);
 		int writeChunkinfile(Client &clientData);
 		int parseBoundarybody(std::string &body);

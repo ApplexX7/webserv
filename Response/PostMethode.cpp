@@ -6,25 +6,22 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/12 22:34:14 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/12 22:51:11 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 
-int Response::parseBodyHeaders(std::string header, Client &clientData){
+int Response::parseBodyHeaders(std::string header){
     size_t pos = 0;
     size_t secpos = 0;
-    std::string line;
-    std::string str;
-    (void)clientData;
     pos = header.find("Content-Disposition:");
     if (pos != std::string::npos){
         pos += std::strlen("Content-Disposition:");
         secpos = header.find(";", pos);
         if (secpos != std::string::npos){
             this->bhCtDisposition = header.substr(pos, secpos - pos);
-            this->bhCtDisposition.erase(remove(str.begin(), str.end(), ' '), str.end());
+            this->bhCtDisposition.erase(remove(this->bhCtDisposition.begin(), this->bhCtDisposition.end(), ' '), this->bhCtDisposition.end());
         }
     }
     pos = header.find("name=\"");
@@ -48,16 +45,16 @@ int Response::parseBodyHeaders(std::string header, Client &clientData){
         pos += std::strlen("Content-Type:");
         secpos = header.find("\r\n");
         if (secpos != std::string::npos){
-            this->bhConetentType = header.substr(secpos, secpos - pos);
-            this->bhConetentType.erase(remove(str.begin(), str.end(), ' '), str.end());
+            this->bhConetentType = header.substr(pos, secpos - pos);
+            this->bhConetentType.erase(remove(this->bhConetentType.begin(), this->bhConetentType.end(), ' '), this->bhConetentType.end());
         }
     }
-    // std::cout  << "****************************************" << std::endl;
-    // std::cout << this->bhCtDisposition << std::endl;
-    // std::cout << this->bhName << std::endl;
-    // std::cout << this->bhFileName << std::endl;
-    // std::cout << this->bhConetentType << std::endl;
-    // std::cout  << "****************************************" << std::endl;
+    std::cout  << "****************************************" << std::endl;
+    std::cout << this->bhCtDisposition << std::endl;
+    std::cout << this->bhName << std::endl;
+    std::cout << this->bhFileName << std::endl;
+    std::cout << this->bhConetentType << std::endl;
+    std::cout  << "****************************************" << std::endl;
     return (0);
 }
 
@@ -119,9 +116,7 @@ int Response::parseChunckedType(std::string &body, Client &clientdata){
                 return (0);
             }
             // parse the headers in every chunk;
-            if (this->parseBodyHeaders(chunked[i].substr(2, pos + 2), clientdata)){
-                return (1);
-            }
+            this->parseBodyHeaders(chunked[i].substr(2, pos));
             if (this->parseChunkedPart(chunked[i].substr(pos + 4), clientdata))
                 return (1);
         }
