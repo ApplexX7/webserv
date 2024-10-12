@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/12 12:12:36 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/12 13:40:20 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,11 +210,11 @@ void Webserv::listen( void ) {
                         // std::cout << buf << std::endl;
                         message.assign(buf);
                         clients[fds[i].fd]->appendMessage(buf);
-                        std::cout << "client finished writing" << std::endl;
+                        // std::cout << "client finished writing" << std::endl;
 
-                        std::cout << "\n\n\n";
+                        // std::cout << "\n\n\n";
                         std::cout << clients[fds[i].fd]->getMessage() << std::endl;
-                        std::cout << "\n\n\n";
+                        // std::cout << "\n\n\n";
 
                         
                         clients[fds[i].fd]->getRequest().ParsingTheRequest(*clients[fds[i].fd]);
@@ -256,15 +256,10 @@ void Webserv::listen( void ) {
                     std::string res = clients[fds[i].fd]->getResponse().createGetResponse();
                     std::string header = clients[fds[i].fd]->getResponse().constructHeader();
 
-                    if (clients[fds[i].fd]->getResponse().getContentType() == "video/mp4")
-                    {
-                        fds[i].events = POLLOUT | POLLIN;
-                        // std::cout << "sent header: " << send(fds[i].fd, header.data(), header.size(), MSG_SEND) << std::endl;
-                        
-                    }
+                    
 
-                    // send(fds[i].fd, res.data(), res.size(), MSG_SEND);
-                    std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
+                    send(fds[i].fd, res.data(), res.size(), MSG_SEND);
+                    // std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
                     
                     // reset message 
                     clients[fds[i].fd]->setMessage("");
@@ -273,9 +268,10 @@ void Webserv::listen( void ) {
 
                     // todo: check if connection is keep-alive
 
-                    std::cout << "\n\nCoucou\n\n" << std::endl;
+                    // std::cout << "\n\nCoucou\n\n" << std::endl;
 
                     if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
+                        // std::cout << "ENDED SENDING" << std::endl;
                         if (connection == "keep-alive"
                         && clients[fds[i].fd]->getResponse().getStatusCode() < 400) {
                             fds[i].events = POLLIN | POLLHUP;

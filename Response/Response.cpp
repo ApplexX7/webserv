@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/12 11:48:48 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/12 13:37:24 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,7 +136,7 @@ std::string Response::getFullPath( std::string path ) {
 	}
 	fullPath = root + path;
 
-	std::cout << "FULL PATH: " << fullPath << std::endl;
+	// std::cout << "FULL PATH: " << fullPath << std::endl;
 
 	this->setPath(fullPath);
 
@@ -179,12 +179,12 @@ std::string Response::getFullPath( std::string path ) {
 	else {
 		this->fileName = "";
 	}
-	std::cout << "Filename : " << this->fileName << std::endl;
+	// std::cout << "Filename : " << this->fileName << std::endl;
 	return fullPath;
 }
 
 bool Response::checkPath( void ) {
-	std::cout << "Searching on: " << this->path << std::endl;
+	// std::cout << "Searching on: " << this->path << std::endl;
 
 	if (access(this->path.data(), F_OK) != 0) {
 
@@ -258,7 +258,7 @@ void Response::extractFileName( void ) {
 	extension = this->fileName.substr(start, this->fileName.length());
 	if (this->mimeTypes.find(extension) != this->mimeTypes.end())
 		this->contentType = this->mimeTypes[extension];
-	std::cout << this->contentType << std::endl;
+	// std::cout << this->contentType << std::endl;
 }
 
 std::string getDirectoryLinks(std::string path, std::string uri) {
@@ -319,7 +319,8 @@ std::string Response::constructHeader( void ) {
 	if (this->body != "") {
 		header += " BODY: " + body;
 	}
-	std::cout << "HEADER: \n" + header << std::endl;
+	// std::cout << this->bytesSent << " / " << this->contentLength << std::endl;
+	// std::cout << "HEADER: \n" + header << std::endl;
 	return header;
 }
 
@@ -367,7 +368,6 @@ bool Response::checkAllowedMethod( std::string path ) {
 
 	allowedMethods = location->getField("limit_except").getValues();
 
-	std::cout << method << " " << allowedMethods.size() << std::endl;
 	if (allowedMethods.size() == 0)
 		return true;
 	if (std::find(allowedMethods.begin(), allowedMethods.end(), method) == allowedMethods.end()) {
@@ -435,7 +435,8 @@ std::string Response::createGetResponse( void ) {
 		this->status = FINISHED;
 		std::cout << "Something went wrong with response: " << e.what() << std::endl;
 	}
-
+	std::cout << "Produce HEADER " << std::endl;
+	
 	return this->constructHeader();
 }
 
