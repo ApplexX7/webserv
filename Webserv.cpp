@@ -6,13 +6,13 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/12 20:11:40 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/13 10:25:21 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
 
-# define CHUNK_SIZE 1024
+# define CHUNK_SIZE 8096
 
 Webserv::Webserv( void ) {
     this->listHead = NULL;
@@ -256,10 +256,8 @@ void Webserv::listen( void ) {
                     std::string res = clients[fds[i].fd]->getResponse().createGetResponse();
                     // std::string header = clients[fds[i].fd]->getResponse().constructHeader();
 
-                    
-
-                    send(fds[i].fd, res.data(), res.size(), MSG_SEND);
-                    // std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
+                    // send(fds[i].fd, res.data(), res.size(), MSG_SEND);
+                    std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
 
                     // reset message 
                     clients[fds[i].fd]->setMessage("");
@@ -283,7 +281,6 @@ void Webserv::listen( void ) {
                             clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
                             fds.erase(fds.begin() + i);
                         }
-                           
                     }
 
                     // usleep(100);

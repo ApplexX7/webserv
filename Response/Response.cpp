@@ -6,13 +6,13 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/12 20:52:03 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/13 11:29:56 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 
-#define CHUNK_SIZE 1024
+#define CHUNK_SIZE 8096
 
 void initializeStatusTexts(std::map<int, std::string>& statusTexts) {
 	// 1xx
@@ -62,8 +62,6 @@ Response::Response(){
 	this->bytesSent = 0;
 	this->rangeStart = 0;
 }
-
-
 
 void    Response::setStatusLine(std::string _Status){
 	this->StatusLine = _Status;
@@ -138,7 +136,7 @@ std::string Response::getFullPath( std::string path ) {
 	}
 	fullPath = root + path;
 
-	// std::cout << "FULL PATH: " << fullPath << std::endl;
+	std::cout << "FULL PATH: " << fullPath << std::endl;
 
 	this->setPath(fullPath);
 
@@ -301,15 +299,14 @@ std::string getDateResponse(){
 
 std::string Response::constructHeader( void ) {
 	std::string header = "HTTP/1.1 ";
-	// int start = this->bytesSent;
-	// int end = start + 1023;
 
 	// header += "206 Partial Content\r\n";
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
 	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
 	header += "Content-Type: " + this->contentType + "\r\n";
 	header += "Connection: keep-alive\r\n";
-	if (this->statusCode == PARTIAL_CONTENT && this->rangeStart != 0)
+	// std::cout << this->rangeStart << std::endl;
+	if (this->statusCode == PARTIAL_CONTENT)
 	{
 		unsigned long totalSize = this->rangeStart + this->contentLength;
 		header += "Content-Range: bytes " + std::to_string(this->rangeStart) 
@@ -331,7 +328,7 @@ std::string Response::getFileChunk( void ) {
 	if (!this->file.is_open()) {
 		this->file.open(this->path, std::ios::binary);
 		this->file.seekg(this->rangeStart, std::ios::beg);
-		std::cout << "\n\nrange start: " << this->rangeStart << std::endl;
+		// std::cout << "\n\nrange start: " << this->rangeStart << std::endl;
 		
 		if (!this->file.is_open())
 		{
@@ -343,12 +340,17 @@ std::string Response::getFileChunk( void ) {
 	file.read(buff.data(), CHUNK_SIZE);
 	
 	std::streamsize bytesRead = this->file.gcount();
+	if (bytesRead <= 0)
+	{
+		std::cout << "ERROR READING" << std::endl;
+		exit(1);
+	}
 
 	std::string chunk(buff.data(), bytesRead);
 
 	this->bytesSent += bytesRead;
 
-	if (this->bytesSent == this->contentLength) {
+	if (this->bytesSent >= this->contentLength) {
 		this->status = FINISHED;
 		this->file.close();
 	}
@@ -395,8 +397,8 @@ void Response::reset( void ) {
 void Response::extractRange( void ) {
 	std::string rangeHeader = this->client->getRequest().getValue("Range");
 	std::string range;
-	int start = 0;
 	int end = rangeHeader.length() - 1;
+	int start = end;
 
 	if (rangeHeader.length() == 0)
 		return ;
@@ -408,11 +410,19 @@ void Response::extractRange( void ) {
 			break ;
 		}
 	}
-	range = rangeHeader.substr(start, end - 1);
-	range.erase(range.length() - 1);
-	if (range != "0")
-		this->statusCode = PARTIAL_CONTENT;
-	this->rangeStart = std::stoul(range);
+	
+	if (start != end) {
+		range = rangeHeader.substr(start, end - 1);
+		
+		range.erase(range.length() - 1);
+		
+		this->rangeStart = std::stoul(range);
+		// if (this->rangeStart > 0)
+		// 	this->rangeStart--;
+		std::cout << "RANGE " << this->rangeStart << std::endl;
+	}
+	// if (this->rangeStart != 0)
+	this->statusCode = PARTIAL_CONTENT;
 	this->contentLength -= this->rangeStart;
 }
 
@@ -429,7 +439,7 @@ std::string Response::createGetResponse( void ) {
 			if not in on IDLE, read file and send
 		*/
 
-		if (this->statusCode == SUCCESS) {
+		if (this->statusCode >= 200 && this->statusCode < 300) {
 			if (this->status == IDLE) {
 				this->checkAllowedMethod(path);
 				this->getFullPath(path);
@@ -437,6 +447,7 @@ std::string Response::createGetResponse( void ) {
 					this->body = getDirectoryLinks(this->path, path);
 					this->contentLength = body.length();
 					this->status = FINISHED;
+					return constructHeader() + this->body;
 				}
 				else {
 					this->extractRange();
@@ -446,8 +457,8 @@ std::string Response::createGetResponse( void ) {
 			}
 			else {
 				// read from file
-
 				chunk = this->getFileChunk();
+				std::cout << "LEFT: " << (this->contentLength - this->bytesSent) << std::endl;
 				return chunk;
 			}
 		}
@@ -457,7 +468,7 @@ std::string Response::createGetResponse( void ) {
 		this->status = FINISHED;
 		std::cout << "Something went wrong with response: " << e.what() << std::endl;
 	}
-	// std::cout << "Producing HEADER " << std::endl;
+	std::cout << "Producing HEADER " << std::endl;
 	
 	return this->constructHeader();
 }
