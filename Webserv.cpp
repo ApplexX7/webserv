@@ -6,13 +6,13 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/13 11:51:50 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/13 13:30:40 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
 
-# define CHUNK_SIZE 8096
+# define CHUNK_SIZE 12000
 
 Webserv::Webserv( void ) {
     this->listHead = NULL;
@@ -261,7 +261,6 @@ void Webserv::listen( void ) {
             }
         }
     }
-    std::cout << "\n\nCoucou\n\n" << std::endl;
 }
 
 ServerNode *Webserv::getServerByFd( int fd ) {

@@ -6,13 +6,13 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/13 11:48:22 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/13 13:30:08 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 
-#define CHUNK_SIZE 8096
+#define CHUNK_SIZE 12000
 
 void initializeStatusTexts(std::map<int, std::string>& statusTexts) {
 	// 1xx
@@ -331,16 +331,18 @@ std::string Response::getFileChunk( void ) {
 	if (bytesRead <= 0)
 	{
 		std::cout << "ERROR READING" << std::endl;
+		this->status = FINISHED;
 		exit(1);
 	}
 
 	std::string chunk(buff.data(), bytesRead);
 
+
 	this->bytesSent += bytesRead;
 
-	if (this->bytesSent >= this->contentLength) {
+	if (this->bytesSent > this->contentLength) {
 		this->status = FINISHED;
-		this->file.close();
+		// this->file.close();
 	}
 	return chunk;
 }
@@ -407,6 +409,9 @@ void Response::extractRange( void ) {
 		this->rangeStart = std::stoul(range);
 	}
 	this->statusCode = PARTIAL_CONTENT;
+	if (this->contentLength < this->rangeStart) {
+		exit(0);
+	}
 	this->contentLength -= this->rangeStart;
 }
 
