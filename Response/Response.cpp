@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/13 11:29:56 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/13 11:48:22 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,6 @@ int Response::getStatusCode(){
 }
 
 void Response::setStatusCode(int statusCode){
-	// std::cout << this->statusCode << std::endl;
 	this->statusCode = statusCode;
 }
 
@@ -179,13 +178,10 @@ std::string Response::getFullPath( std::string path ) {
 	else {
 		this->fileName = "";
 	}
-	// std::cout << "Filename : " << this->fileName << std::endl;
 	return fullPath;
 }
 
 bool Response::checkPath( void ) {
-	// std::cout << "Searching on: " << this->path << std::endl;
-
 	if (access(this->path.data(), F_OK) != 0) {
 
 		// doesn't exist
@@ -258,7 +254,6 @@ void Response::extractFileName( void ) {
 	extension = this->fileName.substr(start, this->fileName.length());
 	if (this->mimeTypes.find(extension) != this->mimeTypes.end())
 		this->contentType = this->mimeTypes[extension];
-	// std::cout << this->contentType << std::endl;
 }
 
 std::string getDirectoryLinks(std::string path, std::string uri) {
@@ -300,12 +295,10 @@ std::string getDateResponse(){
 std::string Response::constructHeader( void ) {
 	std::string header = "HTTP/1.1 ";
 
-	// header += "206 Partial Content\r\n";
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
 	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
 	header += "Content-Type: " + this->contentType + "\r\n";
 	header += "Connection: keep-alive\r\n";
-	// std::cout << this->rangeStart << std::endl;
 	if (this->statusCode == PARTIAL_CONTENT)
 	{
 		unsigned long totalSize = this->rangeStart + this->contentLength;
@@ -316,9 +309,6 @@ std::string Response::constructHeader( void ) {
 	header += "Date: " + getDateResponse() + "\r\n";
 	header += "\r\n";
 
-	
-	// std::cout << this->bytesSent << " / " << this->contentLength << std::endl;
-	std::cout << "HEADER: \n" + header << std::endl;
 	return header;
 }
 
@@ -328,8 +318,6 @@ std::string Response::getFileChunk( void ) {
 	if (!this->file.is_open()) {
 		this->file.open(this->path, std::ios::binary);
 		this->file.seekg(this->rangeStart, std::ios::beg);
-		// std::cout << "\n\nrange start: " << this->rangeStart << std::endl;
-		
 		if (!this->file.is_open())
 		{
 			this->status = FINISHED;
@@ -417,18 +405,12 @@ void Response::extractRange( void ) {
 		range.erase(range.length() - 1);
 		
 		this->rangeStart = std::stoul(range);
-		// if (this->rangeStart > 0)
-		// 	this->rangeStart--;
-		std::cout << "RANGE " << this->rangeStart << std::endl;
 	}
-	// if (this->rangeStart != 0)
 	this->statusCode = PARTIAL_CONTENT;
 	this->contentLength -= this->rangeStart;
 }
 
 std::string Response::createGetResponse( void ) {
- 	// todo: check method is allowed
-
 	std::string path = this->client->getRequest().getUri();
 	std::string chunk;
 
@@ -443,6 +425,8 @@ std::string Response::createGetResponse( void ) {
 			if (this->status == IDLE) {
 				this->checkAllowedMethod(path);
 				this->getFullPath(path);
+
+				// empty filename means it's a dir
 				if (this->fileName == "") {
 					this->body = getDirectoryLinks(this->path, path);
 					this->contentLength = body.length();
@@ -450,15 +434,17 @@ std::string Response::createGetResponse( void ) {
 					return constructHeader() + this->body;
 				}
 				else {
-					this->extractRange();
+					// this is a file, set status to ONGOING to start sending chunks
 					this->status = ONGOING;
 					this->body = "";
+
+					// extract range from header
+					this->extractRange();
 				}
 			}
 			else {
 				// read from file
 				chunk = this->getFileChunk();
-				std::cout << "LEFT: " << (this->contentLength - this->bytesSent) << std::endl;
 				return chunk;
 			}
 		}
@@ -468,8 +454,6 @@ std::string Response::createGetResponse( void ) {
 		this->status = FINISHED;
 		std::cout << "Something went wrong with response: " << e.what() << std::endl;
 	}
-	std::cout << "Producing HEADER " << std::endl;
-	
 	return this->constructHeader();
 }
 
