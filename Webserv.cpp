@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/10 20:43:21 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/13 18:39:21 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,7 +152,7 @@ void Webserv::listen( void ) {
     struct sockaddr_storage their_addr;
     socklen_t addr_size;
     int new_fd;
-    char buf[CHUNK_SIZE];
+    char buf[CHUNK_SIZE + 1];
 
     addr_size = sizeof(their_addr);
 
@@ -170,10 +170,9 @@ void Webserv::listen( void ) {
     }
 
     while (1) {
-        if (poll(fds.data(), fds.size(), 100) > 0) {
+        if (poll(fds.data(), fds.size(), 100) >= 0) {
             for (int i = 0; i < (int) fds.size(); i++)
             {
-
                 if(fds[i].revents & POLLHUP)
                 {
                     fds.erase(fds.begin() + i);
@@ -195,71 +194,71 @@ void Webserv::listen( void ) {
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLIN)
                 {
-                    int bytes_read;
+                    int bytes_read = 0;
                     bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, MSG_EOF);
-
-                    if (bytes_read == -1)
-                        std::cout << "error reading" << std::endl;
-
-                    else if (bytes_read < CHUNK_SIZE)
                     {
+                        
                         buf[bytes_read] = 0;
-                        // std::cout << buf << std::endl;
+                        // std::cout << "RECEIVED :\n" << buf << std::endl;
                         message.assign(buf);
-                        clients[fds[i].fd]->appendMessage(buf);
-                        std::cout << "client finished writing, full message:" << std::endl;
-
-                        std::cout << clients[fds[i].fd]->getMessage() << std::endl;
+                        
+                        clients[fds[i].fd]->setMessage(buf);
                         clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
+                        // std::cout << "FINISHED: " << clients[fds[i].fd]->getRequest().getFinishReading() << std::endl;
+                        // std::cout << "BUFF: " << buf << std::endl;
+                        
+                        if ((*clients[fds[i].fd]).getRequest().getFinishReading())
+                        {
+                            // std::cout << buf << std::endl;
+                            // std::cout << "***************" << std::endl;
+                            // message.assign(buf);
+                            // std::cout << "RECEIVED 2 :\n" << buf << std::endl;
+                            // clients[fds[i].fd]->appendMessage(buf);
+                            std::cout << "client finished writing, full message:" << std::endl;
 
-                        clients[fds[i].fd]->findParentServer();
+                            // std::cout << clients[fds[i].fd]->getMessage() << std::endl;
 
-                        // std::vector<std::string> vals = clients[fds[i].fd]->getParentServer().getField("listen").getValues();
+                            clients[fds[i].fd]->findParentServer();
 
-                        // std::cout << "Parent server " << (clients[fds[i].fd]->getParentServer().getField("listen").getValues() != NULL ? "YES" : "None") << std::endl;
-                        clients[fds[i].fd]->getParentServer();
-                        fds[i].events = POLLOUT;
-                        // todo: parse request and generate response using client.handle_request
-                    }
-                    else
-                    {
-                        buf[bytes_read] = 0;
-                        // std::cout << buf << std::endl;
-                        message.assign(buf);
-                        clients[fds[i].fd]->appendMessage(buf);
+                            // std::vector<std::string> vals = clients[fds[i].fd]->getParentServer().getField("listen").getValues();
+
+                            // std::cout << "Parent server " << (clients[fds[i].fd]->getParentServer().getField("listen").getValues() != NULL ? "YES" : "None") << std::endl;
+                            clients[fds[i].fd]->getParentServer();
+                            fds[i].events = POLLOUT;
+                            printf("hello\n");
+                            // todo: parse request and generate response using client.handle_request
+                        }
+                        
                     }
                 }
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLOUT)
                 {
-                    std::cout << "Client ready to receive" << std::endl;
+                    // std::cout << "Client ready to receive" << std::endl;
 
-                    // todo: send response
-                    std::string res = clients[fds[i].fd]->getResponse().createGetResponse();
+                    // // todo: send response
+                    // std::string res = clients[fds[i].fd]->getResponse().createGetResponse();
                     
-                    std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
-                    // reset message 
-                    clients[fds[i].fd]->setMessage("");
+                    // std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
+                    // // reset message 
+                    // clients[fds[i].fd]->setMessage("");
 
-                    std::string connection = clients[fds[i].fd]->getRequest().getValue("Connection");
+                    // std::string connection = clients[fds[i].fd]->getRequest().getValue("Connection");
 
-                    // todo: check if connection is keep-alive
+                    // // todo: check if connection is keep-alive
 
-                    if (connection == "keep-alive") {
-                        fds[i].events = POLLIN | POLLHUP;
-                    }
-                    else {
-                        delete clients[fds[i].fd];
-                        close(fds[i].fd);
-                        clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
-                        fds.erase(fds.begin() + i);
-                    }
-
-
+                    // if (connection == "keep-alive") {
+                    //     fds[i].events = POLLIN | POLLHUP;
+                    // }
+                    // else {
+                    //     delete clients[fds[i].fd];
+                    //     close(fds[i].fd);
+                    //     clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
+                    //     fds.erase(fds.begin() + i);
+                    // }
                 }
-
-                
             }
+            
         }
     }
 }

@@ -6,15 +6,20 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/12 15:42:36 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/13 18:42:49 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 
 Request::Request(){
+	this->finishReading = false;
 	this->compliteHeaderparser = false;
 	this->bodyType = NONE;
+}
+
+bool Request::getFinishReading(){
+	return (this->finishReading);
 }
 
 Request::Request(const Request &obj){
@@ -234,18 +239,17 @@ int Request::requestParserStart(Client &clientData){
 	}
 	// waiting to  teh body get complite
 	if (this->methode == "POST" && this->compliteHeaderparser){
-		size_t pos = clientData.getMessage().find("\r\n\r\n");
-		if (pos != std::string::npos){
- 			this->bodybuffer += clientData.getMessage().substr(pos + 4);
-		}
+ 		this->bodybuffer += clientData.getMessage();
 		if (this->parseBodyTypeBuffer(this->bodybuffer)){
+			std::cout << this->bodybuffer << std::endl;
 			//complite the body parser;
 			// std::cout << this->bodyType << std::endl;
+			this->finishReading = true;
 			std::cout << "Complite the body  read\n\n\n\n\n " << std::endl;
-			if (clientData.getResponse().postBodyResponse(clientData)){
-				return (1);
-			}
-			return (1); // the body complite
+			// if (clientData.getResponse().postBodyResponse(clientData)){
+			// 	return (1);
+			// }
+			// return (1); // the body complite
 		}
 		return (0);
 	}

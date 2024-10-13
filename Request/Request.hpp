@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/12 15:23:48 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/13 14:47:40 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ enum TypeTransf{
 
 class Request{
     private:
+        bool finishReading;
         bool compliteHeaderparser;
         std::string locationName;
         std::string pathName;
@@ -61,6 +62,7 @@ class Request{
         ~Request();
 
 
+        bool getFinishReading();
         int requestParserStart(Client &clientData);
         void setpathName(std::string _Name);
         std::string getpathName( void );

@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/07 09:49:44 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/10 21:03:41 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/13 18:32:09 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,11 +40,11 @@ int Request::ParsePostHeaders(){
 int Request::parseBodyTypeBuffer(std::string &bufferedBody){
 	if (!this->TransferCoding.empty()){
 		if (this->TransferCoding == "chunked"){
-			if (bufferedBody.find("0\r\n\r\n") != std::string::npos){
+			if (bufferedBody.find("0\r\n") != std::string::npos){
 				this->bodyType = ENCODING;
 				return (1);
 			}
-			else if (this->bodybuffer.find("0\r\n\r\n") != std::string::npos){
+			else if (this->bodybuffer.find("0\r\n") != std::string::npos){
 				this->bodyType = ENCODING;
 				return (1);
 			}
