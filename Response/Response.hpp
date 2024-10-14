@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/12 22:46:37 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/14 18:30:54 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include <ctime>
 #include "../Request/Request.hpp"
 #include <exception>
+#include <fstream>
+
 
 class Client;
 
@@ -29,6 +31,8 @@ class Response{
 		std::string bodyResponse;
 
 		// for Post Body
+		std::ofstream file;
+		std::string bFullPath;
 		std::string finaleBody;
 		std::string bhCtDisposition;
 		std::string bhConetentType;
@@ -59,6 +63,7 @@ class Response{
 		int parseChunkedPart(std::string chunk, Client &clientdata);
 		int parseBodyHeaders(std::string header);
 		int openFile(Client &clientDatat);
+		int checkforValidField();
 		int writeChunkinfile(Client &clientData);
 		int parseBoundarybody(std::string &body);
 		int hexaToDecima(std::string hexa);

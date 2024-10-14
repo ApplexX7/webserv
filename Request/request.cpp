@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/13 18:42:49 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/14 17:52:30 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,6 +215,7 @@ int Request::ParsingTheRequest(Client &ClientData){
 	}
 	size_t headerEnd = ClientData.getMessage().find("\r\n\r\n");
 	if (headerEnd != std::string::npos){
+		ClientData.getMessage().erase(0, ClientData.getMessage().find("\r\n\r\n") + 4);
     	this->compliteHeaderparser= true;
 	}
 	if (this->methode == "GET" && this->compliteHeaderparser){
@@ -241,14 +242,12 @@ int Request::requestParserStart(Client &clientData){
 	if (this->methode == "POST" && this->compliteHeaderparser){
  		this->bodybuffer += clientData.getMessage();
 		if (this->parseBodyTypeBuffer(this->bodybuffer)){
-			std::cout << this->bodybuffer << std::endl;
 			//complite the body parser;
-			// std::cout << this->bodyType << std::endl;
 			this->finishReading = true;
 			std::cout << "Complite the body  read\n\n\n\n\n " << std::endl;
-			// if (clientData.getResponse().postBodyResponse(clientData)){
-			// 	return (1);
-			// }
+			if (clientData.getResponse().postBodyResponse(clientData)){
+				return (1);
+			}
 			// return (1); // the body complite
 		}
 		return (0);

@@ -6,11 +6,43 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/13 14:22:55 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/14 18:40:23 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
+
+int Response::openFile(Client &clientData){
+	if (!clientData.getRequest().getlocationName().empty()){
+		this->bFullPath = clientData.getRequest().getserverNode().getLocations()[clientData.getRequest().getlocationName()].getField("root").getValues()[0] + this->fileName;
+	}
+	else{
+		this->bFullPath = clientData.getRequest().getserverNode().getFields()["root"].getValues()[0];
+	}
+	this->file.open(this->bFullPath, std::ios::binary);
+	if (!this->file.good()){
+		std::cerr << "Error: Failed to create the file"<< std::endl;
+		return (1);
+	}
+	return (0);
+}
+
+
+
+int Response::writeChunkinfile(Client &clientdata){
+	if (this->openFile(clientdata)){
+		// failed to open file;
+		return (1);
+	}
+
+	this->file.write(this->finaleBody.c_str(), this->finaleBody.size());
+	if (!this->file){
+		std::cerr << "Error: failed to write in file"<< std::endl;
+		return (1);
+	}
+	return (0);
+}
+
 
 int Response::parseBodyHeaders(std::string header){
 	size_t pos = 0;
@@ -49,12 +81,6 @@ int Response::parseBodyHeaders(std::string header){
 			this->bhConetentType.erase(remove(this->bhConetentType.begin(), this->bhConetentType.end(), ' '), this->bhConetentType.end());
 		}
 	}
-	std::cout  << "****************************************" << std::endl;
-	std::cout << this->bhCtDisposition << std::endl;
-	std::cout << this->bhName << std::endl;
-	std::cout << this->bhFileName << std::endl;
-	std::cout << this->bhConetentType << std::endl;
-	std::cout  << "****************************************" << std::endl;
 	return (0);
 }
 
@@ -89,6 +115,15 @@ int Response::parseChunkedPart(std::string chunk, Client &clientdata){
 	return (0);
 }
 
+int Response::checkforValidField(){
+	if (this->bhFileName.empty()){
+		return (1);	
+	}
+	else if (this->bhName.empty()){
+		return (1);
+	}
+	return (0);
+}
 
 int Response::parseChunckedType(std::string &body, Client &clientdata){
 	size_t pos = 0;
@@ -101,23 +136,46 @@ int Response::parseChunckedType(std::string &body, Client &clientdata){
 
 	while (getline(ss, line)){
 		sizeofchunk = this->hexaToDecima(line);
-		if (!sizeofchunk || (line.find(endBoundary) != std::string::npos))
+		std::cout << line <<std::endl;
+		std::cout <<   sizeofchunk << std::endl;
+		if (!sizeofchunk || (line.find(endBoundary) != std::string::npos)){
+			std::cout << "Not Yet" <<  std::endl;
 			break;
+		}
 		std::string buffer(sizeofchunk, '\0');
 		byteread = ss.read(&buffer[0], sizeofchunk).gcount();
 		if (byteread <= 0)
 			break;
 		if ((pos = buffer.find(startBoundary, pos)) != std::string::npos){
 			if (!this->finaleBody.empty()){
-				std::cout << "**********************" << std::endl;
-				std::cout << finaleBody << std::endl;
-				std::cout << "**********************" << std::endl;
+				this->finaleBody.resize(this->finaleBody.length() - 2);
+				if (this->checkforValidField())
+					//content that don't have do i need to ignore him or store them on session??;
+					;
+				else {
+					this->writeChunkinfile(clientdata);
+				}
+				// go complite Post work
 				this->finaleBody.clear();
 			}
 			this->parseBodyHeaders(buffer.substr(startBoundary.length() + 2, buffer.find("\r\n\r\n")));
-			buffer.erase(buffer.find("\r\n\r\n") + 4);
+			buffer.erase(pos, buffer.find("\r\n\r\n") + 4);
+			if ((pos = buffer.find(endBoundary) != std::string::npos)){
+				buffer = buffer.substr(0, buffer.find(endBoundary) - 2);
+				this->finaleBody += buffer;
+				break;
+			}
 		}
 		this->finaleBody += buffer;
+	}
+	if (!this->finaleBody.empty()){
+		if (this->checkforValidField())
+			//content that don't have do i need to ignore him or store them on session??;
+			;
+		else {
+			this->writeChunkinfile(clientdata);
+		}
+		// go complite Post work
 	}
 	return (0);
 }
