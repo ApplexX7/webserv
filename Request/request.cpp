@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 13:02:29 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/15 13:28:16 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,7 +124,7 @@ int Request::ParseRequestLine(std::string &RqLine, Client &ClientData){
 	}
 	// check the Uri
 	pos = RequestLineChunks[1].find("?");
-	if (pos != std::string::npos){
+	if (pos != std::string::npos) {
 		this->Uri = RequestLineChunks[1].substr(0, pos);
 		this->quertyString = RequestLineChunks[1].substr(pos + 1);
 	}

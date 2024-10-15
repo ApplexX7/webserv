@@ -6,11 +6,12 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 13:26:39 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/15 14:32:33 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
+#include "../parsing/Parser.hpp"
 
 void initializeStatusTexts(std::map<int, std::string>& statusTexts) {
 	// 1xx
@@ -66,6 +67,7 @@ Response::Response(){
 	this->contentLength = 0;
 	this->bytesSent = 0;
 	this->rangeStart = 0;
+	this->isError = false;
 }
 
 
@@ -124,6 +126,7 @@ std::string Response::getFullPath( std::string path ) {
 	else
 	{
 		location = &locations[path];
+		this->location = location;
 		root = locations[path].getField("root").getValues()[0];
 	}
 	fullPath = root + path;
@@ -392,6 +395,7 @@ void Response::reset( void ) {
 	this->status = IDLE;
 	this->file.close();
 	this->path = "";
+	this->isError = false;
 }
 
 void Response::extractRange( void ) {
@@ -471,9 +475,72 @@ std::string Response::createGetResponse( void ) {
 
 	} catch (ResponseException e) {
 		this->status = FINISHED;
+		if (!this->isError)
+			this->getErrorResponse();
 		std::cout << "Something went wrong with response: " << e.what() << std::endl;
 	}
 	return this->constructHeader();
+}
+
+void printVector(std::vector<std::string> arr) {
+	std::cout << "[";
+	for (int i = 0; i < (int) arr.size(); i++) {
+		std::cout << arr[i];
+
+		if (!(i == (int) arr.size() - 1))
+			std::cout << ", ";
+	}
+	std::cout << "]\n";
+}
+
+Location *Response::getPathLocation(std::string path) {
+	ServerNode &server = this->client->getParentServer();
+	std::map<std::string, Location> &locations = server.getLocations();
+
+	if (locations.find(path) != locations.end())
+		return &locations[path];
+	return NULL;
+}
+
+std::string Response::getErrorResponse( void ) {
+	/* 
+		steps:
+			- look for error directive value
+			- look for corresponding location
+			- if no location found, use my default
+	*/
+
+	// int status = this->statusCode;
+	// Location *location = NULL;
+	std::vector<std::string> errorField;
+	std::vector<std::string> errorPages;
+	std::string path = "";
+	bool found = false;
+
+	if (this->location)
+	{
+		errorPages = this->location->getField("error_page").getValues();
+	}
+	errorField = this->client->getParentServer().getField("error_page").getValues();
+	errorPages.insert(errorPages.end(), errorField.begin(), errorField.end());
+	
+	for (int i = 0; i < (int) errorPages.size(); i++) {
+		if (Parser::isNumber(errorPages[i]))
+		{
+			if (std::stoi(errorPages[i]) == this->statusCode)
+				found = true;
+		}
+		else {
+			if (found) {
+				path = errorPages[i];
+				break ;
+			}
+		}
+	}
+	this->client->getRequest().SetUri(path);
+	this->isError = true;
+
+	return this->createGetResponse();
 }
 
 Response::~Response(){

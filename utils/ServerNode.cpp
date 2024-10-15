@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerNode.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/15 11:28:53 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/15 13:58:43 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,9 @@ void ServerNode::initializeServer( ListNode* server ) {
                 // check for status code format in case of error pages
                 if (splitField[0] == "error_page")
                 {
+                    if (j == (int) splitField.size() - 1
+                    && Parser::isNumber(splitField[j]))
+                        throw Parser::ParsingException("Invalid path for error pages");
                     if (j < (int) splitField.size() - 1
                     && !Parser::isNumber(splitField[j]))
                         throw Parser::ParsingException("Status code must be numeric");
@@ -153,7 +156,6 @@ void setAllowedFields( ServerNode* server ) {
     server->allowedLocationFields.push_back("autoindex");
     server->allowedLocationFields.push_back("file_upload");
     server->allowedLocationFields.push_back("error_page");
-    
 }
 
 ServerNode::ServerNode( ListNode *server ) {

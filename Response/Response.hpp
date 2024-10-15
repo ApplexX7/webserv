@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 11:49:37 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/15 14:17:20 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,7 @@ class Response {
         unsigned long bytesSent;
         Location *location;
         unsigned long rangeStart;
+        bool isError;
 
         std::string path;
 
@@ -139,6 +140,8 @@ class Response {
         // response handlers
         std::string constructHeader( void );
         std::string createGetResponse( void );
+        std::string getErrorResponse( void );
+        Location* getPathLocation( std::string );
 
         // Post Response;
         int postBodyResponse(Client &clientData);
