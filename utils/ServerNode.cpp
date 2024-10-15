@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/15 15:18:10 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/15 17:23:11 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ void ServerNode::initializeServer( ListNode* server ) {
     std::vector<std::string> splitField;
     std::string path;
     std::string trimedField;
+    int end;
 
     ListNode *child = server->getChild();
 
@@ -81,6 +82,21 @@ void ServerNode::initializeServer( ListNode* server ) {
             throw Parser::ParsingException("Expected location directive but got \"" + splitField[0] + "\"");
 
         path = splitField[1];
+        
+        if (path != "/")
+        {
+            end = path.length() - 1;
+            for (int i = end; i >= 0; i--) {
+                if (path[i] != '/')
+                {
+                    end = i + 1;
+                    break;
+                }
+            }
+
+            path = path.substr(0, end);
+        }
+
 
         if (this->locationExists(path))
             throw Parser::ParsingException("Duplicate locations for path " + path);
@@ -115,11 +131,6 @@ void ServerNode::initializeServer( ListNode* server ) {
             }
 
             Parser::validateField(splitField[0], this->locations[path].getField(splitField[0]).getValues());
-        }
-        if (this->locations.find(path) == this->locations.end())
-        {
-            // location has no directives
-            this->locations[path] = NULL;
         }
         this->locations[path].setServer(this);
         child = child->getNext();

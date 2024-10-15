@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/07 14:15:55 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/11 09:42:41 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/15 17:20:08 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,10 @@ void ListNode::addField( std::string field )
 std::string ListNode::getContent( void )
 {
     return this->content;
+}
+
+void ListNode::setContent( std::string content ) {
+    this->content = content;
 }
 
 ListNode* ListNode::getNext( void )
