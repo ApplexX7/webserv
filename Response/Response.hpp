@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 11:26:13 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/15 11:49:37 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,16 @@ class Response {
 
         Client *client;
 
+        // for Post Body
+        std::ofstream outFile;
+        std::string bFullPath;
+        std::string finaleBody;
+        std::string bhCtDisposition;
+        std::string bhConetentType;
+        std::string bhName;
+        std::string bhFileName;
+        std::string ContentType;
+
         bool checkPath( void );
         std::string getFullPath( std::string );
 
@@ -129,6 +139,18 @@ class Response {
         // response handlers
         std::string constructHeader( void );
         std::string createGetResponse( void );
+
+        // Post Response;
+        int postBodyResponse(Client &clientData);
+        int parseBoundaryPart(std::string body, Client & clientDatat);
+        int parseChunckedType(std::string &body, Client & clientdata);
+        int parseChunkedPart(std::string chunk, Client &clientdata);
+        int parseBodyHeaders(std::string header);
+        int openFile(Client &clientDatat);
+        int checkforValidField();
+        int writeChunkinfile(Client &clientData);
+        int parseBoundarybody(std::string &body);
+        int hexaToDecima(std::string hexa);
 
         // exceptions
         class ResponseException: public std::exception {

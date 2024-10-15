@@ -6,13 +6,20 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 11:12:04 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/15 12:15:33 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 
 Request::Request(){
+	this->finishReading = false;
+	this->compliteHeaderparser = false;
+	this->bodyType = NONE;
+}
+
+bool Request::getFinishReading(){
+	return (this->finishReading);
 }
 
 Request::Request(const Request &obj){
@@ -36,10 +43,6 @@ void Request::setHeaders(std::string &name, std::string &value){
 	// std:: cout << "******"<< "*****" << std::endl;
 	// std::cout << name << " : " << value << std::endl;
 	// std:: cout << "******"<< "*****" << std::endl;
-}
-
-void Request::setBody(std::string _Body){
-	this->body = _Body;
 }
 
 void Request::printmap(){
@@ -159,26 +162,26 @@ int Request::findLocationtobeUsed(){
 }
 
 std::string Request::FindHost(std::string HostLine){
-	size_t pos;
-	std::string Host;
-
-	pos = HostLine.find("Host: ");
-	if (pos != std::string::npos){
-		Host = HostLine.substr(pos + 1);
-		Host.erase(std::remove_if(Host.begin(), Host.end(), ::isspace), Host.end());
-		pos = Host.find(":");
-		if (pos != std::string::npos){
-			Host = Host.substr(0, pos);
-			this->port = Host.substr(pos + 1);
-		}
-		else
-			this->port = "DEFAULT"; // temporary;
-		return (Host);
-	}
-	return ("");
+    size_t pos = HostLine.find("Host:");
+    if (pos != std::string::npos){
+        std::string hostPort = HostLine.substr(pos + 5);
+        hostPort.erase(std::remove_if(hostPort.begin(), hostPort.end(), ::isspace), hostPort.end());
+        size_t colonPos = hostPort.find(":");
+        if (colonPos != std::string::npos){
+            this->port = hostPort.substr(colonPos + 1);
+            return hostPort.substr(0, colonPos);
+        }
+        this->port = "DEFAULT";
+        return hostPort;
+    }
+    return "";
 }
 
-int Request::ParsingTheRequest(Client &ClientData){
+std::string Request::getlocationName(){
+	return (this->locationName);	
+}
+
+int Request::ParsingTheRequest(Client &ClientData) {
 	size_t pos;
 	std::string name;
 	std::string Value;
@@ -192,7 +195,7 @@ int Request::ParsingTheRequest(Client &ClientData){
 	}
 	// headers parsing;
 	while (std::getline(Message, ChunkLine)){
-		if (ChunkLine == "\r")
+		if (ChunkLine == "\r" || ChunkLine.empty())
 			break;
 		pos = ChunkLine.find(':');
 		if (pos == std::string::npos){
@@ -210,19 +213,68 @@ int Request::ParsingTheRequest(Client &ClientData){
 		Value.erase(std::remove_if(Value.begin(),Value.end(), ::isspace), Value.end());
 		if (Value.empty() || name.empty()){
 			ClientData.getResponse().setStatusCode(400);
+			return (1);
 		}
 		this->setHeaders(name, Value);
 	}
-	if (this->methode == "GET"){
+	size_t headerEnd = ClientData.getMessage().find("\r\n\r\n");
+	if (headerEnd != std::string::npos){
+		ClientData.getMessage().erase(0, ClientData.getMessage().find("\r\n\r\n") + 4);
+    	this->compliteHeaderparser= true;
+	}
+	if (this->methode == "GET" && this->compliteHeaderparser){
 		// this->CheckDirectory(ClientData);
-		//pass to the  getresponse
+		//pass to the  get response
+		this->finishReading = true;
 		return (0);
 	}
-	else if (this->methode == "POST"){
-		this->ParsePostHeaders();
+	else if (this->methode == "POST" && this->compliteHeaderparser){
+		if (this->ParsePostHeaders())
+			return (1);
 	}
-	// body part
 	return 0;
+}
+
+
+// this funct need to be modified later
+int Request::requestParserStart(Client &clientData) {
+	// parse tell the  body;
+	if (!this->compliteHeaderparser && this->ParsingTheRequest(clientData)){
+		// problem in teh request pass to the repsonse
+		return (1);
+	}
+	// waiting to  teh body get complite
+	if (this->methode == "POST" && this->compliteHeaderparser){
+ 		this->bodybuffer += clientData.getMessage();
+		if (this->parseBodyTypeBuffer(this->bodybuffer)){
+			//complite the body parser;
+			this->finishReading = true;
+			std::cout << "Complite the body  read\n\n\n\n\n " << std::endl;
+			if (clientData.getResponse().postBodyResponse(clientData)) {
+				return (1);
+			}
+			// return (1); // the body complite
+		}
+		return (0);
+	}
+	return (0);
+}
+
+
+std::string Request::getTransferCoding(){
+	return (this->TransferCoding);
+}
+
+std::string Request::getEndofBoundary(){
+	return (this->startofBoundary);
+}
+
+std::string Request::getStartBoundary(){
+	return (this->startofBoundary);
+}
+
+TypeTransf  Request::getTheBodyType(){
+	return (this->bodyType);
 }
 
 void Request::setserverNode(ServerNode *_ServerNode){
@@ -258,8 +310,8 @@ std::string Request::getValue(std::string _Key){
 		return ("");
 }
 
-std::string Request::getBody(){
-	return (this->body);
+std::string& Request::getBody(){
+	return (this->bodybuffer);
 }
 
 void Request::Setmethode(std::string _methode){

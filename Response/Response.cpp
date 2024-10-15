@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 11:36:07 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/15 12:15:37 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,11 +81,6 @@ void Response::setMap(std::string _name, std::string _Value){
 	this->ResponseMeth[_name] = _Value;
 }
 
-Response::Response(const Response &Obj){
-	this->mimeTypes = Obj.mimeTypes;
-	this->ResponseMeth = Obj.ResponseMeth;
-}
-
 Response& Response::operator=(const Response &Obj){
 	if (this != &Obj){
 		this->ResponseMeth = Obj.ResponseMeth;
@@ -133,7 +128,7 @@ std::string Response::getFullPath( std::string path ) {
 	}
 	fullPath = root + path;
 
-	std::cout << "FULL PATH: " << fullPath << std::endl;
+	// std::cout << "FULL PATH: " << fullPath << std::endl;
 
 	this->setPath(fullPath);
 
@@ -307,6 +302,8 @@ std::string Response::constructHeader( void ) {
 	header += "Date: " + getDateResponse() + "\r\n";
 	header += "\r\n";
 
+	// std::cout << "HEADER: \n" << header << std::endl;
+
 	return header;
 }
 
@@ -411,6 +408,7 @@ void Response::extractRange( void ) {
 		exit(0);
 	}
 	this->contentLength -= this->rangeStart;
+	std::cout << "RANGE: " << this->rangeStart << std::endl;
 }
 
 std::string Response::createGetResponse( void ) {
@@ -440,6 +438,8 @@ std::string Response::createGetResponse( void ) {
 					// this is a file, set status to ONGOING to start sending chunks
 					this->status = ONGOING;
 					this->body = "";
+
+					// std::cout << "HERE" << std::endl;
 
 					// extract range from header
 					this->extractRange();

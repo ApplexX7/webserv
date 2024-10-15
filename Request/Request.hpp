@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/09 12:29:04 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/13 14:47:40 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,17 @@
 
 class Client;
 
+enum TypeTransf{
+    NONE,
+    BOUNDARY,
+    FIXEDSIZE,
+    ENCODING,
+};
+
 class Request{
     private:
+        bool finishReading;
+        bool compliteHeaderparser;
         std::string locationName;
         std::string pathName;
         std::string quertyString;
@@ -37,10 +46,11 @@ class Request{
         std::string methode;
         std::string Uri;
         std::map<std::string,std::string> headers;
-        std::string body;
+        std::string bodybuffer;
 
-
+        // for the Post Methode
         int contentLenght;
+        TypeTransf bodyType;
         std::string contentType;
         std::string startofBoundary;
         std::string endofBoundary;
@@ -51,9 +61,11 @@ class Request{
         Request& operator=(const Request &ope);
         ~Request();
 
+
+        bool getFinishReading();
+        int requestParserStart(Client &clientData);
         void setpathName(std::string _Name);
         std::string getpathName( void );
-        void setBody(std::string _Body);
         void setHeaders(std::string &name, std::string &value);
         void Setmethode(std::string _metode);
         void setport(std::string _port);
@@ -66,7 +78,11 @@ class Request{
         ServerNode &getserverNode() const;
         int Validmethode(std::string &methode);
         std::string FindHost(std::string HostLine);
-
+        TypeTransf getTheBodyType();
+        std::string getcontentType();
+        std::string getStartBoundary();
+        std::string getEndofBoundary();
+        std::string getTransferCoding();
         int findLocationtobeUsed();
         //checkhostName
         int CheckserverhostName(Client& ClientData);
@@ -76,14 +92,15 @@ class Request{
         void sethostName(std::string _hostName);
         // POST parse Body
         int ParsePostHeaders();
-
+        int parseBodytype();
+        int parseBodyTypeBuffer(std::string &bufferedBody);
     
         std::string  getport();
         std::string gethostName();
         std::string getValue(std::string _Key);
         std::string getmethode();
         std::string getUri();
-        std::string getBody();
+        std::string &getBody();
         std::map<std::string,std::string> getHeaders( void );
 
         //parsing the request;

@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/15 11:32:42 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/15 12:17:39 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,7 +167,7 @@ void Webserv::listen( void ) {
     }
 
     while (1) {
-        if (poll(fds.data(), fds.size(), 100) > 0) {
+        if (poll(fds.data(), fds.size(), 100) >= 0) {
             for (int i = 0; i < (int) fds.size(); i++)
             {
                 if (fds[i].revents & POLLHUP)
@@ -195,34 +195,46 @@ void Webserv::listen( void ) {
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLIN)
                 {
-                    int bytes_read;
+                    int bytes_read = 0;
                     bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, MSG_EOF);
-
                     if (bytes_read == -1)
                     {
                         std::cout << "error reading" << std::endl;
+                        bytes_read = 0;
                     }
-
-                    else if (bytes_read < CHUNK_SIZE)
-                    {
-                        buf[bytes_read] = 0;
-                        message.assign(buf);
-                        clients[fds[i].fd]->appendMessage(message);
-
-                        std::cout << clients[fds[i].fd]->getMessage() << std::endl;
-
                         
-                        clients[fds[i].fd]->getRequest().ParsingTheRequest(*clients[fds[i].fd]);
+                    buf[bytes_read] = 0;
+
+                    
+                    // std::cout << "RECEIVED :\n" << buf << std::endl;
+                    message.assign(buf);
+                    
+                    clients[fds[i].fd]->setMessage(buf);
+                    clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
+                    // std::cout << "FINISHED: " << clients[fds[i].fd]->getRequest().getFinishReading() << std::endl;
+                    // std::cout << "BUFF: " << buf << std::endl;
+                    
+                    if ((*clients[fds[i].fd]).getRequest().getFinishReading())
+                    {
+                        // std::cout << buf << std::endl;
+                        // std::cout << "***************" << std::endl;
+                        // message.assign(buf);
+                        // std::cout << "RECEIVED 2 :\n" << buf << std::endl;
+                        // clients[fds[i].fd]->appendMessage(buf);
+                        std::cout << "client finished writing, full message:" << std::endl;
+
+
+                        clients[fds[i].fd]->findParentServer();
 
                         // std::vector<std::string> vals = clients[fds[i].fd]->getParentServer().getField("listen").getValues();
 
-                        fds[i].events = POLLOUT | POLLHUP;
-                    }
-                    else
-                    {
-                        buf[bytes_read] = 0;
-                        message.assign(buf);
-                        clients[fds[i].fd]->appendMessage(message);
+                        // std::cout << "Parent server " << (clients[fds[i].fd]->getParentServer().getField("listen").getValues() != NULL ? "YES" : "None") << std::endl;
+                        // clients[fds[i].fd]->getParentServer();
+                        
+                        fds[i].events = POLLOUT;
+                        // printf("hello\n");
+                        
+                        // todo: parse request and generate response using client.handle_request
                     }
                 }
                 else if (!isServerFd(serverFds, fds[i].fd)
@@ -231,6 +243,7 @@ void Webserv::listen( void ) {
                     clients[fds[i].fd]->findParentServer();
 
                     // send response
+                    
                     std::string res = clients[fds[i].fd]->getResponse().createGetResponse();
 
                     send(fds[i].fd, res.data(), res.size(), MSG_SEND);
@@ -254,11 +267,9 @@ void Webserv::listen( void ) {
                             fds.erase(fds.begin() + i);
                         }
                     }
-                }
-
-                
             }
         }
+    }
     }
 }
 
