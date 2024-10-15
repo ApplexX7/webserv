@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 12:15:33 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/15 13:02:29 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,9 +40,6 @@ void Request::setHeaders(std::string &name, std::string &value){
 	} else {
 		std::cerr << "Error: Header name or value is empty!" << std::endl;
 	}
-	// std:: cout << "******"<< "*****" << std::endl;
-	// std::cout << name << " : " << value << std::endl;
-	// std:: cout << "******"<< "*****" << std::endl;
 }
 
 void Request::printmap(){

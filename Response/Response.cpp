@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 12:15:37 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/15 13:26:39 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,6 +146,11 @@ std::string Response::getFullPath( std::string path ) {
 
 	if (S_ISDIR(fileStat.st_mode)) {
 		
+		if (path[path.length() - 1] != '/')
+			fullPath += "/";
+
+		fullPath += "index.html";
+
 		// is dir
 		if (location) {
 			// path matches a location
@@ -155,14 +160,23 @@ std::string Response::getFullPath( std::string path ) {
 			autoIndex = server.getField("autoindex").getValues()[0] == "on";
 		}
 
-		if (path[path.length() - 1] != '/')
-			fullPath += "/";
-
-		if (autoIndex)
-			fullPath += "index.html";
+		try {
+			this->setPath(fullPath);
+			this->checkPath();
+		} catch (Response::ResponseException e) {
+			
+			// index doesn't exist or not enough permissions
+			if (autoIndex) {
+				fullPath = root + path;
+				this->setPath(fullPath);
+			}
+			else {
+				this->setStatusCode(FORBIDDEN);
+				throw Response::ResponseException("Forbidden Resource");
+			}
+		}
+		
 	}
-	this->setPath(fullPath);
-	this->checkPath();
 	stat(fullPath.data(), &fileStat);
 	if (!S_ISDIR(fileStat.st_mode)) {
 		this->contentLength = fileStat.st_size;
@@ -377,6 +391,7 @@ void Response::reset( void ) {
 	this->statusCode = SUCCESS;
 	this->status = IDLE;
 	this->file.close();
+	this->path = "";
 }
 
 void Response::extractRange( void ) {
@@ -413,6 +428,7 @@ void Response::extractRange( void ) {
 
 std::string Response::createGetResponse( void ) {
 	std::string path = this->client->getRequest().getUri();
+	std::cout << "URI: " << path << std::endl;
 	std::string chunk;
 
 	try {
@@ -426,7 +442,7 @@ std::string Response::createGetResponse( void ) {
 			if (this->status == IDLE) {
 				this->checkAllowedMethod(path);
 				this->getFullPath(path);
-
+				std::cout << "PATH: " << this->getPath() << std::endl;
 				// empty filename means it's a dir
 				if (this->fileName == "") {
 					this->body = getDirectoryLinks(this->path, path);
