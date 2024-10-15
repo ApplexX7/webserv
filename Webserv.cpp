@@ -6,15 +6,17 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/08 16:32:03 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/13 13:30:40 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
 
-# define CHUNK_SIZE 1024
+# define CHUNK_SIZE 12000
 
-Webserv::Webserv( void ) {}
+Webserv::Webserv( void ) {
+    this->listHead = NULL;
+}
 
 void printChilds( ListNode *child)
 {
@@ -83,43 +85,38 @@ void Webserv::init( std::string configPath ) {
         throw Parser::ParsingException("Invalid server block name");
 
     tmp = head;
-    try
-    {
-        while (tmp) {
-            // printServerNode(tmp);
-            this->servers.push_back(new ServerNode(tmp));
+    
+    
+    while (tmp) {
+        // printServerNode(tmp);
+        this->servers.push_back(new ServerNode(tmp));
 
-            // check servername conflicts
-            for (int i = 0; i < (int) this->servers.size() - 1; i++) {
-                // check if there's a server with the same host:port
-                listenValue = this->servers[this->servers.size() - 1]->getField("listen").getValues()[0];
-                otherListenValue = this->servers[i]->getField("listen").getValues()[0];
-                
-                
-                // same host:port
-                if (listenValue == otherListenValue) {
-                        // check server_names
-                        serverNames = this->servers[this->servers.size() - 1]->getField("server_name").getValues();
-                        otherServerNames = this->servers[i]->getField("server_name").getValues();
-                        
-                        for (int j = 0; j < (int) serverNames.size(); j++) {
-                            if (std::find(otherServerNames.begin(), otherServerNames.end(), serverNames[j]) != otherServerNames.end())
-                            {
-                                // conflicting server name
-                                std::cout << "[WARN] Conflicting server name \"" << serverNames[j] << "\" at " << listenValue << std::endl;
-                            }
+        // check servername conflicts
+        for (int i = 0; i < (int) this->servers.size() - 1; i++) {
+            // check if there's a server with the same host:port
+            listenValue = this->servers[this->servers.size() - 1]->getField("listen").getValues()[0];
+            otherListenValue = this->servers[i]->getField("listen").getValues()[0];
+            
+            
+            // same host:port
+            if (listenValue == otherListenValue) {
+                    // check server_names
+                    serverNames = this->servers[this->servers.size() - 1]->getField("server_name").getValues();
+                    otherServerNames = this->servers[i]->getField("server_name").getValues();
+                    
+                    for (int j = 0; j < (int) serverNames.size(); j++) {
+                        if (std::find(otherServerNames.begin(), otherServerNames.end(), serverNames[j]) != otherServerNames.end())
+                        {
+                            // conflicting server name
+                            std::cout << "[WARN] Conflicting server name \"" << serverNames[j] << "\" at " << listenValue << std::endl;
                         }
-                }
+                    }
             }
-
-            tmp = tmp->getNext();
         }
-        // std::cout << "ALL GOOD" << std::endl;
+
+        tmp = tmp->getNext();
     }
-    catch(const std::exception& e)
-    {
-        std::cerr << "Config file error: " << e.what() << std::endl;
-    }
+    // std::cout << "ALL GOOD" << std::endl;
 }
 
 Webserv::~Webserv( void ) {
@@ -131,7 +128,7 @@ Webserv::~Webserv( void ) {
         delete this->servers[i];
     }
 
-    // std::cout << "FREED" << std::endl;
+    std::cout << "WEBSERV DESTRUCTOR CALLED" << std::endl;
 }
 
 bool isServerFd(std::vector<int> serverFds, int fd) {
@@ -152,7 +149,7 @@ void Webserv::listen( void ) {
     struct sockaddr_storage their_addr;
     socklen_t addr_size;
     int new_fd;
-    char buf[CHUNK_SIZE];
+    char buf[CHUNK_SIZE + 1];
 
     addr_size = sizeof(their_addr);
 
@@ -173,11 +170,14 @@ void Webserv::listen( void ) {
         if (poll(fds.data(), fds.size(), 100) > 0) {
             for (int i = 0; i < (int) fds.size(); i++)
             {
-
-                if(fds[i].revents & POLLHUP)
+                if (fds[i].revents & POLLHUP)
                 {
-                    fds.erase(fds.begin() + i);
                     std::cout << "client disconnected " << fds[i].fd << std::endl;
+                    delete clients[fds[i].fd];
+                    close(fds[i].fd);
+                    clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
+                    fds.erase(fds.begin() + i);
+                    continue ;
                 }
 
                 if (fds[i].revents & POLLIN
@@ -199,66 +199,62 @@ void Webserv::listen( void ) {
                     bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, MSG_EOF);
 
                     if (bytes_read == -1)
+                    {
                         std::cout << "error reading" << std::endl;
+                        exit(0);
+                    }
 
                     else if (bytes_read < CHUNK_SIZE)
                     {
                         buf[bytes_read] = 0;
-                        // std::cout << buf << std::endl;
                         message.assign(buf);
-                        clients[fds[i].fd]->appendMessage(buf);
-                        std::cout << "client finished writing, full message:" << std::endl;
+                        clients[fds[i].fd]->appendMessage(message);
 
                         std::cout << clients[fds[i].fd]->getMessage() << std::endl;
-                        clients[fds[i].fd]->getRequest().ParsingTheRequest(*clients[fds[i].fd]);
 
-                        clients[fds[i].fd]->findParentServer();
+                        
+                        clients[fds[i].fd]->getRequest().ParsingTheRequest(*clients[fds[i].fd]);
 
                         // std::vector<std::string> vals = clients[fds[i].fd]->getParentServer().getField("listen").getValues();
 
-                        // std::cout << "Parent server " << (clients[fds[i].fd]->getParentServer().getField("listen").getValues() != NULL ? "YES" : "None") << std::endl;
-                        clients[fds[i].fd]->getParentServer();
-
-                        
-                        fds[i].events = POLLOUT;
-
-                        // todo: parse request and generate response using client.handle_request
+                        fds[i].events = POLLOUT | POLLHUP;
                     }
                     else
                     {
                         buf[bytes_read] = 0;
-                        // std::cout << buf << std::endl;
                         message.assign(buf);
-                        clients[fds[i].fd]->appendMessage(buf);
+                        clients[fds[i].fd]->appendMessage(message);
                     }
                 }
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLOUT)
                 {
-                    std::cout << "Client ready to receive" << std::endl;
+                    clients[fds[i].fd]->findParentServer();
 
-                    // todo: send response
+                    // send response
                     std::string res = clients[fds[i].fd]->getResponse().createGetResponse();
-                    
-                    std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
+
+                    send(fds[i].fd, res.data(), res.size(), MSG_SEND);
+                    // std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
+
                     // reset message 
                     clients[fds[i].fd]->setMessage("");
 
                     std::string connection = clients[fds[i].fd]->getRequest().getValue("Connection");
-
-                    // todo: check if connection is keep-alive
-
-                    if (connection == "keep-alive") {
-                        fds[i].events = POLLIN | POLLHUP;
+                    
+                    if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
+                        if (connection == "keep-alive"
+                        && clients[fds[i].fd]->getResponse().getStatusCode() < 400) {
+                            fds[i].events = POLLIN | POLLHUP;
+                            clients[fds[i].fd]->getResponse().reset();
+                        }
+                        else {
+                            delete clients[fds[i].fd];
+                            close(fds[i].fd);
+                            clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
+                            fds.erase(fds.begin() + i);
+                        }
                     }
-                    else {
-                        delete clients[fds[i].fd];
-                        close(fds[i].fd);
-                        clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
-                        fds.erase(fds.begin() + i);
-                    }
-
-
                 }
 
                 

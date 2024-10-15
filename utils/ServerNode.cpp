@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerNode.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/07 12:08:36 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/13 09:06:35 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,11 +57,20 @@ void ServerNode::initializeServer( ListNode* server ) {
     }
 
     // if server has no listen directive
-    if (this->fields.find("listen") == this->fields.end())
+    if (!this->fieldExists("listen"))
         this->addField("listen", "0.0.0.0:8000");
     
-    if (this->fields.find("server_name") == this->fields.end())
+    // if server has no server_name
+    if (!this->fieldExists("server_name"))
         this->addField("server_name", "");
+
+    // if server has no root
+    if (!this->fieldExists("root"))
+        this->addField("root", "/Users/wbelfatm");
+
+    // if server has no autoindex
+    if (!this->fieldExists("autoindex"))
+        this->addField("autoindex", "on");
 
     // insert locations
     while (child != NULL)
@@ -135,6 +144,7 @@ void setAllowedFields( ServerNode* server ) {
     server->allowedFields.push_back("server_name");
     server->allowedFields.push_back("client_max_body_size");
     server->allowedFields.push_back("error_page");
+    server->allowedFields.push_back("autoindex");
 
     // allowed location fields
     server->allowedLocationFields.push_back("root");
@@ -194,7 +204,6 @@ bool ServerNode::locationExists( std::string path ) {
 }
 
 bool ServerNode::locationFieldExists( std::string path, std::string key ) {
-    
     std::map<std::string, Field > fields =  this->locations[path].getFields();
 
     if (fields.find(key) != fields.end())
@@ -204,7 +213,6 @@ bool ServerNode::locationFieldExists( std::string path, std::string key ) {
 
 int ServerNode::generateServerFd( void ) {
     std::vector<std::string> splitListen;
-    int status;
     struct addrinfo hints;
     struct addrinfo *servinfo;
     int sockfd;
@@ -214,7 +222,7 @@ int ServerNode::generateServerFd( void ) {
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     // hints.ai_flags = AI_PASSIVE;
-    status = getaddrinfo(splitListen[0].data(), splitListen[1].data(), &hints, &servinfo);
+    getaddrinfo(splitListen[0].data(), splitListen[1].data(), &hints, &servinfo);
     sockfd = socket(PF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
     {

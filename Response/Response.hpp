@@ -6,25 +6,84 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/09 12:31:10 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/15 11:23:16 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #ifndef REPONSE_HPP
 #define REPONSE_HPP
 
 #include <ctime>
 #include "../Request/Request.hpp"
+#include "../utils/Client.hpp"
 #include <exception>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <fstream>
 
-class Response{
+//status Response
+
+//information Response
+#define CONTINUE 100
+#define SWITCHING_PROTOCOLS 101
+#define PROCESSING 102
+#define EARLY_HINTS 103
+
+// Successful response
+#define SUCCESS 200
+#define CREATED 201
+#define ACCEPTED 202
+#define NO_CONTENT 204
+#define PARTIAL_CONTENT 206
+
+//client error response
+#define BAD_REQUEST 400
+#define UNAUTHORIZED 401
+#define FORBIDDEN 403
+#define NOT_FOUND 404
+#define METHOD_NOT_ALLOWED 405
+#define NOT_ACCEPTABLE 406
+#define REQUEST_TIMEOUT 408
+
+// server errors
+#define INTERNAL_SERVER_ERROR 500
+
+
+#define SERVER webserve/1.1
+
+typedef enum e_response_status {
+    IDLE,
+    ONGOING,
+    FINISHED
+} t_response_status;
+
+class Client;
+
+class Response {
     private:
         int statusCode;
         std::string statusLine;
+        std::map<int, std::string> statusTexts;
+        t_response_status status;
+        std::ifstream file;
         std::string fileName;
-        std::map<int, std::string> statusMaps;
-        std::map<std::string, std::string> MIMeType;
-        std::string bodyResponse;
+        std::map<std::string, std::string> ResponseMeth;
+        std::map<std::string, std::string> mimeTypes;
+        std::string body;
+        std::string contentType;
+        unsigned long contentLength;
+        unsigned long bytesSent;
+        Location *location;
+        unsigned long rangeStart;
+
+        std::string path;
+
+        Client *client;
+
+        bool checkPath( void );
+        std::string getFullPath( std::string );
+
     public:
         Response();
         Response(const Response &Obj);
@@ -32,19 +91,60 @@ class Response{
         ~Response();
 
         //seters and geters
-        void setFileName(std::string);
         void setStatusMaps();
+        void setFileName( std::string );
+        void extractFileName( void );
         std::string getFileName( void );
-        void setMap(std::string _name, std::string _Value);
-        void setStatusLine(std::string _Status);
+
+        std::string getBody( void ) const;
+        void setBody( std::string );
+        
         std::string getStatusLine();
+        void setStatusLine(std::string _Status);
+        
         std::map<std::string, std::string> getMap( void ) const;
-        std::string getMIMeType(std::string _Key);
-        void SetStatusCode(int _StatusCode);
-        int GetStatusCode( void );
+        void setMap(std::string _name, std::string _Value);
+        
+        std::string getMimeType(std::string _Key);
+        
+        int getStatusCode( void );
+        void setStatusCode( int );
+        
+        t_response_status getStatus( void ) const;
+        void setStatus( t_response_status );
+
+        Client* getClient( void );
+        void setClient( Client * );
+
+        std::string getPath( void ) const;
+        void setPath( std::string );
+        
+        std::string getContentType( void ) const;
+        void setContentType( std::string );
+
+        // helpers
+        std::string getStatusText( void );
+        std::string getFileChunk( void );
+        bool checkAllowedMethod( std::string );
+        void reset( void );
+        void extractRange( void );
 
         // response handlers
+        std::string constructHeader( void );
         std::string createGetResponse( void );
+
+        // exceptions
+        class ResponseException: public std::exception {
+            private:
+                std::string message;
+
+            public:
+                ResponseException(std::string);
+
+                virtual const char* what() const throw();
+
+                virtual ~ResponseException() throw();
+        };
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:11:02 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/08 13:40:44 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/11 12:39:22 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ class Client {
 
         Request &getRequest( void );
         Response &getResponse( void );
+        void resetResponse( void );
 
     private:
         std::vector<ServerNode*> &servers;
@@ -59,10 +60,10 @@ class Client {
         bool responseReady;
 
         // Req
-        Request *requestMessage;
+        Request *request;
     
         // Res 
-        Response *responseMessage;
+        Response *response;
 };
 
 #endif
