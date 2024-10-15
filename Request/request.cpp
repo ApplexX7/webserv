@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 13:28:16 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/15 15:58:42 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -222,8 +222,9 @@ int Request::ParsingTheRequest(Client &ClientData) {
 	if (this->methode == "GET" && this->compliteHeaderparser){
 		// this->CheckDirectory(ClientData);
 		//pass to the  get response
+		this->compliteHeaderparser = false;
 		this->finishReading = true;
-		return (0);
+		return (1);
 	}
 	else if (this->methode == "POST" && this->compliteHeaderparser){
 		if (this->ParsePostHeaders())

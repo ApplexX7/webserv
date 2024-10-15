@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/15 12:17:39 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/15 16:00:30 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,7 +202,6 @@ void Webserv::listen( void ) {
                         std::cout << "error reading" << std::endl;
                         bytes_read = 0;
                     }
-                        
                     buf[bytes_read] = 0;
 
                     
@@ -253,10 +252,11 @@ void Webserv::listen( void ) {
                     clients[fds[i].fd]->setMessage("");
 
                     std::string connection = clients[fds[i].fd]->getRequest().getValue("Connection");
-                    
+
                     if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
-                        if (connection == "keep-alive"
-                        && clients[fds[i].fd]->getResponse().getStatusCode() < 400) {
+                        std::cout << "CONNECTION: " << connection << std::endl;
+
+                        if (connection == "keep-alive") {
                             fds[i].events = POLLIN | POLLHUP;
                             clients[fds[i].fd]->getResponse().reset();
                         }

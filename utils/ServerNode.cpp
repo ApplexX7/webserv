@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/15 13:58:43 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/15 15:18:10 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ void ServerNode::initializeServer( ListNode* server ) {
         splitField = (Parser::strSplit(child->getContent(), ' '));
         if (splitField.size() != 2 || splitField[0] != "location")
             throw Parser::ParsingException("Expected location directive but got \"" + splitField[0] + "\"");
-        
+
         path = splitField[1];
 
         if (this->locationExists(path))
@@ -94,10 +94,9 @@ void ServerNode::initializeServer( ListNode* server ) {
                 throw Parser::ParsingException("Directive has no arguments " + splitField[0]);
             if (splitField[0] != "error_page" && this->locationFieldExists(path, splitField[0]))
             {
-                
                 throw Parser::ParsingException("Duplicate directives for " + splitField[0]);
             }
-            
+
             for (int j = 1; j < (int) splitField.size(); j++) {
                 // check for status code format in case of error pages
                 if (splitField[0] == "error_page")
