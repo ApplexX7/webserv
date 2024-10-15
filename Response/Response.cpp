@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 16:03:56 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/15 17:04:14 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,7 +132,7 @@ std::string Response::getFullPath( std::string path ) {
 	}
 	fullPath = root + path;
 
-	// std::cout << "FULL PATH: " << fullPath << std::endl;
+	std::cout << "FULL PATH: " << fullPath << std::endl;
 
 	this->setPath(fullPath);
 
@@ -194,13 +194,16 @@ std::string Response::getFullPath( std::string path ) {
 
 bool Response::checkPath( void ) {
 	if (access(this->path.data(), F_OK) != 0) {
-
 		// doesn't exist
-		this->statusCode = NOT_FOUND;
+
+		if (!this->isError)
+			this->statusCode = NOT_FOUND;
 		throw ResponseException("Page Not Found");
 	}
 	if (access(this->path.data(), R_OK) != 0) {
-		this->statusCode = FORBIDDEN;
+		if (!this->isError)
+			this->statusCode = FORBIDDEN;
+		std::cout << "Permission denied" << std::endl;
 		throw ResponseException("Permission Denied");
 	}
 	return true;
@@ -431,7 +434,6 @@ void Response::extractRange( void ) {
 std::string Response::createGetResponse( void ) {
 	std::string path = this->client->getRequest().getUri();
 	std::string chunk;
-
 	try {
 
 		/* 
@@ -527,9 +529,7 @@ std::string Response::getErrorResponse( void ) {
 	bool found = false;
 
 	if (this->location)
-	{
 		errorPages = this->location->getField("error_page").getValues();
-	}
 	errorField = this->client->getParentServer().getField("error_page").getValues();
 	errorPages.insert(errorPages.end(), errorField.begin(), errorField.end());
 	
@@ -546,10 +546,10 @@ std::string Response::getErrorResponse( void ) {
 			}
 		}
 	}
-
 	if (path != "")
 		this->client->getRequest().SetUri(path);
 	this->isError = true;
+	std::cout << "ERROR PATH: " << path << std::endl;
 
 	return this->createGetResponse();
 }
