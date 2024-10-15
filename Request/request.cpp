@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   request.cpp                                        :+:      :+:    :+:   */
+/*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 12:15:33 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/15 15:53:55 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -225,6 +225,7 @@ int Request::ParsingTheRequest(Client &ClientData) {
 	if (this->methode == "GET" && this->compliteHeaderparser){
 		// this->CheckDirectory(ClientData);
 		//pass to the  get response
+		this->compliteHeaderparser = false;
 		this->finishReading = true;
 		return (0);
 	}
@@ -240,6 +241,7 @@ int Request::ParsingTheRequest(Client &ClientData) {
 int Request::requestParserStart(Client &clientData) {
 	// parse tell the  body;
 	if (!this->compliteHeaderparser && this->ParsingTheRequest(clientData)){
+		std::cout << this->Uri << std::endl;
 		// problem in teh request pass to the repsonse
 		return (1);
 	}
