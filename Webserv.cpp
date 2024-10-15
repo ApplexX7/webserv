@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/13 13:30:40 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/15 11:32:42 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
 
-# define CHUNK_SIZE 12000
+# define CHUNK_SIZE 1024
 
 Webserv::Webserv( void ) {
     this->listHead = NULL;
@@ -201,7 +201,6 @@ void Webserv::listen( void ) {
                     if (bytes_read == -1)
                     {
                         std::cout << "error reading" << std::endl;
-                        exit(0);
                     }
 
                     else if (bytes_read < CHUNK_SIZE)

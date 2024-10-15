@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 11:23:16 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/15 11:26:13 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,8 @@
 #include <dirent.h>
 #include <fstream>
 
-//status Response
+
+# define CHUNK_SIZE 1024
 
 //information Response
 #define CONTINUE 100
@@ -63,7 +64,6 @@ class Client;
 class Response {
     private:
         int statusCode;
-        std::string statusLine;
         std::map<int, std::string> statusTexts;
         t_response_status status;
         std::ifstream file;
@@ -98,9 +98,6 @@ class Response {
 
         std::string getBody( void ) const;
         void setBody( std::string );
-        
-        std::string getStatusLine();
-        void setStatusLine(std::string _Status);
         
         std::map<std::string, std::string> getMap( void ) const;
         void setMap(std::string _name, std::string _Value);

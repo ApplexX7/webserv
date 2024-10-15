@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 11:19:52 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/15 11:36:07 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,13 +68,6 @@ Response::Response(){
 	this->rangeStart = 0;
 }
 
-void    Response::setStatusLine(std::string _Status){
-	this->StatusLine = _Status;
-}
-
-std::string Response::getStatusLine(){
-	return (this->StatusLine);
-}
 
 int Response::getStatusCode(){
 	return (this->statusCode);
@@ -337,7 +330,7 @@ std::string Response::getFileChunk( void ) {
 	{
 		std::cout << "ERROR READING" << std::endl;
 		this->status = FINISHED;
-		exit(1);
+		// exit(1);
 	}
 
 	std::string chunk(buff.data(), bytesRead);
