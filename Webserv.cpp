@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/16 11:13:33 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/16 11:51:37 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,6 +165,8 @@ void Webserv::listen( void ) {
         fds[i].fd = serverFds[i];
         fds[i].events = POLLIN | POLLOUT | POLLHUP;
     }
+
+    std::cout << "SERVER STARTED LISTENING" << std::endl;
 
     while (1) {
         if (poll(fds.data(), fds.size(), 100) >= 0) {

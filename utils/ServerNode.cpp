@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/16 09:35:25 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/16 11:38:04 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -248,7 +248,7 @@ int ServerNode::generateServerFd( void ) {
 
     if (bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) != 0)
     {
-        std::cout << "Error binding socket: ";
+        std::cout << "Error binding socket on : " << splitListen[1];
         std::cout << strerror(errno) << std::endl;
         return -1;
     }

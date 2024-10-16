@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/16 11:17:21 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/16 12:05:31 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -311,14 +311,9 @@ std::string getDateResponse(){
 
 std::string Response::constructHeader( void ) {
 	std::string header = "HTTP/1.1 ";
-	bool noContent = false;
 
 	if (this->isError && this->contentLength == 0) {
 		this->statusCode = FORBIDDEN;
-	}
-	else if (this->contentLength == 0) {
-		this->statusCode = 304;
-		noContent = true;
 	}
 	
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
@@ -336,9 +331,9 @@ std::string Response::constructHeader( void ) {
 	header += "Date: " + getDateResponse() + "\r\n";
 	header += "\r\n";
 
-	if (noContent)
+	if (this->contentLength == 0)
 	{
-		header += this->body;
+		// header += this->body;
 		this->status = FINISHED;
 	}
 
@@ -446,7 +441,6 @@ void Response::extractRange( void ) {
 		exit(0);
 	}
 	this->contentLength -= this->rangeStart;
-	std::cout << "RANGE: " << this->rangeStart << std::endl;
 }
 
 std::string Response::createGetResponse( void ) {
@@ -467,6 +461,7 @@ std::string Response::createGetResponse( void ) {
 			if (this->fileName == "") {
 				this->body = getDirectoryLinks(this->path, path);
 				this->contentLength = body.length();
+				this->statusCode = SUCCESS;
 				this->status = FINISHED;
 				return constructHeader() + this->body;
 			}
@@ -474,6 +469,8 @@ std::string Response::createGetResponse( void ) {
 				// this is a file, set status to ONGOING to start sending chunks
 				this->status = ONGOING;
 				this->body = "";
+
+				std::cout << "\n\n hello \n\n";
 
 				// std::cout << "HERE" << std::endl;
 				// extract range from header
