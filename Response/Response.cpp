@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 17:04:14 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/16 11:17:21 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,9 @@ void initializeStatusTexts(std::map<int, std::string>& statusTexts) {
 	statusTexts[ACCEPTED] = "Accepted";
 	statusTexts[NO_CONTENT] = "No Content";
 	statusTexts[PARTIAL_CONTENT] = "Partial Content";
+
+	// 30x
+	statusTexts[NOT_MODIFIED] = "Not Modified";
 
 	// 4xx
 	statusTexts[BAD_REQUEST] = "Bad Request";
@@ -175,8 +178,8 @@ std::string Response::getFullPath( std::string path ) {
 				this->setPath(fullPath);
 			}
 			else {
-				this->setStatusCode(FORBIDDEN);
-				throw Response::ResponseException("Forbidden Resource");
+				this->setStatusCode(NOT_FOUND);
+				throw Response::ResponseException("Not found");
 			}
 		}
 		
@@ -308,8 +311,18 @@ std::string getDateResponse(){
 
 std::string Response::constructHeader( void ) {
 	std::string header = "HTTP/1.1 ";
+	bool noContent = false;
 
+	if (this->isError && this->contentLength == 0) {
+		this->statusCode = FORBIDDEN;
+	}
+	else if (this->contentLength == 0) {
+		this->statusCode = 304;
+		noContent = true;
+	}
+	
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
+
 	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
 	header += "Content-Type: " + this->contentType + "\r\n";
 	header += "Connection: keep-alive\r\n";
@@ -322,6 +335,12 @@ std::string Response::constructHeader( void ) {
 	header += "Accept-Ranges: bytes\r\n";
 	header += "Date: " + getDateResponse() + "\r\n";
 	header += "\r\n";
+
+	if (noContent)
+	{
+		header += this->body;
+		this->status = FINISHED;
+	}
 
 	// std::cout << "HEADER: \n" << header << std::endl;
 
@@ -346,12 +365,11 @@ std::string Response::getFileChunk( void ) {
 	std::streamsize bytesRead = this->file.gcount();
 	if (bytesRead < 0)
 	{
-		std::cout << "ERROR READING" << std::endl;
+		std::cout << "ERROR READING FROM FILE" << std::endl;
 		this->status = FINISHED;
 	}
 
 	std::string chunk(buff.data(), bytesRead);
-
 
 	this->bytesSent += bytesRead;
 
@@ -441,44 +459,46 @@ std::string Response::createGetResponse( void ) {
 			if not in on IDLE, read file and send
 		*/
 
-		if (this->statusCode >= 200 && this->statusCode < 600) {
-			if (this->status == IDLE) {
-				this->checkAllowedMethod(path);
-				this->getFullPath(path);
-				// empty filename means it's a dir
-				if (this->fileName == "") {
-					this->body = getDirectoryLinks(this->path, path);
-					this->contentLength = body.length();
-					this->status = FINISHED;
-					return constructHeader() + this->body;
-				}
-				else {
-					// this is a file, set status to ONGOING to start sending chunks
-					this->status = ONGOING;
-					this->body = "";
-
-					// std::cout << "HERE" << std::endl;
-					// extract range from header
-					this->extractRange();
-				}
+		
+		if (this->status == IDLE) {
+			this->checkAllowedMethod(path);
+			this->getFullPath(path);
+			// empty filename means it's a dir
+			if (this->fileName == "") {
+				this->body = getDirectoryLinks(this->path, path);
+				this->contentLength = body.length();
+				this->status = FINISHED;
+				return constructHeader() + this->body;
 			}
 			else {
-				// read from file
-				chunk = this->getFileChunk();
-				return chunk;
+				// this is a file, set status to ONGOING to start sending chunks
+				this->status = ONGOING;
+				this->body = "";
+
+				// std::cout << "HERE" << std::endl;
+				// extract range from header
+				this->extractRange();
 			}
 		}
-
-
+		else {
+			// read from file
+			chunk = this->getFileChunk();
+			return chunk;
+		}
 	} catch (ResponseException e) {
+		std::cout << "Something went wrong with response: " << e.what() << std::endl;
 		if (!this->isError)
 		{
 			this->status = IDLE;
 			return this->getErrorResponse();
 		}
 		else
+		{
 			this->status = FINISHED;
-		std::cout << "Something went wrong with response: " << e.what() << std::endl;
+			this->body = "<h1>" + std::to_string(this->statusCode) + " " + this->getStatusText() + "</h1>";
+			this->contentLength = this->body.length();
+			return this->constructHeader() + this->body;
+		}
 	}
 	return this->constructHeader();
 }

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/01 12:36:01 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/11 10:24:12 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/16 09:31:56 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ int Request::CheckDirectory(Client &ClientData){
 		this->pathName = this->server->getLocations()[this->locationName].getField("root").getValues()[0] + this->Uri;
 	}
 	else
-		//root if the location don't exist;
+		// root if the location don't exist;
 	if (access(this->pathName.c_str(), F_OK) != 0){
 		ClientData.getResponse().setStatusCode(404);
 		return (0);

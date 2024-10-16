@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 14:17:20 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/16 11:16:32 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,9 @@
 #define ACCEPTED 202
 #define NO_CONTENT 204
 #define PARTIAL_CONTENT 206
+
+// 30x
+#define NOT_MODIFIED 304
 
 //client error response
 #define BAD_REQUEST 400

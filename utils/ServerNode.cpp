@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/15 17:23:11 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/16 09:35:25 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ void ServerNode::initializeServer( ListNode* server ) {
 
     // if server has no autoindex
     if (!this->fieldExists("autoindex"))
-        this->addField("autoindex", "on");
+        this->addField("autoindex", "off");
 
     // insert locations
     while (child != NULL)
