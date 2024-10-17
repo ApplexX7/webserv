@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/17 14:32:27 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/17 14:35:20 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,7 +135,8 @@ std::string Response::getFullPath( std::string path ) {
 		root = location->getField("root").getValues()[0];
 	}
 
-	
+	this->setPath(root);
+	this->checkPath();
 	
 	
 	fullPath = root + path;
