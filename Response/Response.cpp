@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/17 14:35:20 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/17 14:37:10 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,10 +202,6 @@ std::string Response::getFullPath( std::string path ) {
 
 bool Response::checkPath( void ) {
 	if (access(this->path.data(), F_OK) != 0) {
-
-		// todo: check if location has permission
-		
-
 		// doesn't exist
 		if (!this->isError)
 			this->statusCode = NOT_FOUND;
@@ -294,7 +290,7 @@ std::string getDirectoryLinks(std::string path, std::string uri) {
 	entry = readdir(dir);
 	while (entry) {
 		tmp = entry->d_name;
-		
+
 		if (tmp[0] != '.') {
 			if (uri.length() == 0 || uri == "/") {
 				res += "<li><a href=\"/" + tmp + "\">";
@@ -340,6 +336,7 @@ std::string Response::constructHeader( void ) {
 	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
 	header += "Accept-Ranges: bytes\r\n";
 	header += "Date: " + getDateResponse() + "\r\n";
+	header += "Server: webserv/1.1\r\n";
 	header += "\r\n";
 
 	if (this->contentLength == 0)
