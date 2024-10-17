@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/17 13:53:11 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/17 15:01:54 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,10 @@ void ServerNode::initializeServer( ListNode* server ) {
     std::vector<std::string> splitField;
     std::string path;
     std::string trimedField;
+    std::string sizeStr;
+    unsigned long long size;
+    char unit;
+    int length;
 
     ListNode *child = server->getChild();
 
@@ -71,6 +75,10 @@ void ServerNode::initializeServer( ListNode* server ) {
     // if server has no autoindex
     if (!this->fieldExists("autoindex"))
         this->addField("autoindex", "off");
+    
+    // if server has no max size
+    if (!this->fieldExists("client_max_body_size"))
+        this->addField("client_max_body_size", "1m");
 
     // insert locations
     while (child != NULL)
@@ -81,22 +89,6 @@ void ServerNode::initializeServer( ListNode* server ) {
             throw Parser::ParsingException("Expected location directive but got \"" + splitField[0] + "\"");
 
         path = splitField[1];
-        
-        // if (path != "/")
-        // {
-        //     end = path.length() - 1;
-        //     for (int i = end; i >= 0; i--) {
-        //         if (path[i] != '/')
-        //         {
-        //             end = i + 1;
-        //             break;
-        //         }
-        //     }
-
-        //     path = path.substr(0, end);
-        // }
-
-
         if (this->locationExists(path))
             throw Parser::ParsingException("Duplicate locations for path " + path);
 
@@ -134,6 +126,22 @@ void ServerNode::initializeServer( ListNode* server ) {
         this->locations[path].setServer(this);
         child = child->getNext();
     }
+    
+    length = this->getField("client_max_body_size").getValues()[0].length();
+    sizeStr = this->getField("client_max_body_size").getValues()[0].substr(0, length - 1);
+    unit = std::toupper(this->getField("client_max_body_size").getValues()[0].substr(length - 1, 1)[0]);
+    
+    size = std::stoull(sizeStr);
+
+    if (unit == 'K')
+        size *= 1000;
+    if (unit == 'M')
+        size *= 1000000;
+    if (unit == 'G')
+        size *= 1000000000;
+    this->maxSize = size;
+
+    std::cout << "MAX_SIZE " << this->maxSize << std::endl;
 }
 
 // canonical form
