@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/16 11:38:04 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/17 13:51:32 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ void ServerNode::initializeServer( ListNode* server ) {
     std::vector<std::string> splitField;
     std::string path;
     std::string trimedField;
-    int end;
+    // int end;
 
     ListNode *child = server->getChild();
 
@@ -83,19 +83,19 @@ void ServerNode::initializeServer( ListNode* server ) {
 
         path = splitField[1];
         
-        if (path != "/")
-        {
-            end = path.length() - 1;
-            for (int i = end; i >= 0; i--) {
-                if (path[i] != '/')
-                {
-                    end = i + 1;
-                    break;
-                }
-            }
+        // if (path != "/")
+        // {
+        //     end = path.length() - 1;
+        //     for (int i = end; i >= 0; i--) {
+        //         if (path[i] != '/')
+        //         {
+        //             end = i + 1;
+        //             break;
+        //         }
+        //     }
 
-            path = path.substr(0, end);
-        }
+        //     path = path.substr(0, end);
+        // }
 
 
         if (this->locationExists(path))

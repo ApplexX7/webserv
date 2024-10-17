@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/17 11:14:19 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/17 13:46:45 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,7 +199,6 @@ std::string Response::getFullPath( std::string path ) {
 bool Response::checkPath( void ) {
 	if (access(this->path.data(), F_OK) != 0) {
 		// doesn't exist
-
 		if (!this->isError)
 			this->statusCode = NOT_FOUND;
 		throw ResponseException("Page Not Found");
@@ -314,12 +313,12 @@ std::string Response::constructHeader( void ) {
 	std::string header = "HTTP/1.1 ";
 
 	if (this->isError && this->contentLength == 0) {
-		this->statusCode = FORBIDDEN;
+		this->statusCode = NOT_FOUND;
 	}
+	
 
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
 
-	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
 	header += "Content-Type: " + this->contentType + "\r\n";
 	header += "Connection: keep-alive\r\n";
 	if (this->statusCode == PARTIAL_CONTENT)
@@ -328,9 +327,12 @@ std::string Response::constructHeader( void ) {
 		header += "Content-Range: bytes " + std::to_string(this->rangeStart) 
 		+ "-" + std::to_string(totalSize - 1) + "/" + std::to_string(totalSize) + "\r\n";
 	}
+	
+	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
 	header += "Accept-Ranges: bytes\r\n";
 	header += "Date: " + getDateResponse() + "\r\n";
 	header += "\r\n";
+	
 
 	if (this->contentLength == 0)
 	{
