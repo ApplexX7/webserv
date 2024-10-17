@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/17 13:46:45 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/17 14:32:27 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,12 +134,15 @@ std::string Response::getFullPath( std::string path ) {
 		this->location = location;
 		root = location->getField("root").getValues()[0];
 	}
+
+	
+	
+	
 	fullPath = root + path;
 
 	std::cout << "FULL PATH: " << fullPath << std::endl;
 
 	this->setPath(fullPath);
-
 	this->checkPath();
 
 	stat(fullPath.data(), &fileStat);
@@ -198,17 +201,23 @@ std::string Response::getFullPath( std::string path ) {
 
 bool Response::checkPath( void ) {
 	if (access(this->path.data(), F_OK) != 0) {
+
+		// todo: check if location has permission
+		
+
 		// doesn't exist
 		if (!this->isError)
 			this->statusCode = NOT_FOUND;
 		throw ResponseException("Page Not Found");
 	}
+	
 	if (access(this->path.data(), R_OK) != 0) {
 		if (!this->isError)
 			this->statusCode = FORBIDDEN;
-		std::cout << "Permission denied" << std::endl;
 		throw ResponseException("Permission Denied");
+		
 	}
+
 	return true;
 }
 
@@ -312,9 +321,9 @@ std::string getDateResponse(){
 std::string Response::constructHeader( void ) {
 	std::string header = "HTTP/1.1 ";
 
-	if (this->isError && this->contentLength == 0) {
-		this->statusCode = NOT_FOUND;
-	}
+	// if (this->isError && this->contentLength == 0) {
+	// 	this->statusCode = NOT_FOUND;
+	// }
 	
 
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
@@ -324,15 +333,13 @@ std::string Response::constructHeader( void ) {
 	if (this->statusCode == PARTIAL_CONTENT)
 	{
 		unsigned long totalSize = this->rangeStart + this->contentLength;
-		header += "Content-Range: bytes " + std::to_string(this->rangeStart) 
+		header += "Content-Range: bytes " + std::to_string(this->rangeStart)
 		+ "-" + std::to_string(totalSize - 1) + "/" + std::to_string(totalSize) + "\r\n";
 	}
-	
 	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
 	header += "Accept-Ranges: bytes\r\n";
 	header += "Date: " + getDateResponse() + "\r\n";
 	header += "\r\n";
-	
 
 	if (this->contentLength == 0)
 	{
@@ -529,6 +536,7 @@ Location *Response::getPathLocation(std::string path) {
 	std::map<std::string, Location>::iterator it;
 	Location *location = NULL;
 	std::string lastMatch = "";
+	std::string root;
 
 	for (it = locations.begin(); it != locations.end(); it++)
 	{
@@ -541,6 +549,14 @@ Location *Response::getPathLocation(std::string path) {
 			}
 		}
 	}
+	if (location) {
+		
+		// check location permission
+		root = location->getField("root").getValues()[0];
+		this->setPath(root + "/" + lastMatch);
+		this->checkPath();
+	}
+
 	return location;
 }
 

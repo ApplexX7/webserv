@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/17 13:51:32 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/17 13:53:11 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ void ServerNode::initializeServer( ListNode* server ) {
     std::vector<std::string> splitField;
     std::string path;
     std::string trimedField;
-    // int end;
 
     ListNode *child = server->getChild();
 
