@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/16 12:05:31 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/17 11:14:19 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,7 @@ Response::Response(){
 	this->bytesSent = 0;
 	this->rangeStart = 0;
 	this->isError = false;
+	this->isBody = false;
 }
 
 
@@ -315,7 +316,7 @@ std::string Response::constructHeader( void ) {
 	if (this->isError && this->contentLength == 0) {
 		this->statusCode = FORBIDDEN;
 	}
-	
+
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
 
 	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
@@ -333,7 +334,6 @@ std::string Response::constructHeader( void ) {
 
 	if (this->contentLength == 0)
 	{
-		// header += this->body;
 		this->status = FINISHED;
 	}
 
@@ -410,6 +410,7 @@ void Response::reset( void ) {
 	this->file.close();
 	this->path = "";
 	this->isError = false;
+	this->isBody = false;
 }
 
 void Response::extractRange( void ) {
@@ -453,33 +454,42 @@ std::string Response::createGetResponse( void ) {
 			if not in on IDLE, read file and send
 		*/
 
-		
 		if (this->status == IDLE) {
 			this->checkAllowedMethod(path);
 			this->getFullPath(path);
+
 			// empty filename means it's a dir
 			if (this->fileName == "") {
 				this->body = getDirectoryLinks(this->path, path);
+
 				this->contentLength = body.length();
 				this->statusCode = SUCCESS;
-				this->status = FINISHED;
-				return constructHeader() + this->body;
+				this->status = ONGOING;
+				this->isBody = true;
+				return constructHeader();
 			}
 			else {
 				// this is a file, set status to ONGOING to start sending chunks
 				this->status = ONGOING;
 				this->body = "";
 
-				std::cout << "\n\n hello \n\n";
-
-				// std::cout << "HERE" << std::endl;
 				// extract range from header
 				this->extractRange();
 			}
 		}
 		else {
 			// read from file
-			chunk = this->getFileChunk();
+			if (this->isBody) {
+				chunk = this->body.substr(0, CHUNK_SIZE);
+				if (this->body.length() >= CHUNK_SIZE) {
+					this->body = this->body.substr(CHUNK_SIZE, this->body.length());
+				}
+				else
+					this->status = FINISHED;
+			}
+			else 
+				chunk = this->getFileChunk();
+			
 			return chunk;
 		}
 	} catch (ResponseException e) {

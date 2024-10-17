@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/16 11:51:37 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/17 10:04:37 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,7 +116,6 @@ void Webserv::init( std::string configPath ) {
 
         tmp = tmp->getNext();
     }
-    // std::cout << "ALL GOOD" << std::endl;
 }
 
 Webserv::~Webserv( void ) {
@@ -125,6 +124,7 @@ Webserv::~Webserv( void ) {
     // free servers
     for (int i = 0; i < (int) this->servers.size(); i++)
     {
+        close(this->servers[i]->getFd());
         delete this->servers[i];
     }
 
@@ -205,37 +205,16 @@ void Webserv::listen( void ) {
                         bytes_read = 0;
                     }
                     buf[bytes_read] = 0;
+                    message.assign(buf, bytes_read);
 
-                    
-                    // std::cout << "RECEIVED :\n" << buf << std::endl;
-                    message.assign(buf);
-                    
                     clients[fds[i].fd]->setMessage(buf);
                     clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
-                    // std::cout << "FINISHED: " << clients[fds[i].fd]->getRequest().getFinishReading() << std::endl;
-                    // std::cout << "BUFF: " << buf << std::endl;
                     
                     if ((*clients[fds[i].fd]).getRequest().getFinishReading())
                     {
-                        // std::cout << buf << std::endl;
-                        // std::cout << "***************" << std::endl;
-                        // message.assign(buf);
-                        // std::cout << "RECEIVED 2 :\n" << buf << std::endl;
-                        // clients[fds[i].fd]->appendMessage(buf);
                         std::cout << "client finished writing, full message:" << std::endl;
-
-
                         clients[fds[i].fd]->findParentServer();
-
-                        // std::vector<std::string> vals = clients[fds[i].fd]->getParentServer().getField("listen").getValues();
-
-                        // std::cout << "Parent server " << (clients[fds[i].fd]->getParentServer().getField("listen").getValues() != NULL ? "YES" : "None") << std::endl;
-                        // clients[fds[i].fd]->getParentServer();
-                        
                         fds[i].events = POLLOUT;
-                        // printf("hello\n");
-                        
-                        // todo: parse request and generate response using client.handle_request
                     }
                 }
                 else if (!isServerFd(serverFds, fds[i].fd)
@@ -247,19 +226,17 @@ void Webserv::listen( void ) {
                     
                     std::string res = clients[fds[i].fd]->getResponse().createGetResponse();
 
-                    std::cout << "RES: " << res << std::endl;
+                    // std::cout << "RES: " << res << std::endl;
 
                     send(fds[i].fd, res.data(), res.size(), MSG_SEND);
                     // std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
 
-                    // reset message 
+                    // reset message
                     clients[fds[i].fd]->setMessage("");
 
                     std::string connection = clients[fds[i].fd]->getRequest().getValue("Connection");
 
                     if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
-                        std::cout << "CONNECTION: " << connection << std::endl;
-
                         if (connection == "keep-alive") {
                             fds[i].events = POLLIN | POLLHUP;
                             clients[fds[i].fd]->getResponse().reset();

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/16 11:16:32 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/17 10:14:12 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ class Response {
         Location *location;
         unsigned long rangeStart;
         bool isError;
+        bool isBody;
 
         std::string path;
 
