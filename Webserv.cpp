@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/19 11:08:16 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/19 11:16:19 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -277,7 +277,6 @@ ServerNode *Webserv::getServerByFd( int fd ) {
     }
     return NULL;
 }
-
 
 /*
     - Frees up parsing linked list's resources

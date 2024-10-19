@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/19 11:13:43 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/19 11:25:11 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -454,6 +454,16 @@ void Response::extractRange( void ) {
 
 std::string Response::createGetResponse( void ) {
 	std::string path = this->client->getRequest().getUri();
+	size_t pos = 0;
+
+	while ((pos = path.find("%20", pos)) != path.npos) {
+		path.replace(pos, 3, " ");
+		pos += 1;
+	}
+
+	std::cout << "path: " << path << std::endl;
+
+
 	std::string chunk;
 	try {
 
