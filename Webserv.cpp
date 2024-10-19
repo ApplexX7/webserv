@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/17 10:04:37 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/19 10:17:46 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,52 +18,59 @@ Webserv::Webserv( void ) {
     this->listHead = NULL;
 }
 
-void printChilds( ListNode *child)
-{
-    std::vector<std::string> fields;
-    while (child)
-    {
-        std::cout << "\tchild start: " + child->getContent() << std::endl;
-        fields = child->getFields();
-        for (size_t i = 0; i < fields.size(); i++)
-            std::cout << "\t\t" << fields[i] << std::endl;
-        child = child->getNext();
-    }
-}
+// void printChilds( ListNode *child)
+// {
+//     std::vector<std::string> fields;
+//     while (child)
+//     {
+//         std::cout << "\tchild start: " + child->getContent() << std::endl;
+//         fields = child->getFields();
+//         for (size_t i = 0; i < fields.size(); i++)
+//             std::cout << "\t\t" << fields[i] << std::endl;
+//         child = child->getNext();
+//     }
+// }
 
-void printServerNode(ListNode* server) {
-    ServerNode n(server);
-    std::map<std::string, Field > fields;
+// void printServerNode(ListNode* server) {
+//     ServerNode n(server);
+//     std::map<std::string, Field > fields;
 
-    std::map<std::string, Field > f = n.getFields();
+//     std::map<std::string, Field > f = n.getFields();
 
-    std::map<std::string, Field >::iterator it;
-    for (it = f.begin(); it != f.end(); it++)
-    {
-        std::cout << it->first << " => ";
-        for (int i = 0; i < (int) it->second.getValues().size(); i++) {
-            std::cout << it->second.getValues()[i] << " ";
-        }
-        std::cout << std::endl;
-    }
+//     std::map<std::string, Field >::iterator it;
+//     for (it = f.begin(); it != f.end(); it++)
+//     {
+//         std::cout << it->first << " => ";
+//         for (int i = 0; i < (int) it->second.getValues().size(); i++) {
+//             std::cout << it->second.getValues()[i] << " ";
+//         }
+//         std::cout << std::endl;
+//     }
 
-    std::map<std::string, Location > locations = n.getLocations();
+//     std::map<std::string, Location > locations = n.getLocations();
 
-    std::map<std::string, Location >::iterator loc_it;
+//     std::map<std::string, Location >::iterator loc_it;
         
     
-    for (loc_it = locations.begin(); loc_it != locations.end(); loc_it++) {
-        std::cout << loc_it->first << ": " << std::endl;
-        fields = loc_it->second.getFields();
-        for (it = fields.begin(); it != fields.end(); it++) {
-            std::cout << "\t" << it->first << " => ";
-            for (int i = 0; i < (int) it->second.getValues().size(); i++) {
-                std::cout << it->second.getValues()[i] << " ";
-            }
-            std::cout << std::endl;
-        }
-    }
-}
+//     for (loc_it = locations.begin(); loc_it != locations.end(); loc_it++) {
+//         std::cout << loc_it->first << ": " << std::endl;
+//         fields = loc_it->second.getFields();
+//         for (it = fields.begin(); it != fields.end(); it++) {
+//             std::cout << "\t" << it->first << " => ";
+//             for (int i = 0; i < (int) it->second.getValues().size(); i++) {
+//                 std::cout << it->second.getValues()[i] << " ";
+//             }
+//             std::cout << std::endl;
+//         }
+//     }
+// }
+
+
+/*
+    - Initializes the servers
+    - Displays warning in the case of servers with conflicting ports/names
+    
+*/
 
 void Webserv::init( std::string configPath ) {
     Parser parser(configPath);
@@ -86,7 +93,6 @@ void Webserv::init( std::string configPath ) {
 
     tmp = head;
     
-    
     while (tmp) {
         // printServerNode(tmp);
         this->servers.push_back(new ServerNode(tmp));
@@ -96,8 +102,7 @@ void Webserv::init( std::string configPath ) {
             // check if there's a server with the same host:port
             listenValue = this->servers[this->servers.size() - 1]->getField("listen").getValues()[0];
             otherListenValue = this->servers[i]->getField("listen").getValues()[0];
-            
-            
+
             // same host:port
             if (listenValue == otherListenValue) {
                     // check server_names
@@ -118,24 +123,19 @@ void Webserv::init( std::string configPath ) {
     }
 }
 
-Webserv::~Webserv( void ) {
-    ListNode::freeListNode(this->listHead);
-    
-    // free servers
-    for (int i = 0; i < (int) this->servers.size(); i++)
-    {
-        close(this->servers[i]->getFd());
-        delete this->servers[i];
-    }
 
-    std::cout << "WEBSERV DESTRUCTOR CALLED" << std::endl;
-}
 
 bool isServerFd(std::vector<int> serverFds, int fd) {
     return (std::find(serverFds.begin(), serverFds.end(), fd) != serverFds.end());
 }
 
 
+/*
+    - Starts up the web server
+    - Opens socket for each server
+    - Listens for events on sockets using poll (new connection, input, output, disconnection)
+    - Parses Requests and generates responses
+*/
 
 void Webserv::listen( void ) {
     std::vector<int> serverFds;
@@ -152,9 +152,13 @@ void Webserv::listen( void ) {
     char buf[CHUNK_SIZE + 1];
 
     addr_size = sizeof(their_addr);
-
     for (int i = 0; i < (int) this->servers.size(); i++) {
-        serverFds.push_back(this->servers[i]->generateServerFd());
+        try {
+            serverFds.push_back(this->servers[i]->generateServerFd());
+        } catch (ServerNode::SocketException& e) {
+            std::cerr << e.what() << std::endl;
+            return ;
+        }
     }
 
     size = serverFds.size();
@@ -223,7 +227,6 @@ void Webserv::listen( void ) {
                     clients[fds[i].fd]->findParentServer();
 
                     // send response
-                    
                     std::string res = clients[fds[i].fd]->getResponse().createGetResponse();
 
                     // std::cout << "RES: " << res << std::endl;
@@ -260,4 +263,23 @@ ServerNode *Webserv::getServerByFd( int fd ) {
             return (this->servers[i]);
     }
     return NULL;
+}
+
+
+/*
+    - Frees up parsing linked list's resources
+    - Closes server sockets
+*/
+
+Webserv::~Webserv( void ) {
+    ListNode::freeListNode(this->listHead);
+    
+    // free servers
+    for (int i = 0; i < (int) this->servers.size(); i++)
+    {
+        close(this->servers[i]->getFd());
+        delete this->servers[i];
+    }
+
+    std::cout << "WEBSERV DESTRUCTOR CALLED" << std::endl;
 }

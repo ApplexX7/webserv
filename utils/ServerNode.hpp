@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/17 14:59:57 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/19 10:12:39 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,18 @@ class ServerNode {
         void setFd( int );
 
         std::string getListenField( void );
+
+        class SocketException: public std::exception {
+            private:
+                std::string message;
+
+            public:
+                SocketException(std::string);
+
+                virtual const char* what() const throw();
+
+                virtual ~SocketException() throw();
+        };
 };
 
 #endif

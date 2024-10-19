@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/17 15:01:54 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/19 10:16:27 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,13 +56,13 @@ void ServerNode::initializeServer( ListNode* server ) {
 
         // Parser::validateField(splitField[0], values);
         if (splitField[0] == "listen" && values[0].find(":") == values[0].npos)
-            this->getField(splitField[0]).updateValue("0.0.0.0:" + values[0], 0);
+            this->getField(splitField[0]).updateValue("127.0.0.1:" + values[0], 0);
         Parser::validateField(splitField[0], this->getField(splitField[0]).getValues());
     }
 
     // if server has no listen directive
     if (!this->fieldExists("listen"))
-        this->addField("listen", "0.0.0.0:8000");
+        this->addField("listen", "127.0.0.1:8080");
     
     // if server has no server_name
     if (!this->fieldExists("server_name"))
@@ -176,6 +176,7 @@ void setAllowedFields( ServerNode* server ) {
 }
 
 ServerNode::ServerNode( ListNode *server ) {
+    this->fd = -1;
     setAllowedFields(this);
     initializeServer(server);
 };
@@ -230,40 +231,47 @@ bool ServerNode::locationFieldExists( std::string path, std::string key ) {
     return false;
 }
 
+/*
+    - Opens a new socket and returns its fd
+*/
+
 int ServerNode::generateServerFd( void ) {
     std::vector<std::string> splitListen;
     struct addrinfo hints;
     struct addrinfo *servinfo;
     int sockfd;
+    int optval;
 
     splitListen = Parser::strSplit(this->fields["listen"].getValues()[0], ':');
     Parser::ft_memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    // hints.ai_flags = AI_PASSIVE;
     getaddrinfo(splitListen[0].data(), splitListen[1].data(), &hints, &servinfo);
     sockfd = socket(PF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
     {
-        std::cout << "Error opening socket: ";
-        std::cout << strerror(errno) << std::endl;
-        return -1;
+        freeaddrinfo(servinfo);
+        throw ServerNode::SocketException("Error opening server socket");
     }
 
-    int optval = 1;
+    optval = 1;
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
+    // bind socket to port and address
     if (bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) != 0)
     {
-        std::cout << "Error binding socket on : " << splitListen[1];
-        std::cout << strerror(errno) << std::endl;
+        freeaddrinfo(servinfo);
+        close(sockfd);
+        throw ServerNode::SocketException("Error binding server socket");
         return -1;
     }
 
+    // start listening on socket
     if (listen(sockfd, 10) != 0)
     {
-        std::cout << "Error listening on socket: ";
-        std::cout << strerror(errno) << std::endl;
+        freeaddrinfo(servinfo);
+        close(sockfd);
+        throw ServerNode::SocketException("Error listening on server socket");
         return -1;
     }
     freeaddrinfo(servinfo);
@@ -284,3 +292,11 @@ std::string ServerNode::getListenField( void ) {
     std::string listen = this->getField("listen").getValues()[0];
     return listen;
 }
+
+const char* ServerNode::SocketException::what() const throw() {
+    return message.c_str();
+};
+
+ServerNode::SocketException::SocketException(std::string msg): message(msg) {};
+
+ServerNode::SocketException::~SocketException() throw() {};
