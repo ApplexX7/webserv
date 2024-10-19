@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/17 15:02:17 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/19 11:12:29 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ void Parser::loadFile( void )
     }
     
     this->_fileContent = content;
+    file.close();
 }
 
 std::string Parser::getContent( void )

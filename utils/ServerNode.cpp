@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/19 10:16:27 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/19 10:56:41 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,14 +134,12 @@ void ServerNode::initializeServer( ListNode* server ) {
     size = std::stoull(sizeStr);
 
     if (unit == 'K')
-        size *= 1000;
+        size *= 1024;
     if (unit == 'M')
-        size *= 1000000;
+        size *= 1024 * 1024;
     if (unit == 'G')
-        size *= 1000000000;
+        size *= 1024 * 1024 * 1024;
     this->maxSize = size;
-
-    std::cout << "MAX_SIZE " << this->maxSize << std::endl;
 }
 
 // canonical form

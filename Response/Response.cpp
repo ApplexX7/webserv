@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/17 14:37:10 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/19 11:13:43 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -302,6 +302,7 @@ std::string getDirectoryLinks(std::string path, std::string uri) {
 		}
 		entry = readdir(dir);
 	}
+	closedir(dir);
 	return res + "</ul>";
 }
 

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/19 10:17:46 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/19 11:08:16 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,9 +139,8 @@ bool isServerFd(std::vector<int> serverFds, int fd) {
 
 void Webserv::listen( void ) {
     std::vector<int> serverFds;
-    std::vector<int> clientFds;
+    std::vector<int> &clientFds = this->clientFds;
     std::string message;
-
     std::map<int, Client*> clients;
     
     struct pollfd newPollFd;
@@ -150,6 +149,7 @@ void Webserv::listen( void ) {
     socklen_t addr_size;
     int new_fd;
     char buf[CHUNK_SIZE + 1];
+    std::string res;
 
     addr_size = sizeof(their_addr);
     for (int i = 0; i < (int) this->servers.size(); i++) {
@@ -173,9 +173,10 @@ void Webserv::listen( void ) {
     std::cout << "SERVER STARTED LISTENING" << std::endl;
 
     while (1) {
-        if (poll(fds.data(), fds.size(), 100) >= 0) {
+        if (poll(fds.data(), fds.size(), 100) > 0) {
             for (int i = 0; i < (int) fds.size(); i++)
             {
+                // client disconnected
                 if (fds[i].revents & POLLHUP)
                 {
                     std::cout << "client disconnected " << fds[i].fd << std::endl;
@@ -186,24 +187,34 @@ void Webserv::listen( void ) {
                     continue ;
                 }
 
+                // client wants to connect
                 if (fds[i].revents & POLLIN
                 && isServerFd(serverFds, fds[i].fd))
                 {
                     new_fd = accept(fds[i].fd, (struct sockaddr *)&their_addr, &addr_size);
-                    std::cout << "new connection on " << fds[i].fd << std::endl;
-                    newPollFd.events = POLLIN | POLLHUP;
-                    clientFds.push_back(new_fd);
-                    newPollFd.fd = new_fd;
-                    fds.push_back(newPollFd);
-                    clients[new_fd] = new Client(this->servers, "", new_fd);
-                    clients[new_fd]->setListen(this->getServerByFd(fds[i].fd)->getListenField());
+
+                    if (new_fd < 0)
+                    {
+                        std::cout << "Error opening connection on " << fds[i].fd << std::endl;
+                    }
+                    else {
+                        std::cout << "new connection on " << new_fd << std::endl;
+                        newPollFd.events = POLLIN | POLLHUP;
+                        clientFds.push_back(new_fd);
+                        newPollFd.fd = new_fd;
+                        fds.push_back(newPollFd);
+                        clients[new_fd] = new Client(this->servers, "", new_fd);
+                        clients[new_fd]->setListen(this->getServerByFd(fds[i].fd)->getListenField());
+                    }
                 }
+
+                // client wants to send data
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLIN)
                 {
                     int bytes_read = 0;
                     bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, MSG_EOF);
-                    if (bytes_read == -1)
+                    if (bytes_read < 0)
                     {
                         std::cout << "error reading" << std::endl;
                         bytes_read = 0;
@@ -213,26 +224,28 @@ void Webserv::listen( void ) {
 
                     clients[fds[i].fd]->setMessage(buf);
                     clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
-                    
+
+                    // client finished writing
                     if ((*clients[fds[i].fd]).getRequest().getFinishReading())
                     {
-                        std::cout << "client finished writing, full message:" << std::endl;
+                        std::cout << "client finished writing" << std::endl;
+
+                        // find server responsible for this client
                         clients[fds[i].fd]->findParentServer();
+
+                        // listen for client readiness to receive
                         fds[i].events = POLLOUT;
                     }
                 }
+
+                // client wants ready to receive data
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLOUT)
                 {
-                    clients[fds[i].fd]->findParentServer();
-
                     // send response
-                    std::string res = clients[fds[i].fd]->getResponse().createGetResponse();
-
-                    // std::cout << "RES: " << res << std::endl;
+                    res = clients[fds[i].fd]->getResponse().createGetResponse();
 
                     send(fds[i].fd, res.data(), res.size(), MSG_SEND);
-                    // std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
 
                     // reset message
                     clients[fds[i].fd]->setMessage("");
@@ -270,7 +283,6 @@ ServerNode *Webserv::getServerByFd( int fd ) {
     - Frees up parsing linked list's resources
     - Closes server sockets
 */
-
 Webserv::~Webserv( void ) {
     ListNode::freeListNode(this->listHead);
     
@@ -280,6 +292,9 @@ Webserv::~Webserv( void ) {
         close(this->servers[i]->getFd());
         delete this->servers[i];
     }
+
+    for (int i = 0; i < (int) this->clientFds.size(); i++)
+        close(this->clientFds[i]);
 
     std::cout << "WEBSERV DESTRUCTOR CALLED" << std::endl;
 }
