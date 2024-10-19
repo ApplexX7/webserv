@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/07 09:49:44 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 11:43:36 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/19 18:12:42 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ int Request::ParsePostHeaders(){
 	if (tempStr.find("boundary=") != std::string::npos){
 		this->contentType = tempStr.substr(0, tempStr.find("boundary=") - 1);
 		this->startofBoundary = "--" + tempStr.substr(tempStr.find("boundary=") + std::strlen("boundary="));
-		this->endofBoundary = "--" + tempStr.substr(tempStr.find("boundary=") + std::strlen("boundary=")) + "--";
+		this->endofBoundary = this->startofBoundary + "--";
 	}
 	else
 		this->contentType = tempStr;
@@ -29,8 +29,7 @@ int Request::ParsePostHeaders(){
 	}
 	else
 		this->contentLenght = 0;
-
-	this->TransferCoding = getValue("Transfer-Coding");
+	this->TransferCoding = this->getValue("Transfer-Encoding");
 	return (0);
 }
 
@@ -49,10 +48,6 @@ int Request::parseBodyTypeBuffer(std::string &bufferedBody){
 				return (1);
 			}
 		}
-		else{
-			this->bodyType = NONE;
-			return (0);
-		}
 	}
 	else if (!this->startofBoundary.empty()){
 		if (bufferedBody.find(this->endofBoundary) != std::string::npos){
@@ -65,13 +60,11 @@ int Request::parseBodyTypeBuffer(std::string &bufferedBody){
 		}
 	}
 	else if (this->contentLenght){
-		std::cout << this->bodybuffer.size() << std::endl;
-		if ((size_t)this->contentLenght == this->bodybuffer.size()){
+		if ((size_t)this->contentLenght <= this->bodybuffer.size()){
 			this->bodyType = FIXEDSIZE;
 			return (1);
 		}
 	}
-	this->bodyType = NONE;
 	return (0);
 }
 

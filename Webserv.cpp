@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/15 12:17:39 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/17 18:14:51 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,22 +195,31 @@ void Webserv::listen( void ) {
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLIN)
                 {
-                    int bytes_read = 0;
-                    bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, MSG_EOF);
+                    int bytes_read  = recv(fds[i].fd, buf, CHUNK_SIZE, 0);
                     if (bytes_read == -1)
                     {
                         std::cout << "error reading" << std::endl;
                         bytes_read = 0;
-                    }
-                        
+                    } 
+                    // else if (bytes_read < CHUNK_SIZE) {
+                    //     // std::cout << "Bytes read is 0"<< std::endl;
+                    // std::cout <<  buf << std::endl;
+                    // for(int i = 0; i < bytes_read; i++)
+                    // {
+                    //     std::cout << buf[i];
+                    // }
+                    //     // exit (1);
+                    // }
                     buf[bytes_read] = 0;
-
+                    // if (bytes_read == CHUNK_SIZE)
+                    //     std::cout <<  buf << std::endl;
                     
                     // std::cout << "RECEIVED :\n" << buf << std::endl;
-                    message.assign(buf);
-                    
-                    clients[fds[i].fd]->setMessage(buf);
+                    message.assign(buf, bytes_read);
+                    clients[fds[i].fd]->setMessage(message);
+                    // std::cout << clients[fds[i].fd]->getMessage()<< std::endl;
                     clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
+                    
                     // std::cout << "FINISHED: " << clients[fds[i].fd]->getRequest().getFinishReading() << std::endl;
                     // std::cout << "BUFF: " << buf << std::endl;
                     

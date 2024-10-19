@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 11:49:37 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/19 18:40:04 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@
 #define METHOD_NOT_ALLOWED 405
 #define NOT_ACCEPTABLE 406
 #define REQUEST_TIMEOUT 408
+#define CONFLICT 409
 
 // server errors
 #define INTERNAL_SERVER_ERROR 500
@@ -89,7 +90,6 @@ class Response {
         std::string bhConetentType;
         std::string bhName;
         std::string bhFileName;
-        std::string ContentType;
 
         bool checkPath( void );
         std::string getFullPath( std::string );
@@ -99,7 +99,7 @@ class Response {
         Response(const Response &Obj);
         Response& operator=(const Response & Obj);
         ~Response();
-
+        
         //seters and geters
         void setStatusMaps();
         void setFileName( std::string );
@@ -108,11 +108,11 @@ class Response {
 
         std::string getBody( void ) const;
         void setBody( std::string );
-        
+        std::string generateFileName();
         std::map<std::string, std::string> getMap( void ) const;
         void setMap(std::string _name, std::string _Value);
         
-        std::string getMimeType(std::string _Key);
+        // std::string getMimeType(std::string _Key);
         
         int getStatusCode( void );
         void setStatusCode( int );
@@ -140,7 +140,15 @@ class Response {
         std::string constructHeader( void );
         std::string createGetResponse( void );
 
+        // MIMETYPE
+        std::string getMimeType(std::string &contentType);
+
+
         // Post Response;
+        void resetBodyHeader( void );
+        int parseContentLenght(Client &cliendata, std::string &body);
+        int parseBoundarys(std::string &body, Client &clientData);
+        int closeFileafterWriting( void );
         int postBodyResponse(Client &clientData);
         int parseBoundaryPart(std::string body, Client & clientDatat);
         int parseChunckedType(std::string &body, Client & clientdata);

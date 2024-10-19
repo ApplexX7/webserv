@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/13 14:47:40 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/19 18:15:37 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,13 +40,14 @@ class Request{
         std::string locationName;
         std::string pathName;
         std::string quertyString;
-        ServerNode *server;
+        ServerNode *listenningServer;
         std::string port;
         std::string hostName;
         std::string methode;
         std::string Uri;
         std::map<std::string,std::string> headers;
         std::string bodybuffer;
+        Location serverLocation;
 
         // for the Post Methode
         int contentLenght;
@@ -60,8 +61,9 @@ class Request{
         Request(const Request &obj);
         Request& operator=(const Request &ope);
         ~Request();
+        
 
-
+        int getContentLenght();
         bool getFinishReading();
         int requestParserStart(Client &clientData);
         void setpathName(std::string _Name);
@@ -69,23 +71,22 @@ class Request{
         void setHeaders(std::string &name, std::string &value);
         void Setmethode(std::string _metode);
         void setport(std::string _port);
-        void setserverNode(ServerNode *_serverNode);
         void setlocationName();
         int ParseRequestLine(std::string &Message, Client &ClientData);
         int ParsingRequestHeaders(std::string RequestHeader);
-
+        Location *getServerLocation();
         std::string getlocationName();
         ServerNode &getserverNode() const;
         int Validmethode(std::string &methode);
         std::string FindHost(std::string HostLine);
         TypeTransf getTheBodyType();
-        std::string getcontentType();
         std::string getStartBoundary();
         std::string getEndofBoundary();
         std::string getTransferCoding();
-        int findLocationtobeUsed();
+        void    findLocationtobeUsed();
         //checkhostName
-        int CheckserverhostName(Client& ClientData);
+        void findServer(Client &ClientData);
+        // int CheckserverhostName(Client& ClientData);
         //GET parser function
         int CheckDirectory(Client &ClientData);
         

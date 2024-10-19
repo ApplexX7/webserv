@@ -6,18 +6,43 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 11:54:34 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/19 18:39:43 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 
+
+std::string Response::generateFileName(){
+	char buffer[100];
+	time_t rawtime;
+	time(&rawtime);
+
+	struct tm*  Info = gmtime(&rawtime);
+	std::strftime(buffer, 100, "%a%d%b%Y%H:%M%S", Info);
+	return ((std::string) buffer);
+}
+
+int Response::closeFileafterWriting(){
+	if (this->outFile.is_open()){
+		this->outFile.close();
+		return (0);
+	}
+	return (0);
+}
+
 int Response::openFile(Client &clientData){
-	if (!clientData.getRequest().getlocationName().empty()){
-		this->bFullPath = clientData.getRequest().getserverNode().getLocations()[clientData.getRequest().getlocationName()].getField("root").getValues()[0] + this->bhFileName;
+	struct stat buffer;
+	Location *PathLocation = clientData.getRequest().getServerLocation();
+	if (PathLocation != NULL){
+		this->bFullPath = PathLocation->getField("root").getValues()[0] + "/" + this->bhFileName + this->getMimeType(this->bhConetentType);
 	}
 	else{
-		this->bFullPath = clientData.getRequest().getserverNode().getFields()["root"].getValues()[0];
+		this->bFullPath = clientData.getRequest().getserverNode().getFields()["root"].getValues()[0] + "/" + this->bhFileName + this->getMimeType(this->contentType);
+	}
+	if (stat(this->bFullPath.c_str(), &buffer) == 0){
+		this->statusCode = 409;
+		return (1);
 	}
 	this->outFile.open(this->bFullPath, std::ios::binary);
 	if (!this->outFile.good()){
@@ -28,13 +53,10 @@ int Response::openFile(Client &clientData){
 }
 
 
-
 int Response::writeChunkinfile(Client &clientdata){
 	if (this->openFile(clientdata)){
-		// failed to open file;
 		return (1);
 	}
-
 	this->outFile.write(this->finaleBody.c_str(), this->finaleBody.size());
 	if (!this->outFile){
 		std::cerr << "Error: failed to write in file"<< std::endl;
@@ -119,10 +141,14 @@ int Response::checkforValidField(){
 	if (this->bhFileName.empty()){
 		return (1);	
 	}
-	else if (this->bhName.empty()){
-		return (1);
-	}
 	return (0);
+}
+
+void Response::resetBodyHeader( void ){
+	this->bFullPath.clear();
+	this->bhConetentType.clear();
+	this->bhCtDisposition.clear();
+	this->bhName.clear();
 }
 
 int Response::parseChunckedType(std::string &body, Client &clientdata){
@@ -133,32 +159,30 @@ int Response::parseChunckedType(std::string &body, Client &clientdata){
 	std::string startBoundary = clientdata.getRequest().getStartBoundary();
 	std::string endBoundary = clientdata.getRequest().getEndofBoundary();
 	size_t sizeofchunk;
+	this->bhFileName = this->generateFileName();
 
 	while (getline(ss, line)){
 		sizeofchunk = this->hexaToDecima(line);
-		std::cout << line <<std::endl;
-		std::cout <<   sizeofchunk << std::endl;
-		if (!sizeofchunk || (line.find(endBoundary) != std::string::npos)){
-			std::cout << "Not Yet" <<  std::endl;
+		if (!sizeofchunk){
 			break;
 		}
 		std::string buffer(sizeofchunk, '\0');
-		byteread = ss.read(&buffer[0], sizeofchunk).gcount();
+		byteread = ss.read(&buffer[0], sizeofchunk + 1).gcount();
 		if (byteread <= 0)
 			break;
 		if ((pos = buffer.find(startBoundary, pos)) != std::string::npos){
 			if (!this->finaleBody.empty()){
 				this->finaleBody.resize(this->finaleBody.length() - 2);
 				if (this->checkforValidField())
-					//content that don't have do i need to ignore him or store them on session??;
 					;
 				else {
 					this->writeChunkinfile(clientdata);
 				}
-				// go complite Post work
+				this->resetBodyHeader();
 				this->finaleBody.clear();
 			}
 			this->parseBodyHeaders(buffer.substr(startBoundary.length() + 2, buffer.find("\r\n\r\n")));
+			
 			buffer.erase(pos, buffer.find("\r\n\r\n") + 4);
 			if ((pos = buffer.find(endBoundary) != std::string::npos)){
 				buffer = buffer.substr(0, buffer.find(endBoundary) - 2);
@@ -170,53 +194,64 @@ int Response::parseChunckedType(std::string &body, Client &clientdata){
 	}
 	if (!this->finaleBody.empty()){
 		if (this->checkforValidField())
-			//content that don't have do i need to ignore him or store them on session??;
 			;
 		else {
 			this->writeChunkinfile(clientdata);
 		}
-		// go complite Post work
 	}
 	return (0);
 }
 
 
-// int Response::parseChunckedType(std::string &body, Client &clientdata){
-//     size_t secpos = 0;
-//     size_t pos = 0;
-//     std::string bufferdata;
-//     std::vector <std::string> chunked;
-//     if (body.find(clientdata.getRequest().getStartBoundary()) != std::string::npos) {
-//         while (pos != std::string::npos) {
-//             secpos = body.find(clientdata.getRequest().getStartBoundary(), pos + clientdata.getRequest().getStartBoundary().length());
-//             if (secpos != std::string::npos) {
-//             std::string chunk = body.substr(pos + clientdata.getRequest().getStartBoundary().length(),
-//                 secpos - (pos + clientdata.getRequest().getStartBoundary().length()));
-//             if (!chunk.empty() && chunk != clientdata.getRequest().getEndofBoundary()) {
-//                 chunked.push_back(chunk);
-//             }
-//             pos = secpos;
-//             } else {
-//                 break;
-//             }
-//         }
-//         // parse the Chunk Part;
-//         for (size_t i = 0; i < chunked.size(); i++){
-//             pos = chunked[i].find("\r\n\r\n");
-//             if (pos == std::string::npos){
-//                 return (0);
-//             }
-//             // parse the headers in every chunk;
-//             this->parseBodyHeaders(chunked[i].substr(2, pos));
-//             if (this->parseChunkedPart(chunked[i].substr(pos + 4), clientdata))
-//                 return (1);
-//         }
-//     }
-//     else {// if there is only chunked without boundary
-//         this->parseChunkedPart(body, clientdata);
-//     }
-//     return (0);
-// }
+int Response::parseBoundarys(std::string &body, Client &clientData){
+	size_t pos = 0;
+	size_t secpos = 0;
+	bool complite = false;
+	std::string startBd = clientData.getRequest().getStartBoundary();
+	std::string endBd = clientData.getRequest().getEndofBoundary();
+
+	while (!complite){
+		pos = body.find(startBd, pos);
+		if (pos != std::string::npos){
+			pos =  startBd.length() + pos;
+			if (!this->finaleBody.empty()){
+				this->closeFileafterWriting();
+				this->finaleBody.clear();
+			}
+			secpos = body.find("\r\n\r\n", pos) + 4;
+			this->parseBodyHeaders(body.substr(pos , secpos - pos));
+			pos = secpos;
+			if ((secpos = (body.find(startBd, pos))) != std::string::npos || (secpos = body.find(endBd, pos)) != std::string::npos){
+				if (body.find(endBd, pos) == secpos){
+					complite = true;
+				}
+				this->finaleBody = body.substr(pos, secpos - pos - 2);
+				this->writeChunkinfile(clientData);
+			}
+		}
+		else{
+			complite = true;
+		}
+	}
+	return (0);
+}
+
+
+int Response::parseContentLenght(Client &clientData, std::string &body){
+	size_t pos = 0;
+	this->bhFileName = this->generateFileName();
+	this->bhConetentType = clientData.getRequest().getValue("Content-Type");
+	pos = body.find("\r\n\r\n");
+	if (pos != std::string::npos){
+		this->finaleBody = body.substr(0, pos);
+	}
+	else
+		this->finaleBody = body;
+	this->writeChunkinfile(clientData);
+	this->closeFileafterWriting();
+	return (0);
+}
+
 
 int  Response::postBodyResponse(Client &clientData){
 	// if (0){
@@ -229,16 +264,22 @@ int  Response::postBodyResponse(Client &clientData){
 	//     return (1);
 	// }
 	// check if body going to be excute in Cgi
-	if (clientData.getRequest().getTheBodyType() == BOUNDARY){
-		 this->parseChunckedType(clientData.getRequest().getBody(), clientData);
-		// if we had boundary
+	if (clientData.getRequest().getTheBodyType() == ENCODING){
+		if (this->parseChunckedType(clientData.getRequest().getBody(), clientData))
+			this->statusCode = 201;
+		else
+			return (1);
 	}
-	else if (clientData.getRequest().getTheBodyType() == ENCODING){
-		this->parseChunckedType(clientData.getRequest().getBody(), clientData);
-		// parsing the body for the chunk size;
+	else if (clientData.getRequest().getTheBodyType() == BOUNDARY){
+		this->parseBoundarys(clientData.getRequest().getBody(), clientData);
 	}
 	else if (clientData.getRequest().getTheBodyType() ==  FIXEDSIZE){
-		// parsing the body for the Fizxed lenght
+		if ((size_t)clientData.getRequest().getContentLenght() != clientData.getRequest().getBody().size()){
+			this->statusCode = 400;
+			return (1);
+		}
+		else
+			parseContentLenght(clientData, clientData.getMessage());
 	}
 	return (0);
 }

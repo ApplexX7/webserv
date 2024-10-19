@@ -6,16 +6,18 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 15:53:55 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/19 18:15:30 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 
 Request::Request(){
+	this->Uri = "";
 	this->finishReading = false;
 	this->compliteHeaderparser = false;
 	this->bodyType = NONE;
+	this->serverLocation = NULL;
 }
 
 bool Request::getFinishReading(){
@@ -40,38 +42,43 @@ void Request::setHeaders(std::string &name, std::string &value){
 	} else {
 		std::cerr << "Error: Header name or value is empty!" << std::endl;
 	}
-	// std:: cout << "******"<< "*****" << std::endl;
-	// std::cout << name << " : " << value << std::endl;
-	// std:: cout << "******"<< "*****" << std::endl;
 }
 
 void Request::printmap(){
-	// std::cout << "HEADER  :" << std::endl;
-	// for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it){
-	// 	std::cout << it->first << " : " << it->second << std::endl;
-	// }
+	std::cout << "HEADER  :" << std::endl;
+	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it){
+		std::cout << it->first << " : " << it->second << std::endl;
+	}
 }
 
-int Request::CheckserverhostName(Client & ClientData){
-    size_t i;
-    //find the listenning server
-    for (i = 0; i < ClientData.getServers().size(); i++){
-        if (ClientData.getServers()[i]->getListenField() == ClientData.getRequest().getport()){
-            for(size_t j = 0; j < ClientData.getServers()[i]->getFields()["server_name"].getValues().size(); j++){
-                if (ClientData.getServers()[i]->getFields()["server_name"].getValues()[j] ==  ClientData.getRequest().gethostName()){
-                    ClientData.getRequest().setserverNode(ClientData.getServers()[i]);
-                    return (0);
-                }
-            }
-            ClientData.getRequest().setserverNode(ClientData.getServers()[0]);
-			return (0);
-        }
-    }
-	return 1;
+
+void Request::findServer(Client &clientData){
+	std::vector<std::string> serverName;
+	std::vector<ServerNode*> &servers = clientData.getServers();
+	std::string Listen;
+
+	for (size_t i = 0; i < servers.size(); i++){
+		if (servers[i]->getField("listen").getValues()[0] == clientData.getListen()){
+			if (this->listenningServer == NULL){
+				this->listenningServer = servers[i];
+			}
+			serverName = servers[i]->getField("server_name").getValues();
+			for (size_t j = 0; j < serverName.size(); j++){
+				if (this->getValue("Host") == serverName[j]){
+					this->listenningServer = servers[j];
+					return ;
+				}
+			}
+		}
+	}
 }
 
 std::string Request::getpathName( void ){
 	return (this->pathName);
+}
+
+int Request::getContentLenght(){
+	return (this->contentLenght);
 }
 
 void Request::setpathName(std::string _Name){
@@ -142,10 +149,15 @@ int Request::ParseRequestLine(std::string &RqLine, Client &ClientData){
 	return (0);
 }
 
-int Request::findLocationtobeUsed(){
+Location *Request::getServerLocation(){
+	return (&this->serverLocation);
+}
+
+
+void Request::findLocationtobeUsed(){
 	std::string LongestMatch = "";
-	for (std::map<std::string, Location>::iterator it = this->server->getLocations().begin();
-		it != this->server->getLocations().end(); it++){
+	for (std::map<std::string, Location>::iterator it = this->listenningServer->getLocations().begin();
+		it != this->listenningServer->getLocations().end(); it++){
 
 			if (this->getUri().find(it->first) == 0){
 				if (it->first.length() > LongestMatch.length()){
@@ -154,11 +166,10 @@ int Request::findLocationtobeUsed(){
 		}
 	}
 	if (!LongestMatch.empty()){
-		this->locationName = LongestMatch;
-		return (0);
+		this->serverLocation = this->listenningServer->getLocations()[LongestMatch];
+		return ;
 	}
-	this->locationName = "";
-	return (1);
+	this->serverLocation = NULL;
 }
 
 std::string Request::FindHost(std::string HostLine){
@@ -177,8 +188,9 @@ std::string Request::FindHost(std::string HostLine){
     return "";
 }
 
+
 std::string Request::getlocationName(){
-	return (this->locationName);	
+	return (this->locationName);
 }
 
 int Request::ParsingTheRequest(Client &ClientData) {
@@ -217,21 +229,20 @@ int Request::ParsingTheRequest(Client &ClientData) {
 		}
 		this->setHeaders(name, Value);
 	}
+	this->findServer(ClientData);
+	this->findLocationtobeUsed();
 	size_t headerEnd = ClientData.getMessage().find("\r\n\r\n");
 	if (headerEnd != std::string::npos){
-		ClientData.getMessage().erase(0, ClientData.getMessage().find("\r\n\r\n") + 4);
+		ClientData.getMessage().erase(0,headerEnd + 4);
     	this->compliteHeaderparser= true;
 	}
 	if (this->methode == "GET" && this->compliteHeaderparser){
-		// this->CheckDirectory(ClientData);
-		//pass to the  get response
 		this->compliteHeaderparser = false;
 		this->finishReading = true;
-		return (0);
+		return (1);
 	}
 	else if (this->methode == "POST" && this->compliteHeaderparser){
-		if (this->ParsePostHeaders())
-			return (1);
+		this->ParsePostHeaders();
 	}
 	return 0;
 }
@@ -239,23 +250,18 @@ int Request::ParsingTheRequest(Client &ClientData) {
 
 // this funct need to be modified later
 int Request::requestParserStart(Client &clientData) {
-	// parse tell the  body;
+	std::cout <<  clientData.getMessage() << std::endl;
 	if (!this->compliteHeaderparser && this->ParsingTheRequest(clientData)){
-		std::cout << this->Uri << std::endl;
-		// problem in teh request pass to the repsonse
 		return (1);
 	}
-	// waiting to  teh body get complite
-	if (this->methode == "POST" && this->compliteHeaderparser){
+	if (this->methode == "POST" && this->compliteHeaderparser && !clientData.getMessage().empty()){
  		this->bodybuffer += clientData.getMessage();
 		if (this->parseBodyTypeBuffer(this->bodybuffer)){
-			//complite the body parser;
 			this->finishReading = true;
 			std::cout << "Complite the body  read\n\n\n\n\n " << std::endl;
-			if (clientData.getResponse().postBodyResponse(clientData)) {
-				return (1);
-			}
-			// return (1); // the body complite
+		}
+		if (clientData.getResponse().postBodyResponse(clientData)) {
+			return (1);
 		}
 		return (0);
 	}
@@ -268,7 +274,7 @@ std::string Request::getTransferCoding(){
 }
 
 std::string Request::getEndofBoundary(){
-	return (this->startofBoundary);
+	return (this->endofBoundary);
 }
 
 std::string Request::getStartBoundary(){
@@ -279,12 +285,8 @@ TypeTransf  Request::getTheBodyType(){
 	return (this->bodyType);
 }
 
-void Request::setserverNode(ServerNode *_ServerNode){
-	this->server = _ServerNode;
-}
-
 ServerNode& Request::getserverNode() const{
-	return *this->server;
+	return *this->listenningServer;
 }
 
 void Request::setport(std::string _Port){

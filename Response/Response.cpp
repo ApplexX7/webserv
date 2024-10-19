@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/15 12:15:37 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/16 15:44:39 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,14 +93,14 @@ std::map<std::string, std::string> Response::getMap() const {
 	return (this->ResponseMeth);
 }
 
-std::string Response::getMimeType(std::string _Key){
-	try{
-		return (this->mimeTypes.at(_Key));
-	} catch (const std::out_of_range& e) {
-		std::cerr << "Expection: Key not found" << e.what() << std::endl;
-		return "";
-	}
-}
+// std::string Response::getMimeType(std::string _Key){
+// 	try{
+// 		return (this->mimeTypes.at(_Key));
+// 	} catch (const std::out_of_range& e) {
+// 		std::cerr << "Expection: Key not found" << e.what() << std::endl;
+// 		return "";
+// 	}
+// }
 
 Client* Response::getClient( void ) {
 	return this->client;
