@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerNode.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/07 12:09:04 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/19 10:12:39 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ class ServerNode {
         std::map<std::string, Field > fields;
         std::map<std::string,  Location> locations;
         int fd;
+        unsigned long long maxSize;
 
     public:
         std::vector<std::string> allowedFields;
@@ -62,6 +63,18 @@ class ServerNode {
         void setFd( int );
 
         std::string getListenField( void );
+
+        class SocketException: public std::exception {
+            private:
+                std::string message;
+
+            public:
+                SocketException(std::string);
+
+                virtual const char* what() const throw();
+
+                virtual ~SocketException() throw();
+        };
 };
 
 #endif

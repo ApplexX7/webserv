@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/19 18:40:04 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/20 17:06:02 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,9 @@
 #define ACCEPTED 202
 #define NO_CONTENT 204
 #define PARTIAL_CONTENT 206
+
+// 30x
+#define NOT_MODIFIED 304
 
 //client error response
 #define BAD_REQUEST 400
@@ -77,12 +80,15 @@ class Response {
         unsigned long bytesSent;
         Location *location;
         unsigned long rangeStart;
+        bool isError;
+        bool isBody;
 
         std::string path;
 
         Client *client;
 
         // for Post Body
+        size_t chunkSize;
         std::ofstream outFile;
         std::string bFullPath;
         std::string finaleBody;
@@ -139,6 +145,8 @@ class Response {
         // response handlers
         std::string constructHeader( void );
         std::string createGetResponse( void );
+        std::string getErrorResponse( void );
+        Location* getPathLocation( std::string );
 
         // MIMETYPE
         std::string getMimeType(std::string &contentType);

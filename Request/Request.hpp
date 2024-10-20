@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/19 18:15:37 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/20 11:54:33 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ class Request{
         std::string getStartBoundary();
         std::string getEndofBoundary();
         std::string getTransferCoding();
+        void setFinishReading(bool var);
         void    findLocationtobeUsed();
         //checkhostName
         void findServer(Client &ClientData);

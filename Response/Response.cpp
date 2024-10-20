@@ -6,11 +6,12 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/16 15:44:39 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/20 17:05:57 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
+#include "../parsing/Parser.hpp"
 
 void initializeStatusTexts(std::map<int, std::string>& statusTexts) {
 	// 1xx
@@ -23,6 +24,9 @@ void initializeStatusTexts(std::map<int, std::string>& statusTexts) {
 	statusTexts[ACCEPTED] = "Accepted";
 	statusTexts[NO_CONTENT] = "No Content";
 	statusTexts[PARTIAL_CONTENT] = "Partial Content";
+
+	// 30x
+	statusTexts[NOT_MODIFIED] = "Not Modified";
 
 	// 4xx
 	statusTexts[BAD_REQUEST] = "Bad Request";
@@ -37,7 +41,7 @@ void initializeStatusTexts(std::map<int, std::string>& statusTexts) {
 	statusTexts[415] = "Unsupported Media Type";
 	statusTexts[416] = "Range Not Satisfiable";
 	statusTexts[422] = "Unprocessable Entity";
-	
+
 	// 5xx
 	statusTexts[INTERNAL_SERVER_ERROR] = "Internal Server Error";
 	statusTexts[501] = "Not Implemented";
@@ -66,6 +70,9 @@ Response::Response(){
 	this->contentLength = 0;
 	this->bytesSent = 0;
 	this->rangeStart = 0;
+	this->isError = false;
+	this->isBody = false;
+	this->chunkSize = 0;
 }
 
 
@@ -119,19 +126,25 @@ std::string Response::getFullPath( std::string path ) {
 	struct stat fileStat;
 	bool autoIndex = true;
 
-	if (locations.find(path) == locations.end()) 
+	location = this->getPathLocation(path);
+
+	if (!location) 
 		root = server.getField("root").getValues()[0];
 	else
 	{
-		location = &locations[path];
-		root = locations[path].getField("root").getValues()[0];
+		this->location = location;
+		root = location->getField("root").getValues()[0];
 	}
+
+	this->setPath(root);
+	this->checkPath();
+	
+	
 	fullPath = root + path;
 
-	// std::cout << "FULL PATH: " << fullPath << std::endl;
+	std::cout << "FULL PATH: " << fullPath << std::endl;
 
 	this->setPath(fullPath);
-
 	this->checkPath();
 
 	stat(fullPath.data(), &fileStat);
@@ -146,6 +159,11 @@ std::string Response::getFullPath( std::string path ) {
 
 	if (S_ISDIR(fileStat.st_mode)) {
 		
+		if (path[path.length() - 1] != '/')
+			fullPath += "/";
+
+		fullPath += "index.html";
+
 		// is dir
 		if (location) {
 			// path matches a location
@@ -155,14 +173,23 @@ std::string Response::getFullPath( std::string path ) {
 			autoIndex = server.getField("autoindex").getValues()[0] == "on";
 		}
 
-		if (path[path.length() - 1] != '/')
-			fullPath += "/";
-
-		if (autoIndex)
-			fullPath += "index.html";
+		try {
+			this->setPath(fullPath);
+			this->checkPath();
+		} catch (Response::ResponseException e) {
+			
+			// index doesn't exist or not enough permissions
+			if (autoIndex) {
+				fullPath = root + path;
+				this->setPath(fullPath);
+			}
+			else {
+				this->setStatusCode(NOT_FOUND);
+				throw Response::ResponseException("Not found");
+			}
+		}
+		
 	}
-	this->setPath(fullPath);
-	this->checkPath();
 	stat(fullPath.data(), &fileStat);
 	if (!S_ISDIR(fileStat.st_mode)) {
 		this->contentLength = fileStat.st_size;
@@ -176,15 +203,19 @@ std::string Response::getFullPath( std::string path ) {
 
 bool Response::checkPath( void ) {
 	if (access(this->path.data(), F_OK) != 0) {
-
 		// doesn't exist
-		this->statusCode = NOT_FOUND;
+		if (!this->isError)
+			this->statusCode = NOT_FOUND;
 		throw ResponseException("Page Not Found");
 	}
+	
 	if (access(this->path.data(), R_OK) != 0) {
-		this->statusCode = FORBIDDEN;
+		if (!this->isError)
+			this->statusCode = FORBIDDEN;
 		throw ResponseException("Permission Denied");
+		
 	}
+
 	return true;
 }
 
@@ -260,7 +291,7 @@ std::string getDirectoryLinks(std::string path, std::string uri) {
 	entry = readdir(dir);
 	while (entry) {
 		tmp = entry->d_name;
-		
+
 		if (tmp[0] != '.') {
 			if (uri.length() == 0 || uri == "/") {
 				res += "<li><a href=\"/" + tmp + "\">";
@@ -272,6 +303,7 @@ std::string getDirectoryLinks(std::string path, std::string uri) {
 		}
 		entry = readdir(dir);
 	}
+	closedir(dir);
 	return res + "</ul>";
 }
 
@@ -288,19 +320,31 @@ std::string getDateResponse(){
 std::string Response::constructHeader( void ) {
 	std::string header = "HTTP/1.1 ";
 
+	// if (this->isError && this->contentLength == 0) {
+	// 	this->statusCode = NOT_FOUND;
+	// }
+	
+
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
-	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
+
 	header += "Content-Type: " + this->contentType + "\r\n";
 	header += "Connection: keep-alive\r\n";
 	if (this->statusCode == PARTIAL_CONTENT)
 	{
 		unsigned long totalSize = this->rangeStart + this->contentLength;
-		header += "Content-Range: bytes " + std::to_string(this->rangeStart) 
+		header += "Content-Range: bytes " + std::to_string(this->rangeStart)
 		+ "-" + std::to_string(totalSize - 1) + "/" + std::to_string(totalSize) + "\r\n";
 	}
+	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
 	header += "Accept-Ranges: bytes\r\n";
 	header += "Date: " + getDateResponse() + "\r\n";
+	header += "Server: webserv/1.1\r\n";
 	header += "\r\n";
+
+	if (this->contentLength == 0)
+	{
+		this->status = FINISHED;
+	}
 
 	// std::cout << "HEADER: \n" << header << std::endl;
 
@@ -323,19 +367,17 @@ std::string Response::getFileChunk( void ) {
 	file.read(buff.data(), CHUNK_SIZE);
 	
 	std::streamsize bytesRead = this->file.gcount();
-	if (bytesRead <= 0)
+	if (bytesRead < 0)
 	{
-		std::cout << "ERROR READING" << std::endl;
+		std::cout << "ERROR READING FROM FILE" << std::endl;
 		this->status = FINISHED;
-		// exit(1);
 	}
 
 	std::string chunk(buff.data(), bytesRead);
 
-
 	this->bytesSent += bytesRead;
 
-	if (this->bytesSent > this->contentLength) {
+	if (this->bytesSent >= this->contentLength) {
 		this->status = FINISHED;
 		// this->file.close();
 	}
@@ -349,9 +391,7 @@ bool Response::checkAllowedMethod( std::string path ) {
 	std::string method = this->client->getRequest().getmethode();
 	std::vector<std::string> allowedMethods;
 
-	if (locations.find(path) != locations.end()) {
-		location = &locations[path];
-	}
+	location = this->getPathLocation(path);
 
 	if (!location)
 		return true;
@@ -377,6 +417,9 @@ void Response::reset( void ) {
 	this->statusCode = SUCCESS;
 	this->status = IDLE;
 	this->file.close();
+	this->path = "";
+	this->isError = false;
+	this->isBody = false;
 }
 
 void Response::extractRange( void ) {
@@ -408,13 +451,18 @@ void Response::extractRange( void ) {
 		exit(0);
 	}
 	this->contentLength -= this->rangeStart;
-	std::cout << "RANGE: " << this->rangeStart << std::endl;
 }
 
 std::string Response::createGetResponse( void ) {
 	std::string path = this->client->getRequest().getUri();
-	std::string chunk;
+	size_t pos = 0;
 
+	while ((pos = path.find("%20", pos)) != path.npos) {
+		path.replace(pos, 3, " ");
+		pos += 1;
+	}
+
+	std::string chunk;
 	try {
 
 		/* 
@@ -422,42 +470,140 @@ std::string Response::createGetResponse( void ) {
 			if not in on IDLE, read file and send
 		*/
 
-		if (this->statusCode >= 200 && this->statusCode < 300) {
-			if (this->status == IDLE) {
-				this->checkAllowedMethod(path);
-				this->getFullPath(path);
+		if (this->status == IDLE) {
+			this->checkAllowedMethod(path);
+			this->getFullPath(path);
 
-				// empty filename means it's a dir
-				if (this->fileName == "") {
-					this->body = getDirectoryLinks(this->path, path);
-					this->contentLength = body.length();
-					this->status = FINISHED;
-					return constructHeader() + this->body;
-				}
-				else {
-					// this is a file, set status to ONGOING to start sending chunks
-					this->status = ONGOING;
-					this->body = "";
+			// empty filename means it's a dir
+			if (this->fileName == "") {
+				this->body = getDirectoryLinks(this->path, path);
 
-					// std::cout << "HERE" << std::endl;
-
-					// extract range from header
-					this->extractRange();
-				}
+				this->contentLength = body.length();
+				this->statusCode = SUCCESS;
+				this->status = ONGOING;
+				this->isBody = true;
+				return constructHeader();
 			}
 			else {
-				// read from file
-				chunk = this->getFileChunk();
-				return chunk;
+				// this is a file, set status to ONGOING to start sending chunks
+				this->status = ONGOING;
+				this->body = "";
+
+				// extract range from header
+				this->extractRange();
 			}
 		}
-
-
+		else {
+			// read from file
+			if (this->isBody) {
+				chunk = this->body.substr(0, CHUNK_SIZE);
+				if (this->body.length() >= CHUNK_SIZE) {
+					this->body = this->body.substr(CHUNK_SIZE, this->body.length());
+				}
+				else
+					this->status = FINISHED;
+			}
+			else 
+				chunk = this->getFileChunk();
+			
+			return chunk;
+		}
 	} catch (ResponseException e) {
-		this->status = FINISHED;
 		std::cout << "Something went wrong with response: " << e.what() << std::endl;
+		if (!this->isError)
+		{
+			this->status = IDLE;
+			return this->getErrorResponse();
+		}
+		else
+		{
+			this->status = FINISHED;
+			this->body = "<h1>" + std::to_string(this->statusCode) + " " + this->getStatusText() + "</h1>";
+			this->contentLength = this->body.length();
+			return this->constructHeader() + this->body;
+		}
 	}
 	return this->constructHeader();
+}
+
+void printVector(std::vector<std::string> arr) {
+	std::cout << "[";
+	for (int i = 0; i < (int) arr.size(); i++) {
+		std::cout << arr[i];
+
+		if (!(i == (int) arr.size() - 1))
+			std::cout << ", ";
+	}
+	std::cout << "]\n";
+}
+
+Location *Response::getPathLocation(std::string path) {
+	ServerNode &server = this->client->getParentServer();
+	std::map<std::string, Location> &locations = server.getLocations();
+	std::map<std::string, Location>::iterator it;
+	Location *location = NULL;
+	std::string lastMatch = "";
+	std::string root;
+
+	for (it = locations.begin(); it != locations.end(); it++)
+	{
+		if (path.find(it->first) != path.npos) {
+			// location match
+			if (it->first.length() > lastMatch.length())
+			{
+				location = &it->second;
+				lastMatch = it->first;
+			}
+		}
+	}
+	if (location) {
+		
+		// check location permission
+		root = location->getField("root").getValues()[0];
+		this->setPath(root + "/" + lastMatch);
+		this->checkPath();
+	}
+
+	return location;
+}
+
+std::string Response::getErrorResponse( void ) {
+	/* 
+		steps:
+			- look for error directive value
+			- look for corresponding location
+			- if no location found, use my default
+	*/
+
+	std::vector<std::string> errorField;
+	std::vector<std::string> errorPages;
+	std::string path = "";
+	bool found = false;
+
+	if (this->location)
+		errorPages = this->location->getField("error_page").getValues();
+	errorField = this->client->getParentServer().getField("error_page").getValues();
+	errorPages.insert(errorPages.end(), errorField.begin(), errorField.end());
+	
+	for (int i = 0; i < (int) errorPages.size(); i++) {
+		if (Parser::isNumber(errorPages[i]))
+		{
+			if (std::stoi(errorPages[i]) == this->statusCode)
+				found = true;
+		}
+		else {
+			if (found) {
+				path = errorPages[i];
+				break ;
+			}
+		}
+	}
+	if (path != "")
+		this->client->getRequest().SetUri(path);
+	this->isError = true;
+	std::cout << "ERROR PATH: " << path << std::endl;
+
+	return this->createGetResponse();
 }
 
 Response::~Response(){

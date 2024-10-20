@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerNode.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/15 11:28:53 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/19 10:56:41 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,10 @@ void ServerNode::initializeServer( ListNode* server ) {
     std::vector<std::string> splitField;
     std::string path;
     std::string trimedField;
+    std::string sizeStr;
+    unsigned long long size;
+    char unit;
+    int length;
 
     ListNode *child = server->getChild();
 
@@ -52,13 +56,13 @@ void ServerNode::initializeServer( ListNode* server ) {
 
         // Parser::validateField(splitField[0], values);
         if (splitField[0] == "listen" && values[0].find(":") == values[0].npos)
-            this->getField(splitField[0]).updateValue("0.0.0.0:" + values[0], 0);
+            this->getField(splitField[0]).updateValue("127.0.0.1:" + values[0], 0);
         Parser::validateField(splitField[0], this->getField(splitField[0]).getValues());
     }
 
     // if server has no listen directive
     if (!this->fieldExists("listen"))
-        this->addField("listen", "0.0.0.0:8000");
+        this->addField("listen", "127.0.0.1:8080");
     
     // if server has no server_name
     if (!this->fieldExists("server_name"))
@@ -70,7 +74,11 @@ void ServerNode::initializeServer( ListNode* server ) {
 
     // if server has no autoindex
     if (!this->fieldExists("autoindex"))
-        this->addField("autoindex", "on");
+        this->addField("autoindex", "off");
+    
+    // if server has no max size
+    if (!this->fieldExists("client_max_body_size"))
+        this->addField("client_max_body_size", "1m");
 
     // insert locations
     while (child != NULL)
@@ -79,9 +87,8 @@ void ServerNode::initializeServer( ListNode* server ) {
         splitField = (Parser::strSplit(child->getContent(), ' '));
         if (splitField.size() != 2 || splitField[0] != "location")
             throw Parser::ParsingException("Expected location directive but got \"" + splitField[0] + "\"");
-        
-        path = splitField[1];
 
+        path = splitField[1];
         if (this->locationExists(path))
             throw Parser::ParsingException("Duplicate locations for path " + path);
 
@@ -94,14 +101,16 @@ void ServerNode::initializeServer( ListNode* server ) {
                 throw Parser::ParsingException("Directive has no arguments " + splitField[0]);
             if (splitField[0] != "error_page" && this->locationFieldExists(path, splitField[0]))
             {
-                
                 throw Parser::ParsingException("Duplicate directives for " + splitField[0]);
             }
-            
+
             for (int j = 1; j < (int) splitField.size(); j++) {
                 // check for status code format in case of error pages
                 if (splitField[0] == "error_page")
                 {
+                    if (j == (int) splitField.size() - 1
+                    && Parser::isNumber(splitField[j]))
+                        throw Parser::ParsingException("Invalid path for error pages");
                     if (j < (int) splitField.size() - 1
                     && !Parser::isNumber(splitField[j]))
                         throw Parser::ParsingException("Status code must be numeric");
@@ -114,14 +123,23 @@ void ServerNode::initializeServer( ListNode* server ) {
 
             Parser::validateField(splitField[0], this->locations[path].getField(splitField[0]).getValues());
         }
-        if (this->locations.find(path) == this->locations.end())
-        {
-            // location has no directives
-            this->locations[path] = NULL;
-        }
         this->locations[path].setServer(this);
         child = child->getNext();
     }
+    
+    length = this->getField("client_max_body_size").getValues()[0].length();
+    sizeStr = this->getField("client_max_body_size").getValues()[0].substr(0, length - 1);
+    unit = std::toupper(this->getField("client_max_body_size").getValues()[0].substr(length - 1, 1)[0]);
+    
+    size = std::stoull(sizeStr);
+
+    if (unit == 'K')
+        size *= 1024;
+    if (unit == 'M')
+        size *= 1024 * 1024;
+    if (unit == 'G')
+        size *= 1024 * 1024 * 1024;
+    this->maxSize = size;
 }
 
 // canonical form
@@ -153,10 +171,10 @@ void setAllowedFields( ServerNode* server ) {
     server->allowedLocationFields.push_back("autoindex");
     server->allowedLocationFields.push_back("file_upload");
     server->allowedLocationFields.push_back("error_page");
-    
 }
 
 ServerNode::ServerNode( ListNode *server ) {
+    this->fd = -1;
     setAllowedFields(this);
     initializeServer(server);
 };
@@ -211,40 +229,47 @@ bool ServerNode::locationFieldExists( std::string path, std::string key ) {
     return false;
 }
 
+/*
+    - Opens a new socket and returns its fd
+*/
+
 int ServerNode::generateServerFd( void ) {
     std::vector<std::string> splitListen;
     struct addrinfo hints;
     struct addrinfo *servinfo;
     int sockfd;
+    int optval;
 
     splitListen = Parser::strSplit(this->fields["listen"].getValues()[0], ':');
     Parser::ft_memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    // hints.ai_flags = AI_PASSIVE;
     getaddrinfo(splitListen[0].data(), splitListen[1].data(), &hints, &servinfo);
     sockfd = socket(PF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
     {
-        std::cout << "Error opening socket: ";
-        std::cout << strerror(errno) << std::endl;
-        return -1;
+        freeaddrinfo(servinfo);
+        throw ServerNode::SocketException("Error opening server socket");
     }
 
-    int optval = 1;
+    optval = 1;
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
+    // bind socket to port and address
     if (bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) != 0)
     {
-        std::cout << "Error binding socket: ";
-        std::cout << strerror(errno) << std::endl;
+        freeaddrinfo(servinfo);
+        close(sockfd);
+        throw ServerNode::SocketException("Error binding server socket");
         return -1;
     }
 
+    // start listening on socket
     if (listen(sockfd, 10) != 0)
     {
-        std::cout << "Error listening on socket: ";
-        std::cout << strerror(errno) << std::endl;
+        freeaddrinfo(servinfo);
+        close(sockfd);
+        throw ServerNode::SocketException("Error listening on server socket");
         return -1;
     }
     freeaddrinfo(servinfo);
@@ -265,3 +290,11 @@ std::string ServerNode::getListenField( void ) {
     std::string listen = this->getField("listen").getValues()[0];
     return listen;
 }
+
+const char* ServerNode::SocketException::what() const throw() {
+    return message.c_str();
+};
+
+ServerNode::SocketException::SocketException(std::string msg): message(msg) {};
+
+ServerNode::SocketException::~SocketException() throw() {};

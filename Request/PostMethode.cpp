@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/07 09:49:44 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/19 18:12:42 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/20 21:06:45 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ int Request::ParsePostHeaders(){
 		this->contentType = tempStr.substr(0, tempStr.find("boundary=") - 1);
 		this->startofBoundary = "--" + tempStr.substr(tempStr.find("boundary=") + std::strlen("boundary="));
 		this->endofBoundary = this->startofBoundary + "--";
+		this->bodyType = BOUNDARY;
 	}
 	else
 		this->contentType = tempStr;
@@ -30,6 +31,9 @@ int Request::ParsePostHeaders(){
 	else
 		this->contentLenght = 0;
 	this->TransferCoding = this->getValue("Transfer-Encoding");
+	if (!this->TransferCoding.empty()){
+		this->bodyType = ENCODING;
+	}
 	return (0);
 }
 
@@ -39,17 +43,18 @@ int Request::ParsePostHeaders(){
 int Request::parseBodyTypeBuffer(std::string &bufferedBody){
 	if (!this->TransferCoding.empty()){
 		if (this->TransferCoding == "chunked"){
-			if (bufferedBody.find("0\r\n") != std::string::npos){
+			if (bufferedBody.find("0\r\n\r\n") != std::string::npos){
 				this->bodyType = ENCODING;
 				return (1);
 			}
-			else if (this->bodybuffer.find("0\r\n") != std::string::npos){
+			else if (this->bodybuffer.find("0\r\n\r\n") != std::string::npos){
 				this->bodyType = ENCODING;
 				return (1);
 			}
 		}
 	}
 	else if (!this->startofBoundary.empty()){
+
 		if (bufferedBody.find(this->endofBoundary) != std::string::npos){
 			this->bodyType = BOUNDARY;
 			return (1);

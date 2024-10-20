@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:11:02 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/15 11:37:59 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/20 12:05:12 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ class Client {
         Response &getResponse( void );
         void resetResponse( void );
 
+        bool responseReady;
     private:
         std::vector<ServerNode*> &servers;
         ServerNode* parentServer;
@@ -57,7 +58,6 @@ class Client {
         std::string listen;
         int fd;
         bool keepAlive;
-        bool responseReady;
 
         // Req
         Request *request;

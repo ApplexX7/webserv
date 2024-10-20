@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/19 18:39:43 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/20 21:08:00 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@ std::string Response::generateFileName(){
 int Response::closeFileafterWriting(){
 	if (this->outFile.is_open()){
 		this->outFile.close();
-		return (0);
 	}
 	return (0);
 }
@@ -40,10 +39,14 @@ int Response::openFile(Client &clientData){
 	else{
 		this->bFullPath = clientData.getRequest().getserverNode().getFields()["root"].getValues()[0] + "/" + this->bhFileName + this->getMimeType(this->contentType);
 	}
+	if (this->outFile.is_open()){
+		return (0);
+	}
 	if (stat(this->bFullPath.c_str(), &buffer) == 0){
 		this->statusCode = 409;
 		return (1);
 	}
+	std::cout <<this->bFullPath << std::endl;
 	this->outFile.open(this->bFullPath, std::ios::binary);
 	if (!this->outFile.good()){
 		std::cerr << "Error: Failed to create the file"<< std::endl;
@@ -153,51 +156,77 @@ void Response::resetBodyHeader( void ){
 
 int Response::parseChunckedType(std::string &body, Client &clientdata){
 	size_t pos = 0;
-	int byteread = 0;
+	int byteRead = 0;
 	std::string line;
 	std::stringstream ss(body);
-	std::string startBoundary = clientdata.getRequest().getStartBoundary();
+	std::string startBoundary = clientdata.getRequest().getStartBoundary() + "\r\n";
 	std::string endBoundary = clientdata.getRequest().getEndofBoundary();
-	size_t sizeofchunk;
-	this->bhFileName = this->generateFileName();
-
-	while (getline(ss, line)){
-		sizeofchunk = this->hexaToDecima(line);
-		if (!sizeofchunk){
+	while (true){
+		if (!this->chunkSize){
+			if (!std::getline(ss, line) || line.empty())
+				break;
+			this->chunkSize = this->hexaToDecima(line);
+			if (!this->chunkSize)
+				break;
+		}
+		std::string buffer(this->chunkSize, '\0');
+		byteRead = ss.read(&buffer[0], this->chunkSize).gcount();
+		if (byteRead <= 0){
 			break;
 		}
-		std::string buffer(sizeofchunk, '\0');
-		byteread = ss.read(&buffer[0], sizeofchunk + 1).gcount();
-		if (byteread <= 0)
-			break;
-		if ((pos = buffer.find(startBoundary, pos)) != std::string::npos){
-			if (!this->finaleBody.empty()){
-				this->finaleBody.resize(this->finaleBody.length() - 2);
-				if (this->checkforValidField())
-					;
-				else {
-					this->writeChunkinfile(clientdata);
+		if (byteRead < (int)this->chunkSize){
+			this->chunkSize -= byteRead;
+			buffer.resize(byteRead);
+		}
+		else
+			this->chunkSize = 0;
+		pos = buffer.find(startBoundary);
+		if (pos != std::string::npos){
+			if (pos != 0){
+				this->finaleBody += body.substr(0, pos - 2);
+				if (!this->finaleBody.empty()){
+					if (this->checkforValidField())
+						;
+					else {
+						this->writeChunkinfile(clientdata);
+					}
+					this->closeFileafterWriting();
+					this->resetBodyHeader();
+					this->finaleBody.clear();
 				}
-				this->resetBodyHeader();
-				this->finaleBody.clear();
 			}
-			this->parseBodyHeaders(buffer.substr(startBoundary.length() + 2, buffer.find("\r\n\r\n")));
-			
-			buffer.erase(pos, buffer.find("\r\n\r\n") + 4);
-			if ((pos = buffer.find(endBoundary) != std::string::npos)){
-				buffer = buffer.substr(0, buffer.find(endBoundary) - 2);
-				this->finaleBody += buffer;
-				break;
-			}
+			size_t headerEnd = buffer.find("\r\n\r\n", pos);
+			this->parseBodyHeaders(buffer.substr(pos + startBoundary.length(), headerEnd - pos - startBoundary.length()));
+			buffer = buffer.substr(headerEnd + 4);
 		}
 		this->finaleBody += buffer;
+		pos = this->finaleBody.find(endBoundary);
+		if (pos != std::string::npos){
+			this->finaleBody = this->finaleBody.substr(0, pos - 2);
+			break;
+		}
+		if (this->chunkSize == 0 && !this->finaleBody.empty()){
+			if (this->checkforValidField())
+					;
+			else {
+				this->writeChunkinfile(clientdata);
+			}
+			this->finaleBody.clear();
+		}
+		if (ss.eof())
+			break;
 	}
 	if (!this->finaleBody.empty()){
+		pos = this->finaleBody.find(endBoundary);
+		if (pos != std::string::npos){
+			this->finaleBody = this->finaleBody.substr(0, pos - 2);
+		}
 		if (this->checkforValidField())
 			;
 		else {
 			this->writeChunkinfile(clientdata);
 		}
+		this->finaleBody.clear();
 	}
 	return (0);
 }
@@ -206,31 +235,51 @@ int Response::parseChunckedType(std::string &body, Client &clientdata){
 int Response::parseBoundarys(std::string &body, Client &clientData){
 	size_t pos = 0;
 	size_t secpos = 0;
-	bool complite = false;
-	std::string startBd = clientData.getRequest().getStartBoundary();
+	bool complete = false;
+	std::string startBd = clientData.getRequest().getStartBoundary() + "\r\n";
 	std::string endBd = clientData.getRequest().getEndofBoundary();
 
-	while (!complite){
+	while (!complete){
 		pos = body.find(startBd, pos);
 		if (pos != std::string::npos){
-			pos =  startBd.length() + pos;
-			if (!this->finaleBody.empty()){
+			pos =  startBd.length() + pos + 2;
+			if (this->finaleBody.empty()){
 				this->closeFileafterWriting();
 				this->finaleBody.clear();
 			}
 			secpos = body.find("\r\n\r\n", pos) + 4;
 			this->parseBodyHeaders(body.substr(pos , secpos - pos));
 			pos = secpos;
-			if ((secpos = (body.find(startBd, pos))) != std::string::npos || (secpos = body.find(endBd, pos)) != std::string::npos){
-				if (body.find(endBd, pos) == secpos){
-					complite = true;
-				}
+			size_t endbb = body.find(endBd, pos);
+			secpos = body.find(startBd, pos);
+
+            if (endbb != std::string::npos && endbb <= secpos) {
+                secpos = endbb;
+                complete = true;
+            }
+			if (secpos != std::string::npos){
 				this->finaleBody = body.substr(pos, secpos - pos - 2);
 				this->writeChunkinfile(clientData);
+				this->finaleBody.clear();
+
+			}
+			else{
+				this->finaleBody = body.substr(pos);
+				this->writeChunkinfile(clientData);
+				this->finaleBody.clear();
+				complete = true;
 			}
 		}
 		else{
-			complite = true;
+			size_t endpos = body.find(endBd);
+			if (endpos != std::string::npos){
+				this->finaleBody = body.substr(0,endpos - 2);
+			}
+			else
+				this->finaleBody = body;
+			writeChunkinfile(clientData);
+			this->finaleBody.clear();
+			complete = true;
 		}
 	}
 	return (0);
@@ -264,22 +313,33 @@ int  Response::postBodyResponse(Client &clientData){
 	//     return (1);
 	// }
 	// check if body going to be excute in Cgi
+	// std::cout << clientData.getRequest().getBody() <<std::endl;
 	if (clientData.getRequest().getTheBodyType() == ENCODING){
-		if (this->parseChunckedType(clientData.getRequest().getBody(), clientData))
+		std::cout << clientData.getRequest().getBody() << std::endl;
+		if (!this->parseChunckedType(clientData.getRequest().getBody(), clientData) &&  clientData.getRequest().getFinishReading()){
+			clientData.responseReady = true;
 			this->statusCode = 201;
+		}
 		else
 			return (1);
 	}
 	else if (clientData.getRequest().getTheBodyType() == BOUNDARY){
-		this->parseBoundarys(clientData.getRequest().getBody(), clientData);
+		if (!this->parseBoundarys(clientData.getRequest().getBody(), clientData) && clientData.getRequest().getFinishReading()){
+			clientData.responseReady = true;
+		}
 	}
 	else if (clientData.getRequest().getTheBodyType() ==  FIXEDSIZE){
 		if ((size_t)clientData.getRequest().getContentLenght() != clientData.getRequest().getBody().size()){
+			clientData.responseReady = true;
 			this->statusCode = 400;
 			return (1);
 		}
 		else
 			parseContentLenght(clientData, clientData.getMessage());
+	}
+	else if (clientData.getRequest().getTheBodyType() == NONE){
+		clientData.responseReady = true;
+		clientData.getRequest().setFinishReading(true);
 	}
 	return (0);
 }

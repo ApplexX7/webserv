@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/17 18:14:51 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/20 15:09:57 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,52 +18,59 @@ Webserv::Webserv( void ) {
     this->listHead = NULL;
 }
 
-void printChilds( ListNode *child)
-{
-    std::vector<std::string> fields;
-    while (child)
-    {
-        std::cout << "\tchild start: " + child->getContent() << std::endl;
-        fields = child->getFields();
-        for (size_t i = 0; i < fields.size(); i++)
-            std::cout << "\t\t" << fields[i] << std::endl;
-        child = child->getNext();
-    }
-}
+// void printChilds( ListNode *child)
+// {
+//     std::vector<std::string> fields;
+//     while (child)
+//     {
+//         std::cout << "\tchild start: " + child->getContent() << std::endl;
+//         fields = child->getFields();
+//         for (size_t i = 0; i < fields.size(); i++)
+//             std::cout << "\t\t" << fields[i] << std::endl;
+//         child = child->getNext();
+//     }
+// }
 
-void printServerNode(ListNode* server) {
-    ServerNode n(server);
-    std::map<std::string, Field > fields;
+// void printServerNode(ListNode* server) {
+//     ServerNode n(server);
+//     std::map<std::string, Field > fields;
 
-    std::map<std::string, Field > f = n.getFields();
+//     std::map<std::string, Field > f = n.getFields();
 
-    std::map<std::string, Field >::iterator it;
-    for (it = f.begin(); it != f.end(); it++)
-    {
-        std::cout << it->first << " => ";
-        for (int i = 0; i < (int) it->second.getValues().size(); i++) {
-            std::cout << it->second.getValues()[i] << " ";
-        }
-        std::cout << std::endl;
-    }
+//     std::map<std::string, Field >::iterator it;
+//     for (it = f.begin(); it != f.end(); it++)
+//     {
+//         std::cout << it->first << " => ";
+//         for (int i = 0; i < (int) it->second.getValues().size(); i++) {
+//             std::cout << it->second.getValues()[i] << " ";
+//         }
+//         std::cout << std::endl;
+//     }
 
-    std::map<std::string, Location > locations = n.getLocations();
+//     std::map<std::string, Location > locations = n.getLocations();
 
-    std::map<std::string, Location >::iterator loc_it;
+//     std::map<std::string, Location >::iterator loc_it;
         
     
-    for (loc_it = locations.begin(); loc_it != locations.end(); loc_it++) {
-        std::cout << loc_it->first << ": " << std::endl;
-        fields = loc_it->second.getFields();
-        for (it = fields.begin(); it != fields.end(); it++) {
-            std::cout << "\t" << it->first << " => ";
-            for (int i = 0; i < (int) it->second.getValues().size(); i++) {
-                std::cout << it->second.getValues()[i] << " ";
-            }
-            std::cout << std::endl;
-        }
-    }
-}
+//     for (loc_it = locations.begin(); loc_it != locations.end(); loc_it++) {
+//         std::cout << loc_it->first << ": " << std::endl;
+//         fields = loc_it->second.getFields();
+//         for (it = fields.begin(); it != fields.end(); it++) {
+//             std::cout << "\t" << it->first << " => ";
+//             for (int i = 0; i < (int) it->second.getValues().size(); i++) {
+//                 std::cout << it->second.getValues()[i] << " ";
+//             }
+//             std::cout << std::endl;
+//         }
+//     }
+// }
+
+
+/*
+    - Initializes the servers
+    - Displays warning in the case of servers with conflicting ports/names
+    
+*/
 
 void Webserv::init( std::string configPath ) {
     Parser parser(configPath);
@@ -86,7 +93,6 @@ void Webserv::init( std::string configPath ) {
 
     tmp = head;
     
-    
     while (tmp) {
         // printServerNode(tmp);
         this->servers.push_back(new ServerNode(tmp));
@@ -96,8 +102,7 @@ void Webserv::init( std::string configPath ) {
             // check if there's a server with the same host:port
             listenValue = this->servers[this->servers.size() - 1]->getField("listen").getValues()[0];
             otherListenValue = this->servers[i]->getField("listen").getValues()[0];
-            
-            
+
             // same host:port
             if (listenValue == otherListenValue) {
                     // check server_names
@@ -116,32 +121,26 @@ void Webserv::init( std::string configPath ) {
 
         tmp = tmp->getNext();
     }
-    // std::cout << "ALL GOOD" << std::endl;
 }
 
-Webserv::~Webserv( void ) {
-    ListNode::freeListNode(this->listHead);
-    
-    // free servers
-    for (int i = 0; i < (int) this->servers.size(); i++)
-    {
-        delete this->servers[i];
-    }
 
-    std::cout << "WEBSERV DESTRUCTOR CALLED" << std::endl;
-}
 
 bool isServerFd(std::vector<int> serverFds, int fd) {
     return (std::find(serverFds.begin(), serverFds.end(), fd) != serverFds.end());
 }
 
 
+/*
+    - Starts up the web server
+    - Opens socket for each server
+    - Listens for events on sockets using poll (new connection, input, output, disconnection)
+    - Parses Requests and generates responses
+*/
 
 void Webserv::listen( void ) {
     std::vector<int> serverFds;
-    std::vector<int> clientFds;
+    std::vector<int> &clientFds = this->clientFds;
     std::string message;
-
     std::map<int, Client*> clients;
     
     struct pollfd newPollFd;
@@ -150,11 +149,16 @@ void Webserv::listen( void ) {
     socklen_t addr_size;
     int new_fd;
     char buf[CHUNK_SIZE + 1];
+    std::string res;
 
     addr_size = sizeof(their_addr);
-
     for (int i = 0; i < (int) this->servers.size(); i++) {
-        serverFds.push_back(this->servers[i]->generateServerFd());
+        try {
+            serverFds.push_back(this->servers[i]->generateServerFd());
+        } catch (ServerNode::SocketException& e) {
+            std::cerr << e.what() << std::endl;
+            return ;
+        }
     }
 
     size = serverFds.size();
@@ -166,10 +170,13 @@ void Webserv::listen( void ) {
         fds[i].events = POLLIN | POLLOUT | POLLHUP;
     }
 
+    std::cout << "SERVER STARTED LISTENING" << std::endl;
+
     while (1) {
-        if (poll(fds.data(), fds.size(), 100) >= 0) {
+        if (poll(fds.data(), fds.size(), 100) > 0) {
             for (int i = 0; i < (int) fds.size(); i++)
             {
+                // client disconnected
                 if (fds[i].revents & POLLHUP)
                 {
                     std::cout << "client disconnected " << fds[i].fd << std::endl;
@@ -180,92 +187,76 @@ void Webserv::listen( void ) {
                     continue ;
                 }
 
+                // client wants to connect
                 if (fds[i].revents & POLLIN
                 && isServerFd(serverFds, fds[i].fd))
                 {
                     new_fd = accept(fds[i].fd, (struct sockaddr *)&their_addr, &addr_size);
-                    std::cout << "new connection on " << fds[i].fd << std::endl;
-                    newPollFd.events = POLLIN | POLLHUP;
-                    clientFds.push_back(new_fd);
-                    newPollFd.fd = new_fd;
-                    fds.push_back(newPollFd);
-                    clients[new_fd] = new Client(this->servers, "", new_fd);
-                    clients[new_fd]->setListen(this->getServerByFd(fds[i].fd)->getListenField());
+
+                    if (new_fd < 0)
+                    {
+                        std::cout << "Error opening connection on " << fds[i].fd << std::endl;
+                    }
+                    else {
+                        std::cout << "new connection on " << new_fd << std::endl;
+                        newPollFd.events = POLLIN | POLLHUP;
+                        clientFds.push_back(new_fd);
+                        newPollFd.fd = new_fd;
+                        fds.push_back(newPollFd);
+                        clients[new_fd] = new Client(this->servers, "", new_fd);
+                        clients[new_fd]->setListen(this->getServerByFd(fds[i].fd)->getListenField());
+                    }
                 }
+
+                // client wants to send data
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLIN)
                 {
-                    int bytes_read  = recv(fds[i].fd, buf, CHUNK_SIZE, 0);
-                    if (bytes_read == -1)
+                    int bytes_read = 0;
+                    bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, 0);
+                    if (bytes_read <= 0)
                     {
                         std::cout << "error reading" << std::endl;
                         bytes_read = 0;
-                    } 
-                    // else if (bytes_read < CHUNK_SIZE) {
-                    //     // std::cout << "Bytes read is 0"<< std::endl;
-                    // std::cout <<  buf << std::endl;
-                    // for(int i = 0; i < bytes_read; i++)
-                    // {
-                    //     std::cout << buf[i];
-                    // }
-                    //     // exit (1);
-                    // }
+                    }
                     buf[bytes_read] = 0;
-                    // if (bytes_read == CHUNK_SIZE)
-                    //     std::cout <<  buf << std::endl;
-                    
-                    // std::cout << "RECEIVED :\n" << buf << std::endl;
                     message.assign(buf, bytes_read);
                     clients[fds[i].fd]->setMessage(message);
-                    // std::cout << clients[fds[i].fd]->getMessage()<< std::endl;
+                    // std::cout << clients[fds[i].fd]->getMessage() << std::endl;
                     clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
-                    
-                    // std::cout << "FINISHED: " << clients[fds[i].fd]->getRequest().getFinishReading() << std::endl;
-                    // std::cout << "BUFF: " << buf << std::endl;
-                    
+
                     if ((*clients[fds[i].fd]).getRequest().getFinishReading())
                     {
-                        // std::cout << buf << std::endl;
-                        // std::cout << "***************" << std::endl;
-                        // message.assign(buf);
-                        // std::cout << "RECEIVED 2 :\n" << buf << std::endl;
-                        // clients[fds[i].fd]->appendMessage(buf);
-                        std::cout << "client finished writing, full message:" << std::endl;
+                        std::cout << "client finished writing" << std::endl;
 
-
+                        // find server responsible for this client
                         clients[fds[i].fd]->findParentServer();
 
-                        // std::vector<std::string> vals = clients[fds[i].fd]->getParentServer().getField("listen").getValues();
-
-                        // std::cout << "Parent server " << (clients[fds[i].fd]->getParentServer().getField("listen").getValues() != NULL ? "YES" : "None") << std::endl;
-                        // clients[fds[i].fd]->getParentServer();
-                        
+                        // listen for client readiness to receive
                         fds[i].events = POLLOUT;
-                        // printf("hello\n");
-                        
-                        // todo: parse request and generate response using client.handle_request
                     }
                 }
+
+                // client wants ready to receive data
                 else if (!isServerFd(serverFds, fds[i].fd)
-                && fds[i].revents & POLLOUT)
+                && fds[i].revents & POLLOUT && (clients[fds[i].fd]->responseReady))
                 {
-                    clients[fds[i].fd]->findParentServer();
-
                     // send response
+                    if (clients[fds[i].fd]->getRequest().getmethode() == "GET")
+                        res = clients[fds[i].fd]->getResponse().createGetResponse();
+                    else {
+                        res = clients[fds[i].fd]->getResponse().constructHeader();
+                    }
                     
-                    std::string res = clients[fds[i].fd]->getResponse().createGetResponse();
-
                     send(fds[i].fd, res.data(), res.size(), MSG_SEND);
-                    // std::cout << "sent: " << send(fds[i].fd, res.data(), res.size(), MSG_SEND) << std::endl;
 
-                    // reset message 
+                    // reset message
                     clients[fds[i].fd]->setMessage("");
 
                     std::string connection = clients[fds[i].fd]->getRequest().getValue("Connection");
-                    
+
                     if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
-                        if (connection == "keep-alive"
-                        && clients[fds[i].fd]->getResponse().getStatusCode() < 400) {
+                        if (connection == "keep-alive") {
                             fds[i].events = POLLIN | POLLHUP;
                             clients[fds[i].fd]->getResponse().reset();
                         }
@@ -288,4 +279,24 @@ ServerNode *Webserv::getServerByFd( int fd ) {
             return (this->servers[i]);
     }
     return NULL;
+}
+
+/*
+    - Frees up parsing linked list's resources
+    - Closes server sockets
+*/
+Webserv::~Webserv( void ) {
+    ListNode::freeListNode(this->listHead);
+    
+    // free servers
+    for (int i = 0; i < (int) this->servers.size(); i++)
+    {
+        close(this->servers[i]->getFd());
+        delete this->servers[i];
+    }
+
+    for (int i = 0; i < (int) this->clientFds.size(); i++)
+        close(this->clientFds[i]);
+
+    std::cout << "WEBSERV DESTRUCTOR CALLED" << std::endl;
 }

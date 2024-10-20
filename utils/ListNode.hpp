@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/07 14:09:18 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/09/24 22:01:53 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/15 17:15:09 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ class ListNode {
         void addChild( ListNode* );
         void addField( std::string );
         std::string getContent( void );
+        void setContent( std::string );
         ListNode *getNext( void );
         ListNode *getChild( void );
         bool hasNext( void );

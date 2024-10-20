@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/19 18:15:30 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/20 21:05:41 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@ void Request::findServer(Client &clientData){
 	std::vector<std::string> serverName;
 	std::vector<ServerNode*> &servers = clientData.getServers();
 	std::string Listen;
+	this->listenningServer = NULL;
 
 	for (size_t i = 0; i < servers.size(); i++){
 		if (servers[i]->getField("listen").getValues()[0] == clientData.getListen()){
@@ -134,7 +135,7 @@ int Request::ParseRequestLine(std::string &RqLine, Client &ClientData){
 	}
 	// check the Uri
 	pos = RequestLineChunks[1].find("?");
-	if (pos != std::string::npos){
+	if (pos != std::string::npos) {
 		this->Uri = RequestLineChunks[1].substr(0, pos);
 		this->quertyString = RequestLineChunks[1].substr(pos + 1);
 	}
@@ -150,12 +151,18 @@ int Request::ParseRequestLine(std::string &RqLine, Client &ClientData){
 }
 
 Location *Request::getServerLocation(){
+	if (this->serverLocation.getFields().size() == 0)
+		return NULL;
 	return (&this->serverLocation);
 }
 
 
 void Request::findLocationtobeUsed(){
 	std::string LongestMatch = "";
+	if (this->listenningServer && this->listenningServer->getLocations().size() == 0){
+		this->serverLocation = NULL;
+		return ;
+	}
 	for (std::map<std::string, Location>::iterator it = this->listenningServer->getLocations().begin();
 		it != this->listenningServer->getLocations().end(); it++){
 
@@ -239,6 +246,7 @@ int Request::ParsingTheRequest(Client &ClientData) {
 	if (this->methode == "GET" && this->compliteHeaderparser){
 		this->compliteHeaderparser = false;
 		this->finishReading = true;
+		ClientData.responseReady = true;
 		return (1);
 	}
 	else if (this->methode == "POST" && this->compliteHeaderparser){
@@ -250,13 +258,13 @@ int Request::ParsingTheRequest(Client &ClientData) {
 
 // this funct need to be modified later
 int Request::requestParserStart(Client &clientData) {
-	std::cout <<  clientData.getMessage() << std::endl;
 	if (!this->compliteHeaderparser && this->ParsingTheRequest(clientData)){
 		return (1);
 	}
 	if (this->methode == "POST" && this->compliteHeaderparser && !clientData.getMessage().empty()){
- 		this->bodybuffer += clientData.getMessage();
+ 		this->bodybuffer = clientData.getMessage();
 		if (this->parseBodyTypeBuffer(this->bodybuffer)){
+			std::cout  << this->bodybuffer			<< std::endl;
 			this->finishReading = true;
 			std::cout << "Complite the body  read\n\n\n\n\n " << std::endl;
 		}
@@ -266,6 +274,11 @@ int Request::requestParserStart(Client &clientData) {
 		return (0);
 	}
 	return (0);
+}
+
+
+void Request::setFinishReading(bool var){
+	this->finishReading = var;
 }
 
 

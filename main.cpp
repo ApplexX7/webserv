@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:04:58 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/19 16:50:41 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/20 11:44:02 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,6 @@ int main(int argc, char **argv)
         Webserv webserv;
         webserv.init(configPath);
         webserv.listen();
-
-        
     }
     catch(const std::exception& e)
     {
