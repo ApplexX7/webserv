@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/20 17:06:02 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/22 21:02:26 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,9 @@ class Response {
         Client *client;
 
         // for Post Body
-        size_t chunkSize;
+        int chunkSize;
+        int globalRead;
+        std::string bufferBody;
         std::ofstream outFile;
         std::string bFullPath;
         std::string finaleBody;
@@ -159,15 +161,19 @@ class Response {
         int closeFileafterWriting( void );
         int postBodyResponse(Client &clientData);
         int parseBoundaryPart(std::string body, Client & clientDatat);
-        int parseChunckedType(std::string &body, Client & clientdata);
+        int parseChunckedType(Client & clientdata);
         int parseChunkedPart(std::string chunk, Client &clientdata);
         int parseBodyHeaders(std::string header);
         int openFile(Client &clientDatat);
         int checkforValidField();
-        int writeChunkinfile(Client &clientData);
+        int writeChunkinfile(std::string content, Client &clientData);
         int parseBoundarybody(std::string &body);
         int hexaToDecima(std::string hexa);
-
+        void extractSizeChunk(std::string &body);
+        int handle_partchunkedformdataWriting(Client &clientData);
+        //temporay
+        void handleRemainingBody(Client &clientdata, const std::string &endBoundary);
+        void processBoundaryBuffer(size_t pos, Client &clientdata);
         // exceptions
         class ResponseException: public std::exception {
             private:

@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/20 15:09:57 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/21 16:50:31 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -220,6 +220,9 @@ void Webserv::listen( void ) {
                         bytes_read = 0;
                     }
                     buf[bytes_read] = 0;
+                    // for(int i = 0; i < bytes_read;i++){
+                    //     std::cout << buf[i];
+                    // }
                     message.assign(buf, bytes_read);
                     clients[fds[i].fd]->setMessage(message);
                     // std::cout << clients[fds[i].fd]->getMessage() << std::endl;

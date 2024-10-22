@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:04:58 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/20 11:44:02 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/21 09:22:46 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,14 +30,14 @@ int main(int argc, char **argv)
 
     std::string configPath(argv[1]);
 
-    try
-    {
+    // try
+    // {
         Webserv webserv;
         webserv.init(configPath);
         webserv.listen();
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << "Config file error: " << e.what() << '\n';
-    }
+    // }
+    // catch(const std::exception& e)
+    // {
+    //     std::cerr << "Config file error: " << e.what() << '\n';
+    // }
 }

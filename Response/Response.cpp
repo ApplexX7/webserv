@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/20 17:05:57 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/22 13:33:48 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,8 @@ Response::Response(){
 	this->isError = false;
 	this->isBody = false;
 	this->chunkSize = 0;
+	this->globalRead = 0;
+	this->bufferBody = "";
 }
 
 

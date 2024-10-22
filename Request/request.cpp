@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/20 21:05:41 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/21 09:07:51 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -264,7 +264,6 @@ int Request::requestParserStart(Client &clientData) {
 	if (this->methode == "POST" && this->compliteHeaderparser && !clientData.getMessage().empty()){
  		this->bodybuffer = clientData.getMessage();
 		if (this->parseBodyTypeBuffer(this->bodybuffer)){
-			std::cout  << this->bodybuffer			<< std::endl;
 			this->finishReading = true;
 			std::cout << "Complite the body  read\n\n\n\n\n " << std::endl;
 		}
