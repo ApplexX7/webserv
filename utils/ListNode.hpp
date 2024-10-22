@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/07 14:09:18 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/15 17:15:09 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/22 20:31:43 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@
 #include <vector>
 
 class ListNode {
-
     private:
         std::vector<std::string> fields;
         std::string content;

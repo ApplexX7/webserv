@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/16 11:51:37 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/22 20:54:25 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ void Webserv::init( std::string configPath ) {
     if (Parser::checkValidContent(content) == false)
         throw Parser::ParsingException("Invalid braces in config file");
 
-    head = parser.extractBlocks(parser.getContent(), 0);
+    head = parser.parse(parser.getContent());
     this->listHead = head;
     if (Parser::checkValidList(head, 0) == false)
         throw Parser::ParsingException("Invalid server block name");
@@ -88,7 +88,7 @@ void Webserv::init( std::string configPath ) {
     
     
     while (tmp) {
-        // printServerNode(tmp);
+        printServerNode(tmp);
         this->servers.push_back(new ServerNode(tmp));
 
         // check servername conflicts
@@ -115,6 +115,7 @@ void Webserv::init( std::string configPath ) {
         }
 
         tmp = tmp->getNext();
+        std::cout << std::endl;
     }
     // std::cout << "ALL GOOD" << std::endl;
 }

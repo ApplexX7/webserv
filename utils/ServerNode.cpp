@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/16 11:38:04 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/22 20:55:19 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ void ServerNode::initializeServer( ListNode* server ) {
 
     // if server has no root
     if (!this->fieldExists("root"))
-        this->addField("root", "/Users/wbelfatm");
+        this->addField("root", "/Users/pro");
 
     // if server has no autoindex
     if (!this->fieldExists("autoindex"))
