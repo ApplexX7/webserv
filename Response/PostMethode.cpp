@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/22 22:24:22 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/26 13:06:18 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,46 +152,53 @@ void Response::resetBodyHeader( void ){
 
 int Response::handle_partchunkedformdataWriting(Client &clientData){
 	size_t pos = 0;
-	int cout = 0;
 	std::string headerString;
-	std::string startbd = clientData.getRequest().getStartBoundary();
-	std::string endbd = clientData.getRequest().getEndofBoundary();
-
+	std::string startBd = clientData.getRequest().getStartBoundary();
+	std::string endBd = clientData.getRequest().getEndofBoundary();
 	while (!this->finaleBody.empty()){
-		cout++;
-		pos = this->finaleBody.find(startbd);
+		pos = this->finaleBody.find(startBd);
 		if (pos != std::string::npos){
-
-			if (pos != 0 && pos < (this->finaleBody.find(endbd))){
+			if (pos != 0 && pos < this->finaleBody.find(endBd)){
+				// std::cout << this->finaleBody << std::endl;
+				std::string segment = this->finaleBody.substr(0, pos - 2);
 				if (!this->checkforValidField()){
-					this->writeChunkinfile(this->finaleBody.substr(0, pos - 2), clientData);
+					this->writeChunkinfile(segment, clientData);
 				}
 				this->finaleBody = this->finaleBody.substr(pos);
-				continue ;
+				continue;
 			}
-			this->finaleBody = this->finaleBody.substr(pos + 2);
-			this->resetBodyHeader();
-			this->closeFileafterWriting();
-			pos = this->finaleBody.find(endbd);
-			if (pos != std::string::npos){
-				this->finaleBody = this->finaleBody.substr(0, pos - 2);
-			}
-			this->finaleBody = this->finaleBody.substr(startbd.length());
-			pos = this->finaleBody.find("\r\n\r\n");
-			if (pos != std::string::npos){
-				headerString = this->finaleBody.substr(0, pos);
-				this->parseBodyHeaders(headerString);
-				this->finaleBody = this->finaleBody.substr(pos + 4);
+			else{
+				pos = this->finaleBody.find(endBd);
+				if (pos != std::string::npos){
+					this->finaleBody = this->finaleBody.substr(0, pos - 2);
+					continue;
+				}
+				pos = this->finaleBody.find("\r\n\r\n");
+				if (pos != std::string::npos){
+					this->resetBodyHeader();
+					this->closeFileafterWriting();
+					std::string headerBh = this->finaleBody.substr(0, pos);
+					this->parseBodyHeaders(headerBh);
+					this->finaleBody = this->finaleBody.substr(pos + 4);
+					continue;
+				}
+				else
+					break;
 			}
 		}
 		if (!this->checkforValidField()){
+			if (checkforPartienltboundary(startBd, this->finaleBody) > 0 && !this->chunkedNotComplite)
+			{
+				this->chunkedNotComplite = 1;
+				break;
+			}
+			this->chunkedNotComplite = 0;
 			this->writeChunkinfile(this->finaleBody,clientData);
-			if ((this->finaleBody.find(startbd)) == std::string::npos){
+			if ((this->finaleBody.find(startBd)) == std::string::npos){
 				this->finaleBody.clear();
 			}
 		}
 	}
-	this->finaleBody.clear();
 	return (0);
 }
 
@@ -215,10 +222,17 @@ void	Response::extractSizeChunk(std::string &body){
 	}
 }
 
+
 int Response::parseChunckedType(Client &clientData){
 	this->bufferBody += clientData.getMessage();
 	if (this->chunkSize == 0){
 		extractSizeChunk(this->bufferBody);
+		clientData.getRequest().getClientMaxSizeBody() -= this->chunkSize;
+		if (clientData.getRequest().getClientMaxSizeBody() < 0){
+			remove(this->bFullPath.c_str());
+			this->statusCode = 413;
+			return (1);
+		}
 	}
 	while (!this->bufferBody.empty() && this->chunkSize != 0){
 		if (this->bufferBody.length() <= (size_t)this->chunkSize){
@@ -228,7 +242,7 @@ int Response::parseChunckedType(Client &clientData){
 		}
 		else{
 			this->finaleBody += this->bufferBody.substr(0, this->chunkSize);
-			this->bufferBody.erase(0, this->chunkSize);
+			this->bufferBody.erase(0, this->chunkSize + 2);
 			this->chunkSize = 0;
 		}
 	}
@@ -236,59 +250,39 @@ int Response::parseChunckedType(Client &clientData){
 	return (0);
 }
 
-int Response::parseBoundarys(std::string &body, Client &clientData){
+
+int checkforPartienltboundary(const std::string &boundary, const std::string &body) {
+    size_t max_len = std::min(boundary.length(), body.length());
+
+    for (size_t i = 1; i <= max_len; ++i) {
+        if (boundary.substr(0, i) == body.substr(body.length() - i)) {
+            return i;
+        }
+    }
+    return 0;
+}
+
+int checkforPartienltboundary(std::string &partielData, std::string &body){
 	size_t pos = 0;
-	size_t secpos = 0;
-	bool complete = false;
-	std::string startBd = clientData.getRequest().getStartBoundary() + "\r\n";
-	std::string endBd = clientData.getRequest().getEndofBoundary();
-
-	while (!complete){
-		pos = body.find(startBd, pos);
-		if (pos != std::string::npos){
-			pos =  startBd.length() + pos + 2;
-			if (this->finaleBody.empty()){
-				this->closeFileafterWriting();
-				this->finaleBody.clear();
-			}
-			secpos = body.find("\r\n\r\n", pos) + 4;
-			this->parseBodyHeaders(body.substr(pos , secpos - pos));
-			pos = secpos;
-			size_t endbb = body.find(endBd, pos);
-			secpos = body.find(startBd, pos);
-
-            if (endbb != std::string::npos && endbb <= secpos) {
-                secpos = endbb;
-                complete = true;
-            }
-			if (secpos != std::string::npos){
-				this->finaleBody = body.substr(pos, secpos - pos - 2);
-				this->writeChunkinfile(this->finaleBody,clientData);
-				this->finaleBody.clear();
-
-			}
-			else{
-				this->finaleBody = body.substr(pos);
-				this->writeChunkinfile(this->finaleBody,clientData);
-				this->finaleBody.clear();
-				complete = true;
-			}
-		}
-		else{
-			size_t endpos = body.find(endBd);
-			if (endpos != std::string::npos){
-				this->finaleBody = body.substr(0,endpos - 2);
-			}
-			else
-				this->finaleBody = body;
-			writeChunkinfile(this->finaleBody,clientData);
-			this->finaleBody.clear();
-			complete = true;
-		}
-	}
+	std::string findstring = partielData.substr(0, 3);
+	pos = body.find(findstring);
+	if (pos != std::string::npos)
+		return (1);
 	return (0);
 }
 
+
+int Response::parseBoundarys(std::string &body, Client &clientData){
+	clientData.getRequest().getClientMaxSizeBody() -= body.length();
+	if (clientData.getRequest().getClientMaxSizeBody() < 0){
+		remove(this->bFullPath.c_str());
+		this->statusCode = 413;
+		return (1);
+	}
+	this->finaleBody += body;
+	this->handle_partchunkedformdataWriting(clientData);
+	return (0);
+}
 
 int Response::parseContentLenght(Client &clientData, std::string &body){
 	size_t pos = 0;
@@ -305,42 +299,54 @@ int Response::parseContentLenght(Client &clientData, std::string &body){
 	return (0);
 }
 
-
 int  Response::postBodyResponse(Client &clientData){
-	// if (0){
-	//     std::cout <<"hello\n" << std::endl;
-	//     // check for the file dir;
-	//     return (1);
-	// }
-	// else{
-	//     // use the root for it
-	//     return (1);
-	// }
-	// check if body going to be excute in Cgi
-	// std::cout << clientData.getRequest().getBody() <<std::endl;
+	//check for Cgi;
 	if (clientData.getRequest().getTheBodyType() == ENCODING){
-		if (!this->parseChunckedType(clientData) &&  clientData.getRequest().getFinishReading()){
-			clientData.responseReady = true;
-			this->statusCode = 201;
+		if (!this->parseChunckedType(clientData)){
+			if (clientData.getRequest().getFinishReading()){
+				std::cout << "hellooo" << std::endl;
+				clientData.responseReady = true;
+				this->statusCode = 201;
+			}
 		}
-		else
+		else{
+			std::cout << "hellooo" << std::endl;
+			clientData.responseReady = true;
 			return (1);
+		}
 	}
 	else if (clientData.getRequest().getTheBodyType() == BOUNDARY){
-		if (!this->parseBoundarys(clientData.getRequest().getBody(), clientData) && clientData.getRequest().getFinishReading()){
+		if (!this->parseBoundarys(clientData.getRequest().getBody(), clientData)){
+			if (clientData.getRequest().getFinishReading()){
+				this->statusCode = 201;
+				clientData.responseReady = true;
+			}
+		}
+		else{
 			clientData.responseReady = true;
+			return (1);
 		}
 	}
 	else if (clientData.getRequest().getTheBodyType() ==  FIXEDSIZE){
+		if ((long int)clientData.getRequest().getContentLenght() > clientData.getRequest().getClientMaxSizeBody()){
+			clientData.responseReady = true;
+			this->statusCode = 413;
+			return (1);
+		}
 		if ((size_t)clientData.getRequest().getContentLenght() != clientData.getRequest().getBody().size()){
 			clientData.responseReady = true;
 			this->statusCode = 400;
 			return (1);
 		}
-		else
-			parseContentLenght(clientData, clientData.getMessage());
+		else{
+			if (this->parseContentLenght(clientData, clientData.getMessage())){
+				clientData.responseReady = true;
+				this->statusCode = 201;
+			}
+		}
 	}
 	else if (clientData.getRequest().getTheBodyType() == NONE){
+		this->statusCode = 400;
 		clientData.responseReady = true;
 		clientData.getRequest().setFinishReading(true);
 	}

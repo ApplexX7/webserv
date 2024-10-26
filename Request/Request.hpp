@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/22 13:27:54 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/25 18:55:34 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@
 #include <stdexcept>
 #include <fstream>
 #include <map>
+#include <sys/stat.h>
+#include <cstdio>
 #include "../utils/Client.hpp"
 
 class Client;
@@ -37,6 +39,7 @@ class Request{
     private:
         bool finishReading;
         bool compliteHeaderparser;
+        long int maxBodySize;
         std::string locationName;
         std::string pathName;
         std::string quertyString;
@@ -48,6 +51,7 @@ class Request{
         std::map<std::string,std::string> headers;
         std::string bodybuffer;
         Location serverLocation;
+
 
         // for the Post Methode
         int contentLenght;
@@ -85,13 +89,16 @@ class Request{
         std::string getTransferCoding();
         void setFinishReading(bool var);
         void    findLocationtobeUsed();
-        //checkhostName
+
+        long int &getClientMaxSizeBody();
+    
         void findServer(Client &ClientData);
         // int CheckserverhostName(Client& ClientData);
         //GET parser function
         int CheckDirectory(Client &ClientData);
         
         void sethostName(std::string _hostName);
+        void deleteMethode(Client &clientData);
         // POST parse Body
         int ParsePostHeaders();
         int parseBodytype();
@@ -106,11 +113,12 @@ class Request{
         std::map<std::string,std::string> getHeaders( void );
 
         //parsing the request;
+        void SetUri(std::string _Uri);
         int ParsingTheRequest(Client& ClientData);
+        int parseUri(std::string &uri);
     
         // for debugging
         void printmap();
-        void SetUri(std::string _Uri);
 };
 
 #endif

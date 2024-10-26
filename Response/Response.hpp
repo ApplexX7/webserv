@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/22 21:02:26 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/25 17:59:23 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include "../utils/Client.hpp"
 #include <exception>
 #include <sys/stat.h>
+#include <cstdio>
 #include <dirent.h>
 #include <fstream>
 
@@ -55,8 +56,6 @@
 #define INTERNAL_SERVER_ERROR 500
 
 
-#define SERVER webserve/1.1
-
 typedef enum e_response_status {
     IDLE,
     ONGOING,
@@ -88,6 +87,7 @@ class Response {
         Client *client;
 
         // for Post Body
+        int chunkedNotComplite;
         int chunkSize;
         int globalRead;
         std::string bufferBody;
@@ -188,4 +188,5 @@ class Response {
         };
 };
 
+int checkforPartienltboundary(const std::string &boundary, const std::string &body);
 #endif

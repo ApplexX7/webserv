@@ -6,13 +6,14 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/21 09:07:51 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/26 13:07:07 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 
 Request::Request(){
+	this->maxBodySize = CHUNK_SIZE;
 	this->Uri = "";
 	this->finishReading = false;
 	this->compliteHeaderparser = false;
@@ -101,11 +102,27 @@ int Request::Validmethode(std::string &_Methode){
 	return (0);
 }
 
+int Request::parseUri(std::string &uri){
+	size_t pos = 0;
+
+	if (uri.length() > 2000){
+		return (1);
+	}
+	pos = uri.find("?");
+	if (pos != std::string::npos) {
+		this->Uri = uri.substr(0, pos);
+		this->quertyString = uri.substr(pos + 1);
+	}
+	else{
+		this->Uri = uri;
+	}
+	return (0);
+}
+
 int Request::ParseRequestLine(std::string &RqLine, Client &ClientData){
 	std::vector<std::string> RequestLineChunks;
 	std::stringstream str(RqLine);
 	std::string token;
-	size_t pos;
 
 	if (RqLine.empty()){
 		ClientData.getResponse().setStatusCode(400);
@@ -133,14 +150,10 @@ int Request::ParseRequestLine(std::string &RqLine, Client &ClientData){
 		ClientData.getResponse().setStatusCode(501);
 		return (1);
 	}
-	// check the Uri
-	pos = RequestLineChunks[1].find("?");
-	if (pos != std::string::npos) {
-		this->Uri = RequestLineChunks[1].substr(0, pos);
-		this->quertyString = RequestLineChunks[1].substr(pos + 1);
-	}
-	else{
-		this->Uri = RequestLineChunks[1];
+	// check the Uri // and modify some check for the Uri
+	if (this->parseUri(RequestLineChunks[1])){
+		ClientData.getResponse().setStatusCode(414);
+		return (1);
 	}
 	// checkk HTTPS VERSION;
 	if (RequestLineChunks[2] != "HTTP/1.1"){
@@ -200,6 +213,44 @@ std::string Request::getlocationName(){
 	return (this->locationName);
 }
 
+void Request::deleteMethode(Client &clientData){
+	// check for the Uri;
+	struct  stat ss;
+	Location *PathLcoation =  this->getServerLocation();
+	if (PathLcoation != NULL){
+		this->pathName = PathLcoation->getField("root").getValues()[0] + "/" + this->Uri;
+	}
+	else{
+		this->pathName = clientData.getRequest().getserverNode().getFields()["root"].getValues()[0] + "/" + this->Uri;
+	}
+	if (stat(this->pathName.c_str(), &ss) != 0){
+		clientData.getResponse().setStatusCode(204);
+	}
+	else{
+		if (ss.st_mode & S_IFDIR){
+			clientData.getResponse().setStatusCode(403);
+			return ;
+		}
+		else if (ss.st_mode & S_IFREG){
+			if (access(this->pathName.c_str(), O_WRONLY) == 0){
+				if (!remove(this->pathName.c_str()))
+					clientData.getResponse().setStatusCode(202);
+				else
+					clientData.getResponse().setStatusCode(500);
+				return ;
+			}
+			else
+				clientData.getResponse().setStatusCode(403);
+			
+		}
+		else{
+			clientData.getResponse().setStatusCode(404);
+			return ;
+		}
+	}
+}
+
+
 int Request::ParsingTheRequest(Client &ClientData) {
 	size_t pos;
 	std::string name;
@@ -210,6 +261,7 @@ int Request::ParsingTheRequest(Client &ClientData) {
 	std::getline(Message, ChunkLine, '\r');
 	Message.ignore(1);
 	if (this->ParseRequestLine(ChunkLine, ClientData)){
+		this->finishReading = true;
 		return (1);
 	}
 	// headers parsing;
@@ -232,6 +284,7 @@ int Request::ParsingTheRequest(Client &ClientData) {
 		Value.erase(std::remove_if(Value.begin(),Value.end(), ::isspace), Value.end());
 		if (Value.empty() || name.empty()){
 			ClientData.getResponse().setStatusCode(400);
+			this->finishReading = true;
 			return (1);
 		}
 		this->setHeaders(name, Value);
@@ -241,7 +294,10 @@ int Request::ParsingTheRequest(Client &ClientData) {
 	size_t headerEnd = ClientData.getMessage().find("\r\n\r\n");
 	if (headerEnd != std::string::npos){
 		ClientData.getMessage().erase(0,headerEnd + 4);
-    	this->compliteHeaderparser= true;
+    	this->compliteHeaderparser = true;
+	}
+	else{
+		return (0);
 	}
 	if (this->methode == "GET" && this->compliteHeaderparser){
 		this->compliteHeaderparser = false;
@@ -251,6 +307,19 @@ int Request::ParsingTheRequest(Client &ClientData) {
 	}
 	else if (this->methode == "POST" && this->compliteHeaderparser){
 		this->ParsePostHeaders();
+		if (this->serverLocation.getFields().size() > 0){
+			this->maxBodySize = std::atoi(this->serverLocation.getField("client_max_body_size").getValues()[0].c_str());
+		}
+		else{
+			this->maxBodySize = 200000;
+		}
+		return (0);
+	}
+	if (this->methode == "DELETE"){
+		// chek for the file if exist and not directory
+		this->deleteMethode(ClientData);
+		this->finishReading = true;
+		return (1);
 	}
 	return 0;
 }
@@ -264,10 +333,11 @@ int Request::requestParserStart(Client &clientData) {
 	if (this->methode == "POST" && this->compliteHeaderparser && !clientData.getMessage().empty()){
  		this->bodybuffer = clientData.getMessage();
 		if (this->parseBodyTypeBuffer(this->bodybuffer)){
+			std::cout << "gggg"<< std::endl;
 			this->finishReading = true;
-			std::cout << "Complite the body  read\n\n\n\n\n " << std::endl;
 		}
 		if (clientData.getResponse().postBodyResponse(clientData)) {
+			this->finishReading = true;
 			return (1);
 		}
 		return (0);
@@ -326,21 +396,6 @@ std::string Request::getValue(std::string _Key){
 		return ("");
 }
 
-std::string& Request::getBody(){
-	return (this->bodybuffer);
-}
-
-void Request::Setmethode(std::string _methode){
-	this->methode = _methode;
-}
-std::string Request::getmethode(){
-	return (this->methode);
-}
-
-std::string Request::getUri(){
-	return (this->Uri);
-}
-
 void Request::SetUri(std::string _Uri){
 	size_t pos;
 	pos = _Uri.find("?");
@@ -357,6 +412,26 @@ void Request::SetUri(std::string _Uri){
 		this->Uri = _Uri.substr(0, pos);
 		this->quertyString = _Uri.substr(pos + 1);
 	}
+}
+
+
+std::string& Request::getBody(){
+	return (this->bodybuffer);
+}
+
+void Request::Setmethode(std::string _methode){
+	this->methode = _methode;
+}
+std::string Request::getmethode(){
+	return (this->methode);
+}
+
+std::string Request::getUri(){
+	return (this->Uri);
+}
+
+long int &Request::getClientMaxSizeBody(){
+	return (this->maxBodySize);
 }
 
 std::map<std::string,std::string> Request::getHeaders( void ) {

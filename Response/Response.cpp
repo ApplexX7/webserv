@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/22 13:33:48 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/25 18:03:48 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,7 @@ Response::Response(){
 	this->chunkSize = 0;
 	this->globalRead = 0;
 	this->bufferBody = "";
+	this->chunkedNotComplite = 0;
 }
 
 
@@ -101,15 +102,6 @@ Response& Response::operator=(const Response &Obj){
 std::map<std::string, std::string> Response::getMap() const {
 	return (this->ResponseMeth);
 }
-
-// std::string Response::getMimeType(std::string _Key){
-// 	try{
-// 		return (this->mimeTypes.at(_Key));
-// 	} catch (const std::out_of_range& e) {
-// 		std::cerr << "Expection: Key not found" << e.what() << std::endl;
-// 		return "";
-// 	}
-// }
 
 Client* Response::getClient( void ) {
 	return this->client;
