@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/27 11:01:49 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/27 12:45:55 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,14 @@ Webserv::Webserv( void ) {
 // }
 
 
+void printVector(std::vector<std::string> arr) {
+    for (int i = 0; i < (int) arr.size(); i++) {
+        std::cout << arr[i] << " ---- ";
+    }
+    std::cout << std::endl;
+}
+
+
 /*
     - Initializes the servers
     - Displays warning in the case of servers with conflicting ports/names
@@ -84,6 +92,8 @@ void Webserv::init( std::string configPath ) {
     std::vector<std::string> otherServerNames;
     std::map<std::string, std::vector<std::string> > servers;
     std::map<std::string, std::vector<std::string> >::iterator it;
+    int count = 0;
+    int occurences = 0;
 
     if (Parser::checkValidContent(content) == false)
         throw Parser::ParsingException("Invalid braces in config file");
@@ -95,8 +105,6 @@ void Webserv::init( std::string configPath ) {
 
     tmp = head;
 
-    int count = 0;
-
     while (tmp) {
         // printServerNode(tmp);
         this->servers.push_back(new ServerNode(tmp));
@@ -105,21 +113,32 @@ void Webserv::init( std::string configPath ) {
         listenValue = this->servers[this->servers.size() - 1]->getField("listen").getValues()[0];
         serverNames = this->servers[this->servers.size() - 1]->getField("server_name").getValues();
         for (int j = 0; j < (int) serverNames.size(); j++) {
-            
+            if (std::count(servers[listenValue].begin(), servers[listenValue].end(), serverNames[j]) > 1)
+               continue ; 
             servers[listenValue].push_back(serverNames[j]);
         }
 
         tmp = tmp->getNext();
         std::cout << count++ << std::endl;
     }
-    
+
     for (it = servers.begin(); it != servers.end(); it++) {
         serverNames = it->second;
         for (int i = 0; i < (int) serverNames.size(); i++) {
-            if (std::count(serverNames.begin(), serverNames.end(), serverNames[i]) > 1) {
-                std::cout << "[WARN] Conflicting server name \"" << serverNames[i] << "\" at " << it->first << std::endl;
+            occurences = std::count(serverNames.begin(), serverNames.end(), serverNames[i]);
+            // std::cout << serverNames[i] << " " << occurences << std::endl;
+            if (occurences > 1) {
+                std::cout << "[WARN] Conflicting server name \"|" << serverNames[i] << "|\" at " << it->first << std::endl;
+                std::string tmp = serverNames[i];
+                while (occurences >= 1)
+                {
+                    serverNames.erase(std::find(serverNames.begin(), serverNames.end(), tmp));
+                    occurences = std::count(serverNames.begin(), serverNames.end(), tmp);
+                }
+                i = -1;
             }
         }
+        servers[it->first] = serverNames;
     }
 }
 

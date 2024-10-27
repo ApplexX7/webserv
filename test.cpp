@@ -13,7 +13,8 @@ int main(void) {
     for (int i = 1; i < 65000; i++) {
 
         tmp = "server {\n\
-                listen 127.0.0.1:" + std::to_string(i) +  ";\n\
+                listen 127.0.0.1:" + std::to_string(3000) +  ";\n\
+                server_name walid jilali;\n\
                 autoindex on;\n" + "}\n";
 
         file.write(tmp.data(), tmp.length());

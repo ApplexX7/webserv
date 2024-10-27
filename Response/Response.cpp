@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/27 10:59:57 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/27 11:47:05 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -519,16 +519,16 @@ std::string Response::createGetResponse( void ) {
 	return this->constructHeader();
 }
 
-void printVector(std::vector<std::string> arr) {
-	std::cout << "[";
-	for (int i = 0; i < (int) arr.size(); i++) {
-		std::cout << arr[i];
+// void printVector(std::vector<std::string> arr) {
+// 	std::cout << "[";
+// 	for (int i = 0; i < (int) arr.size(); i++) {
+// 		std::cout << arr[i];
 
-		if (!(i == (int) arr.size() - 1))
-			std::cout << ", ";
-	}
-	std::cout << "]\n";
-}
+// 		if (!(i == (int) arr.size() - 1))
+// 			std::cout << ", ";
+// 	}
+// 	std::cout << "]\n";
+// }
 
 Location *Response::getPathLocation(std::string path) {
 	ServerNode &server = this->client->getParentServer();
