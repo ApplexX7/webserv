@@ -6,12 +6,13 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/19 10:56:41 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/27 11:15:30 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerNode.hpp"
 #include "../parsing/Parser.hpp"
+#include <arpa/inet.h>
 
 void ServerNode::initializeServer( ListNode* server ) {
     std::map<std::string,  Location>::iterator it;
@@ -241,9 +242,12 @@ int ServerNode::generateServerFd( void ) {
     int optval;
 
     splitListen = Parser::strSplit(this->fields["listen"].getValues()[0], ':');
+    if (splitListen[0] == "localhost")
+        splitListen[0] = "127.0.0.1";
     Parser::ft_memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_NUMERICSERV | AI_CANONNAME;
     getaddrinfo(splitListen[0].data(), splitListen[1].data(), &hints, &servinfo);
     sockfd = socket(PF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
@@ -254,18 +258,19 @@ int ServerNode::generateServerFd( void ) {
 
     optval = 1;
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
 
     // bind socket to port and address
     if (bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) != 0)
     {
         freeaddrinfo(servinfo);
         close(sockfd);
-        throw ServerNode::SocketException("Error binding server socket");
+        throw ServerNode::SocketException("Error binding server socket for: " + splitListen[0] + ":" + splitListen[1]);
         return -1;
     }
 
     // start listening on socket
-    if (listen(sockfd, 10) != 0)
+    if (listen(sockfd, SOMAXCONN) != 0)
     {
         freeaddrinfo(servinfo);
         close(sockfd);

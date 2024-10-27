@@ -6,11 +6,12 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/07 14:15:55 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/15 17:20:08 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/22 20:52:51 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ListNode.hpp"
+#include <vector>
 
 ListNode::ListNode( void ) {
     this->child = NULL;

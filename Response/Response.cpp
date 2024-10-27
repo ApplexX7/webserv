@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/25 18:03:48 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/27 10:59:57 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -471,7 +471,6 @@ std::string Response::createGetResponse( void ) {
 			// empty filename means it's a dir
 			if (this->fileName == "") {
 				this->body = getDirectoryLinks(this->path, path);
-
 				this->contentLength = body.length();
 				this->statusCode = SUCCESS;
 				this->status = ONGOING;

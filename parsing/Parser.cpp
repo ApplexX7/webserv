@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/19 11:12:29 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/27 11:08:36 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,42 @@ std::string Parser::getContent( void )
     return this->_fileContent;
 }
 
+std::string extractServer(std::string str, size_t& start) {
+    std::string serverBlock = "";
+    size_t end = start;
+    int isInside = 0;
+
+    while (end < str.length()) {
+        if (str[end] == '}' && isInside == 1)
+            break;
+        if (str[end] == '{')
+            isInside++;
+        if (str[end] == '}')
+            isInside--;
+        end++;
+    }
+    
+    serverBlock = str.substr(start, end - start + 1);
+    start = end + 1;
+    return serverBlock;
+}
+
+ListNode *Parser::parse( std::string str ) {
+    ListNode* head = NULL;
+    size_t start = 0;
+    std::string serverBlock;
+    
+    while (start < str.length()) {
+        serverBlock = extractServer(str, start);
+        if (head) {
+            head->addNext(Parser::extractBlocks(serverBlock, 0));
+        }
+        else
+            head = Parser::extractBlocks(serverBlock, 0);
+    }
+    return head;
+}
+
 ListNode *Parser::extractBlocks( std::string str, int level )
 {
     std::string server;
@@ -90,7 +126,6 @@ ListNode *Parser::extractBlocks( std::string str, int level )
         start--;
     end = start;
 
-    // either it is a simple field: add to vector
     while (end < str.length())
     {
         while (end < str.length() && str[end] != '{' && str[end] != '}' && str[end] != ';')
@@ -275,7 +310,6 @@ void Parser::validateRoot( std::vector<std::string> values ) {
 }
 
 void Parser::validateListen( std::vector<std::string> values ) {
-
     std::string listen;
     std::vector<std::string> splitListen;
     int status;

@@ -3,24 +3,24 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:04:58 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/21 09:22:46 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/27 09:07:46 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
 
 void leaks() {
-    // system("leaks webserv");
+    system("leaks webserv");
 }
 
 int main(int argc, char **argv)
 {
     signal(SIGPIPE, SIG_IGN);
     
-    atexit(leaks);
+    // atexit(leaks);
 
     if (argc != 2)
     {
@@ -30,14 +30,14 @@ int main(int argc, char **argv)
 
     std::string configPath(argv[1]);
 
-    // try
-    // {
+    try
+    {
         Webserv webserv;
         webserv.init(configPath);
         webserv.listen();
-    // }
-    // catch(const std::exception& e)
-    // {
-    //     std::cerr << "Config file error: " << e.what() << '\n';
-    // }
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << "Config file error: " << e.what() << '\n';
+    }
 }

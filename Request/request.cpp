@@ -1,16 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Request.cpp                                        :+:      :+:    :+:   */
+/*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/26 13:07:07 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/26 13:27:35 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
+# define DEFAULT_MAX_BODY 2000000000
 
 Request::Request(){
 	this->maxBodySize = CHUNK_SIZE;
@@ -233,8 +234,10 @@ void Request::deleteMethode(Client &clientData){
 		}
 		else if (ss.st_mode & S_IFREG){
 			if (access(this->pathName.c_str(), O_WRONLY) == 0){
-				if (!remove(this->pathName.c_str()))
+					std::cout << this->pathName<< std::endl;
+				if (!remove(this->pathName.c_str())){
 					clientData.getResponse().setStatusCode(202);
+				}
 				else
 					clientData.getResponse().setStatusCode(500);
 				return ;
@@ -257,6 +260,7 @@ int Request::ParsingTheRequest(Client &ClientData) {
 	std::string Value;
 	std::string ChunkLine;
 	std::stringstream Message(ClientData.getMessage());
+
 
 	std::getline(Message, ChunkLine, '\r');
 	Message.ignore(1);
@@ -311,7 +315,7 @@ int Request::ParsingTheRequest(Client &ClientData) {
 			this->maxBodySize = std::atoi(this->serverLocation.getField("client_max_body_size").getValues()[0].c_str());
 		}
 		else{
-			this->maxBodySize = 200000;
+			this->maxBodySize = DEFAULT_MAX_BODY;
 		}
 		return (0);
 	}
@@ -319,6 +323,7 @@ int Request::ParsingTheRequest(Client &ClientData) {
 		// chek for the file if exist and not directory
 		this->deleteMethode(ClientData);
 		this->finishReading = true;
+		ClientData.responseReady = true;
 		return (1);
 	}
 	return 0;

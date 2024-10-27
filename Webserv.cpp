@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/21 16:50:31 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/27 11:01:49 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,44 +82,44 @@ void Webserv::init( std::string configPath ) {
     std::string otherListenValue;
     std::vector<std::string> serverNames;
     std::vector<std::string> otherServerNames;
+    std::map<std::string, std::vector<std::string> > servers;
+    std::map<std::string, std::vector<std::string> >::iterator it;
 
     if (Parser::checkValidContent(content) == false)
         throw Parser::ParsingException("Invalid braces in config file");
 
-    head = parser.extractBlocks(parser.getContent(), 0);
+    head = parser.parse(parser.getContent());
     this->listHead = head;
     if (Parser::checkValidList(head, 0) == false)
         throw Parser::ParsingException("Invalid server block name");
 
     tmp = head;
-    
+
+    int count = 0;
+
     while (tmp) {
         // printServerNode(tmp);
         this->servers.push_back(new ServerNode(tmp));
 
         // check servername conflicts
-        for (int i = 0; i < (int) this->servers.size() - 1; i++) {
-            // check if there's a server with the same host:port
-            listenValue = this->servers[this->servers.size() - 1]->getField("listen").getValues()[0];
-            otherListenValue = this->servers[i]->getField("listen").getValues()[0];
-
-            // same host:port
-            if (listenValue == otherListenValue) {
-                    // check server_names
-                    serverNames = this->servers[this->servers.size() - 1]->getField("server_name").getValues();
-                    otherServerNames = this->servers[i]->getField("server_name").getValues();
-                    
-                    for (int j = 0; j < (int) serverNames.size(); j++) {
-                        if (std::find(otherServerNames.begin(), otherServerNames.end(), serverNames[j]) != otherServerNames.end())
-                        {
-                            // conflicting server name
-                            std::cout << "[WARN] Conflicting server name \"" << serverNames[j] << "\" at " << listenValue << std::endl;
-                        }
-                    }
-            }
+        listenValue = this->servers[this->servers.size() - 1]->getField("listen").getValues()[0];
+        serverNames = this->servers[this->servers.size() - 1]->getField("server_name").getValues();
+        for (int j = 0; j < (int) serverNames.size(); j++) {
+            
+            servers[listenValue].push_back(serverNames[j]);
         }
 
         tmp = tmp->getNext();
+        std::cout << count++ << std::endl;
+    }
+    
+    for (it = servers.begin(); it != servers.end(); it++) {
+        serverNames = it->second;
+        for (int i = 0; i < (int) serverNames.size(); i++) {
+            if (std::count(serverNames.begin(), serverNames.end(), serverNames[i]) > 1) {
+                std::cout << "[WARN] Conflicting server name \"" << serverNames[i] << "\" at " << it->first << std::endl;
+            }
+        }
     }
 }
 
@@ -142,7 +142,7 @@ void Webserv::listen( void ) {
     std::vector<int> &clientFds = this->clientFds;
     std::string message;
     std::map<int, Client*> clients;
-    
+
     struct pollfd newPollFd;
     int size;
     struct sockaddr_storage their_addr;
@@ -230,8 +230,8 @@ void Webserv::listen( void ) {
 
                     if ((*clients[fds[i].fd]).getRequest().getFinishReading())
                     {
-                        std::cout << "client finished writing" << std::endl;
-
+                        std::cout << "client finished writing on: " << (*clients[fds[i].fd]).getRequest().getUri() << std::endl;
+    
                         // find server responsible for this client
                         clients[fds[i].fd]->findParentServer();
 

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:14:22 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/19 10:53:44 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/27 08:56:49 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 
 # include <iostream>
 # include <vector>
+# include <map>
 # include "parsing/Parser.hpp"
 # include "utils/ServerNode.hpp"
 # include "utils/ListNode.hpp"
