@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 09:31:10 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/20 12:32:02 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/29 14:48:00 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,17 @@ void Location::addField( std::string key, std::string value ) {
     this->fields[key].addValue(value);
 }
 
+
 Field &Location::getField( std::string key ) {
     if (this->fields.find(key) != this->fields.end())
         return this->fields[key];
     return this->server->getField(key);
+}
+
+void Location::addCgiPath( std::string key, std::string value ) {
+    this->cgiPaths[key] = value;
+}
+
+std::string Location::getCgiPath( std::string key ) {
+   return this->cgiPaths[key];
 }

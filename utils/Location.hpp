@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 09:30:53 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/20 12:31:45 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/10/29 14:48:19 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@ class ServerNode;
 class Location {
     private:
         std::map<std::string, Field > fields;
+        std::map<std::string, std::string > cgiPaths;
+        
         ServerNode* server;
 
     public:
@@ -33,6 +35,8 @@ class Location {
         std::map<std::string, Field > getFields( void );
         void addField( std::string, std::string );
         Field &getField( std::string );
+        void addCgiPath( std::string, std::string );
+        std::string getCgiPath( std::string );
 };
 
 #endif

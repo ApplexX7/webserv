@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/27 11:15:30 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/29 14:52:18 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ void ServerNode::initializeServer( ListNode* server ) {
     std::map<std::string,  Location>::iterator it;
     std::vector<std::string> fields = server->getFields();
     std::vector<std::string> splitField;
+    std::vector<std::string> values;
     std::string path;
     std::string trimedField;
     std::string sizeStr;
@@ -53,7 +54,7 @@ void ServerNode::initializeServer( ListNode* server ) {
             this->addField(splitField[0], splitField[j]);
         }
 
-        std::vector<std::string> values = this->getField(splitField[0]).getValues();
+        values = this->getField(splitField[0]).getValues();
 
         // Parser::validateField(splitField[0], values);
         if (splitField[0] == "listen" && values[0].find(":") == values[0].npos)
@@ -121,8 +122,16 @@ void ServerNode::initializeServer( ListNode* server ) {
                 }
                 this->addLocationField(path, splitField[0], splitField[j]);
             }
+            values = this->locations[path].getField(splitField[0]).getValues();
+            Parser::validateField(splitField[0], values);
 
-            Parser::validateField(splitField[0], this->locations[path].getField(splitField[0]).getValues());
+            if (splitField[0] == "cgi_path")
+            {
+                for (int i = 0; i < (int) values.size(); i += 2)
+                {
+                    this->addLocationCgi(path, values[i], values[i + 1]);
+                }
+            }
         }
         this->locations[path].setServer(this);
         child = child->getNext();
@@ -172,6 +181,7 @@ void setAllowedFields( ServerNode* server ) {
     server->allowedLocationFields.push_back("autoindex");
     server->allowedLocationFields.push_back("file_upload");
     server->allowedLocationFields.push_back("error_page");
+    server->allowedLocationFields.push_back("cgi_path");
 }
 
 ServerNode::ServerNode( ListNode *server ) {
@@ -196,6 +206,10 @@ void ServerNode::addLocationField( std::string path, std::string key, std::strin
         key) == this->allowedLocationFields.end())
         throw Parser::ParsingException("Unknown directive " + key + " for location block");
     this->locations[path].addField(key, value);
+}
+
+void ServerNode::addLocationCgi( std::string path, std::string key, std::string value) {
+    this->locations[path].addCgiPath(key, value);
 }
 
 std::map<std::string, Field > ServerNode::getFields( void ) {

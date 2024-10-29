@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/19 10:12:39 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/29 14:49:46 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ class ServerNode {
         std::map<std::string, Field > getFields( void );
     
         void addLocationField( std::string, std::string, std::string);
+        void addLocationCgi( std::string, std::string, std::string);
         std::map<std::string, Location > &getLocations( void );
 
         Field& getField( std::string );

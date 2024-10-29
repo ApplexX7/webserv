@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/27 11:08:36 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/10/29 14:38:30 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -302,11 +302,18 @@ void Parser::validateField( std::string key, std::vector<std::string> values ) {
         Parser::validateAutoIndex(values);
     if (key == "file_upload")
         Parser::validateFileUpload(values);
+    if (key == "cgi_path")
+        Parser::validateCgiPath(values);
 }
 
 void Parser::validateRoot( std::vector<std::string> values ) {
     if (values.size() != 1)
         throw Parser::ParsingException("Invalid number of arguments for \"root\"");
+}
+
+void Parser::validateCgiPath( std::vector<std::string> values ) {
+    if (values.size() < 2 || values.size() % 2 == 1)
+        throw Parser::ParsingException("Invalid number of arguments for \"cgi_path\"");
 }
 
 void Parser::validateListen( std::vector<std::string> values ) {
