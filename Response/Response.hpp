@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/25 17:59:23 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/04 16:39:57 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,6 @@ class Response {
         std::string path;
 
         Client *client;
-
         // for Post Body
         int chunkedNotComplite;
         int chunkSize;
@@ -98,6 +97,9 @@ class Response {
         std::string bhConetentType;
         std::string bhName;
         std::string bhFileName;
+        // cgi Post
+        std::string cgInputfile;
+        std::ofstream cgiFile;
 
         bool checkPath( void );
         std::string getFullPath( std::string );
@@ -154,6 +156,8 @@ class Response {
         std::string getMimeType(std::string &contentType);
 
 
+        //cgi
+        int handleCgiPost(Client &clientData);
         // Post Response;
         void resetBodyHeader( void );
         int parseContentLenght(Client &cliendata, std::string &body);

@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   request.cpp                                        :+:      :+:    :+:   */
+/*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/26 13:27:35 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/04 18:49:02 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 # define DEFAULT_MAX_BODY 2000000000
 
 Request::Request(){
+	this->handleCgi = new Cgi;
+	this->isaCgi = false;
 	this->maxBodySize = CHUNK_SIZE;
 	this->Uri = "";
 	this->finishReading = false;
@@ -38,6 +40,10 @@ Request &Request::operator=(const Request &ope){
 	return (*this);
 }
 
+bool Request::getIsACgi(){
+	return (this->isaCgi);
+}
+
 void Request::setHeaders(std::string &name, std::string &value){
 	if (!name.empty() && !value.empty()) {
 		this->headers[name] = value;
@@ -45,14 +51,6 @@ void Request::setHeaders(std::string &name, std::string &value){
 		std::cerr << "Error: Header name or value is empty!" << std::endl;
 	}
 }
-
-void Request::printmap(){
-	std::cout << "HEADER  :" << std::endl;
-	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it){
-		std::cout << it->first << " : " << it->second << std::endl;
-	}
-}
-
 
 void Request::findServer(Client &clientData){
 	std::vector<std::string> serverName;
@@ -86,6 +84,31 @@ int Request::getContentLenght(){
 
 void Request::setpathName(std::string _Name){
 	this->pathName = _Name;
+}
+
+int Request::isCgi(){
+	size_t pos = 0;
+	std::string cgiExtension;
+	pos = this->Uri.find(".");
+	if (pos == std::string::npos)
+		return (0);
+	cgiExtension = this->Uri.substr(pos);
+	std::cout << "Uri : " << this->Uri << std::endl;
+	std::cout << "extension : " << cgiExtension << std::endl;
+	this->isaCgi = true;
+	if (!this->serverLocation.getCgiPath(cgiExtension).empty()){
+		if (this->serverLocation.getCgiPath(cgiExtension).empty()){
+			return (0);
+		}
+		this->handleCgi->setExtension(cgiExtension);
+		this->isaCgi = true;
+		return (1);
+	}
+	else{
+		return (1);
+	}
+	return (0);
+	
 }
 
 int Request::Validmethode(std::string &_Methode){
@@ -188,6 +211,7 @@ void Request::findLocationtobeUsed(){
 	}
 	if (!LongestMatch.empty()){
 		this->serverLocation = this->listenningServer->getLocations()[LongestMatch];
+		std::cout << "root location: "<< this->serverLocation.getFields()["root"].getValues()[0] << std::endl;
 		return ;
 	}
 	this->serverLocation = NULL;
@@ -254,6 +278,33 @@ void Request::deleteMethode(Client &clientData){
 }
 
 
+std::string stringToupper(std::string str){
+	for (int i = 0; str[i]; i++){
+		if (str[i] == '-')
+			str[i] = '_';
+		else
+			str[i] = std::toupper(str[i]);
+	}
+	return (str);
+}
+
+int Request::handleEnvForCgi(){
+	std::vector<std::string> cgiEnv;
+	std::string headr;
+
+	cgiEnv.push_back("REQUEST_METHOD=" + this->methode);
+	cgiEnv.push_back("SERVER_PORT=" + this->port);
+	cgiEnv.push_back("QUERY_STRING=" + this->quertyString);
+	cgiEnv.push_back("SERVER_NAME=webser1.1");
+	cgiEnv.push_back("SCRIPT_NAME=" + this->Uri);
+	
+	for (std::map<std::string, std::string>::iterator it = this->getHeaders().begin(); it != this->getHeaders().end(); it++){
+		cgiEnv.push_back(stringToupper(it->first) + "=" + it->second);
+	}
+	this->handleCgi->setUpCgenv(cgiEnv);
+	return (0);
+}
+
 int Request::ParsingTheRequest(Client &ClientData) {
 	size_t pos;
 	std::string name;
@@ -303,6 +354,10 @@ int Request::ParsingTheRequest(Client &ClientData) {
 	else{
 		return (0);
 	}
+	if (this->isCgi() && this->compliteHeaderparser){
+		this->handleEnvForCgi();
+		return (1);
+	}
 	if (this->methode == "GET" && this->compliteHeaderparser){
 		this->compliteHeaderparser = false;
 		this->finishReading = true;
@@ -320,7 +375,6 @@ int Request::ParsingTheRequest(Client &ClientData) {
 		return (0);
 	}
 	if (this->methode == "DELETE"){
-		// chek for the file if exist and not directory
 		this->deleteMethode(ClientData);
 		this->finishReading = true;
 		ClientData.responseReady = true;
@@ -335,13 +389,18 @@ int Request::requestParserStart(Client &clientData) {
 	if (!this->compliteHeaderparser && this->ParsingTheRequest(clientData)){
 		return (1);
 	}
+	else if (this->isaCgi){
+		if (this->finishReading){
+			this->handleCgi->executeCgi(clientData);
+			clientData.responseReady = true;
+		}
+	}
 	if (this->methode == "POST" && this->compliteHeaderparser && !clientData.getMessage().empty()){
  		this->bodybuffer = clientData.getMessage();
 		if (this->parseBodyTypeBuffer(this->bodybuffer)){
-			std::cout << "gggg"<< std::endl;
 			this->finishReading = true;
 		}
-		if (clientData.getResponse().postBodyResponse(clientData)) {
+		if (clientData.getResponse().postBodyResponse(clientData)){
 			this->finishReading = true;
 			return (1);
 		}
@@ -349,7 +408,6 @@ int Request::requestParserStart(Client &clientData) {
 	}
 	return (0);
 }
-
 
 void Request::setFinishReading(bool var){
 	this->finishReading = var;
@@ -439,8 +497,10 @@ long int &Request::getClientMaxSizeBody(){
 	return (this->maxBodySize);
 }
 
-std::map<std::string,std::string> Request::getHeaders( void ) {
+std::map<std::string,std::string> &Request::getHeaders( void ) {
 	return this->headers;
 }
 
-Request::~Request() {}
+Request::~Request() {
+	delete this->handleCgi;
+}

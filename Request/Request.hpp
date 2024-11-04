@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/25 18:55:34 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/04 16:19:25 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,9 @@
 #include <sys/stat.h>
 #include <cstdio>
 #include "../utils/Client.hpp"
+#include "../cgi/Cgi.hpp"
 
+class Cgi;
 class Client;
 
 enum TypeTransf{
@@ -37,6 +39,11 @@ enum TypeTransf{
 
 class Request{
     private:
+    // for Cgi
+        Cgi *handleCgi;
+        char **env;
+
+        bool isaCgi;
         bool finishReading;
         bool compliteHeaderparser;
         long int maxBodySize;
@@ -52,7 +59,6 @@ class Request{
         std::string bodybuffer;
         Location serverLocation;
 
-
         // for the Post Methode
         int contentLenght;
         TypeTransf bodyType;
@@ -66,9 +72,13 @@ class Request{
         Request& operator=(const Request &ope);
         ~Request();
         
-
+        /*For Cgi*/
+        int isCgi();
+        int handleEnvForCgi();
+        /*******************************/
         int getContentLenght();
         bool getFinishReading();
+        bool getIsACgi();
         int requestParserStart(Client &clientData);
         void setpathName(std::string _Name);
         std::string getpathName( void );
@@ -110,7 +120,7 @@ class Request{
         std::string getmethode();
         std::string getUri();
         std::string &getBody();
-        std::map<std::string,std::string> getHeaders( void );
+        std::map<std::string,std::string> &getHeaders( void );
 
         //parsing the request;
         void SetUri(std::string _Uri);

@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/26 13:06:18 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/04 18:50:01 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,8 +62,6 @@ int Response::writeChunkinfile(std::string content, Client &clientdata){
 	}
 	this->outFile.write(content.c_str(), content.size());
 	if (!this->outFile){
-		perror("erro");
-		exit(1);
 		std::cerr << "Error: failed to write in file"<< std::endl;
 		return (1);
 	}
@@ -111,8 +109,6 @@ int Response::parseBodyHeaders(std::string header){
 	return (0);
 }
 
-
-
 int Response::parseChunkedPart(std::string chunk, Client &clientdata){
 	size_t pos = 0;
 	size_t secpos = 0;
@@ -159,7 +155,6 @@ int Response::handle_partchunkedformdataWriting(Client &clientData){
 		pos = this->finaleBody.find(startBd);
 		if (pos != std::string::npos){
 			if (pos != 0 && pos < this->finaleBody.find(endBd)){
-				// std::cout << this->finaleBody << std::endl;
 				std::string segment = this->finaleBody.substr(0, pos - 2);
 				if (!this->checkforValidField()){
 					this->writeChunkinfile(segment, clientData);
@@ -246,6 +241,14 @@ int Response::parseChunckedType(Client &clientData){
 			this->chunkSize = 0;
 		}
 	}
+	if (clientData.getRequest().getIsACgi()){
+		this->cgiFile.write(this->finaleBody.c_str(), this->finaleBody.size());
+		if (!this->cgiFile){
+			std::cerr << "Error: failed to write in file"<< this->cgInputfile << std::endl;
+			return (1);
+		}
+		return (0);
+	}
 	this->handle_partchunkedformdataWriting(clientData);
 	return (0);
 }
@@ -299,18 +302,44 @@ int Response::parseContentLenght(Client &clientData, std::string &body){
 	return (0);
 }
 
+int Response::handleCgiPost(Client &clientData){
+	if (this->cgInputfile.empty()){
+		this->cgInputfile = this->generateFileName();
+		this->cgiFile.open(this->cgInputfile, std::ios::binary);
+		if (this->cgiFile.is_open())
+			return (1);
+	}
+	if (clientData.getRequest().getTheBodyType() == ENCODING){
+		if (this->parseChunckedType(clientData)){
+			this->statusCode = 500;
+			return (1);
+		}
+		return (0);
+	}
+	this->cgiFile.write(clientData.getMessage().c_str(), clientData.getMessage().length());
+	if (!this->cgiFile){
+		this->statusCode = 500;
+		return (1);
+	}
+	return (0);
+}
+
 int  Response::postBodyResponse(Client &clientData){
-	//check for Cgi;
+	if (clientData.getRequest().getIsACgi()){
+		if (this->handleCgiPost(clientData)){
+			clientData.responseReady = true;
+			return (1);
+		}
+		return (0);
+	}
 	if (clientData.getRequest().getTheBodyType() == ENCODING){
 		if (!this->parseChunckedType(clientData)){
 			if (clientData.getRequest().getFinishReading()){
-				std::cout << "hellooo" << std::endl;
 				clientData.responseReady = true;
 				this->statusCode = 201;
 			}
 		}
 		else{
-			std::cout << "hellooo" << std::endl;
 			clientData.responseReady = true;
 			return (1);
 		}
