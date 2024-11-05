@@ -6,14 +6,15 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/27 11:47:05 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/05 19:11:31 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 #include "../parsing/Parser.hpp"
 
-void initializeStatusTexts(std::map<int, std::string>& statusTexts) {
+void initializeStatusTexts(std::map<int, std::string> &statusTexts)
+{
 	// 1xx
 	statusTexts[CONTINUE] = "Continue";
 	statusTexts[SWITCHING_PROTOCOLS] = "Switching Protocols";
@@ -48,7 +49,8 @@ void initializeStatusTexts(std::map<int, std::string>& statusTexts) {
 	statusTexts[505] = "HTTP Version Not Supported";
 }
 
-Response::Response(){
+Response::Response()
+{
 	this->statusCode = 200;
 	this->contentType = "text/html; charset=UTF-8";
 	this->mimeTypes[".html"] = "text/html; charset=UTF-8";
@@ -72,68 +74,94 @@ Response::Response(){
 	this->rangeStart = 0;
 	this->isError = false;
 	this->isBody = false;
+	this->isRedir = false;
+	this->redirUrl = "";
 	this->chunkSize = 0;
 	this->globalRead = 0;
 	this->bufferBody = "";
 	this->chunkedNotComplite = 0;
 }
 
-
-int Response::getStatusCode(){
+int Response::getStatusCode()
+{
 	return (this->statusCode);
 }
 
-void Response::setStatusCode(int statusCode){
+void Response::setStatusCode(int statusCode)
+{
 	this->statusCode = statusCode;
 }
 
-void Response::setMap(std::string _name, std::string _Value){
+void Response::setMap(std::string _name, std::string _Value)
+{
 	this->ResponseMeth[_name] = _Value;
 }
 
-Response& Response::operator=(const Response &Obj){
-	if (this != &Obj){
+Response &Response::operator=(const Response &Obj)
+{
+	if (this != &Obj)
+	{
 		this->ResponseMeth = Obj.ResponseMeth;
 		this->mimeTypes = Obj.mimeTypes;
 	}
 	return (*this);
 }
 
-std::map<std::string, std::string> Response::getMap() const {
+std::map<std::string, std::string> Response::getMap() const
+{
 	return (this->ResponseMeth);
 }
 
-Client* Response::getClient( void ) {
+Client *Response::getClient(void)
+{
 	return this->client;
 }
 
-void Response::setClient( Client *client ) {
+void Response::setClient(Client *client)
+{
 	this->client = client;
 }
 
-std::string Response::getFullPath( std::string path ) {
+std::string Response::getFullPath(std::string path)
+{
+
+	
 	ServerNode &server = this->client->getParentServer();
-	std::map<std::string, Location> locations = server.getLocations();
-	Location *location = NULL; 
+	Location *location = NULL;
 	std::string root;
 	std::string fullPath;
+	std::string index = "";
+	std::vector<std::string> redirection;
 	struct stat fileStat;
 	bool autoIndex = true;
 
 	location = this->getPathLocation(path);
 
-	if (!location) 
+	if (!location)
+	{
 		root = server.getField("root").getValues()[0];
+		redirection = server.getField("return").getValues();
+	}
 	else
 	{
 		this->location = location;
 		root = location->getField("root").getValues()[0];
+		redirection = location->getField("return").getValues();
 	}
 
+	if (redirection.size())
+	{
+		this->isRedir = true;
+		this->redirUrl = redirection[1];
+		this->statusCode = std::atoi(redirection[0].data());
+		return "";
+	}
+
+	if (location)
+		this->checkPath();
 	this->setPath(root);
 	this->checkPath();
-	
-	
+
 	fullPath = root + path;
 
 	std::cout << "FULL PATH: " << fullPath << std::endl;
@@ -151,118 +179,147 @@ std::string Response::getFullPath( std::string path ) {
 			if file, nothing to be done
 	*/
 
-	if (S_ISDIR(fileStat.st_mode)) {
-		
+	if (S_ISDIR(fileStat.st_mode))
+	{
+
 		if (path[path.length() - 1] != '/')
 			fullPath += "/";
 
-		fullPath += "index.html";
-
 		// is dir
-		if (location) {
+		if (location)
+		{
 			// path matches a location
 			autoIndex = location->getField("autoindex").getValues()[0] == "on";
+			index = location->getField("index").getValues()[0];
 		}
-		else {
+		
+		else
+		{
 			autoIndex = server.getField("autoindex").getValues()[0] == "on";
+			index = server.getField("index").getValues()[0];
 		}
 
-		try {
+		if (index.length() == 0)
+			index = "index.html";
+		fullPath += index;
+
+		try
+		{
 			this->setPath(fullPath);
 			this->checkPath();
-		} catch (Response::ResponseException e) {
-			
+		}
+		catch (Response::ResponseException e)
+		{
+
 			// index doesn't exist or not enough permissions
-			if (autoIndex) {
+			if (autoIndex)
+			{
 				fullPath = root + path;
 				this->setPath(fullPath);
 			}
-			else {
+			else
+			{
 				this->setStatusCode(NOT_FOUND);
 				throw Response::ResponseException("Not found");
 			}
 		}
-		
 	}
 	stat(fullPath.data(), &fileStat);
-	if (!S_ISDIR(fileStat.st_mode)) {
+	if (!S_ISDIR(fileStat.st_mode))
+	{
 		this->contentLength = fileStat.st_size;
 		this->extractFileName();
 	}
-	else {
+	else
+	{
 		this->fileName = "";
 	}
 	return fullPath;
 }
 
-bool Response::checkPath( void ) {
-	if (access(this->path.data(), F_OK) != 0) {
+bool Response::checkPath(void)
+{
+	if (access(this->path.data(), F_OK) != 0)
+	{
 		// doesn't exist
 		if (!this->isError)
 			this->statusCode = NOT_FOUND;
 		throw ResponseException("Page Not Found");
 	}
-	
-	if (access(this->path.data(), R_OK) != 0) {
+
+	if (access(this->path.data(), R_OK) != 0)
+	{
 		if (!this->isError)
 			this->statusCode = FORBIDDEN;
 		throw ResponseException("Permission Denied");
-		
 	}
 
 	return true;
 }
 
-std::string Response::getPath( void ) const {
+std::string Response::getPath(void) const
+{
 	return this->path;
 }
 
-void Response::setPath( std::string path ) {
+void Response::setPath(std::string path)
+{
 	this->path = path;
 }
 
-t_response_status Response::getStatus( void ) const {
+t_response_status Response::getStatus(void) const
+{
 	return this->status;
 }
 
-void Response::setStatus(t_response_status status) {
+void Response::setStatus(t_response_status status)
+{
 	this->status = status;
 }
 
-std::string Response::getBody( void ) const {
+std::string Response::getBody(void) const
+{
 	return this->body;
 }
 
-void Response::setBody( std::string body ) {
+void Response::setBody(std::string body)
+{
 	this->body = body;
 }
 
-std::string Response::getContentType( void ) const {
+std::string Response::getContentType(void) const
+{
 	return this->contentType;
 }
 
-void Response::setContentType( std::string contentType ) {
+void Response::setContentType(std::string contentType)
+{
 	this->contentType = contentType;
 }
 
-std::string Response::getStatusText( void ) {
+std::string Response::getStatusText(void)
+{
 	return this->statusTexts[this->statusCode];
 }
 
-void Response::extractFileName( void ) {
+void Response::extractFileName(void)
+{
 	std::string path = this->path;
 	std::string extension;
 	int start = path.length() - 1;
 
-	for (int i = start; i >= 0; i--) {
-		if (path[i] == '/') {
+	for (int i = start; i >= 0; i--)
+	{
+		if (path[i] == '/')
+		{
 			start = i + 1;
-			break ;
+			break;
 		}
 	}
 	this->fileName = path.substr(start, path.length());
 	start = this->fileName.length() - 1;
-	for (int i = start; i >= 0; i--) {
+	for (int i = start; i >= 0; i--)
+	{
 		if (this->fileName[i] == '.')
 		{
 			start = i;
@@ -274,20 +331,24 @@ void Response::extractFileName( void ) {
 		this->contentType = this->mimeTypes[extension];
 }
 
-std::string getDirectoryLinks(std::string path, std::string uri) {
+std::string getDirectoryLinks(std::string path, std::string uri)
+{
 	DIR *dir = opendir(path.data());
 	struct dirent *entry;
 	std::string res = "<ul>";
 	std::string tmp;
 
 	if (!dir)
-		return "Error opening directory";
+		return "";
 	entry = readdir(dir);
-	while (entry) {
+	while (entry)
+	{
 		tmp = entry->d_name;
 
-		if (tmp[0] != '.') {
-			if (uri.length() == 0 || uri == "/") {
+		if (tmp[0] != '.')
+		{
+			if (uri.length() == 0 || uri == "/")
+			{
 				res += "<li><a href=\"/" + tmp + "\">";
 			}
 			else
@@ -301,33 +362,37 @@ std::string getDirectoryLinks(std::string path, std::string uri) {
 	return res + "</ul>";
 }
 
-std::string getDateResponse(){
+std::string getDateResponse()
+{
 	char buffer[100];
 	time_t rawtime;
 	time(&rawtime);
 
-	struct tm*  Info = gmtime(&rawtime);
+	struct tm *Info = gmtime(&rawtime);
 	std::strftime(buffer, 100, "%a %d %b %Y %H:%M:%S GMT", Info);
-	return ((std::string) buffer);
+	return ((std::string)buffer);
 }
 
-std::string Response::constructHeader( void ) {
+std::string Response::constructHeader(void)
+{
 	std::string header = "HTTP/1.1 ";
 
 	// if (this->isError && this->contentLength == 0) {
 	// 	this->statusCode = NOT_FOUND;
 	// }
-	
 
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
 
 	header += "Content-Type: " + this->contentType + "\r\n";
 	header += "Connection: keep-alive\r\n";
+	if (this->isRedir)
+	{
+		header += "Location: " + this->redirUrl + "\r\n";
+	}
 	if (this->statusCode == PARTIAL_CONTENT)
 	{
 		unsigned long totalSize = this->rangeStart + this->contentLength;
-		header += "Content-Range: bytes " + std::to_string(this->rangeStart)
-		+ "-" + std::to_string(totalSize - 1) + "/" + std::to_string(totalSize) + "\r\n";
+		header += "Content-Range: bytes " + std::to_string(this->rangeStart) + "-" + std::to_string(totalSize - 1) + "/" + std::to_string(totalSize) + "\r\n";
 	}
 	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
 	header += "Accept-Ranges: bytes\r\n";
@@ -345,10 +410,12 @@ std::string Response::constructHeader( void ) {
 	return header;
 }
 
-std::string Response::getFileChunk( void ) {
+std::string Response::getFileChunk(void)
+{
 	std::vector<char> buff(CHUNK_SIZE + 1);
 
-	if (!this->file.is_open()) {
+	if (!this->file.is_open())
+	{
 		this->file.open(this->path, std::ios::binary);
 		this->file.seekg(this->rangeStart, std::ios::beg);
 		if (!this->file.is_open())
@@ -359,7 +426,7 @@ std::string Response::getFileChunk( void ) {
 	}
 
 	file.read(buff.data(), CHUNK_SIZE);
-	
+
 	std::streamsize bytesRead = this->file.gcount();
 	if (bytesRead < 0)
 	{
@@ -371,14 +438,16 @@ std::string Response::getFileChunk( void ) {
 
 	this->bytesSent += bytesRead;
 
-	if (this->bytesSent >= this->contentLength) {
+	if (this->bytesSent >= this->contentLength)
+	{
 		this->status = FINISHED;
 		// this->file.close();
 	}
 	return chunk;
 }
 
-bool Response::checkAllowedMethod( std::string path ) {
+bool Response::checkAllowedMethod(std::string path)
+{
 	ServerNode &server = this->client->getParentServer();
 	std::map<std::string, Location> locations = server.getLocations();
 	Location *location = NULL;
@@ -394,15 +463,18 @@ bool Response::checkAllowedMethod( std::string path ) {
 
 	if (allowedMethods.size() == 0)
 		return true;
-	if (std::find(allowedMethods.begin(), allowedMethods.end(), method) == allowedMethods.end()) {
+	if (std::find(allowedMethods.begin(), allowedMethods.end(), method) == allowedMethods.end())
+	{
 		this->statusCode = METHOD_NOT_ALLOWED;
 		throw ResponseException("Method not allowed");
 	}
 	return true;
 }
 
-void Response::reset( void ) {
-	std::cout << "\n\nRESET\n\n" << std::endl;
+void Response::reset(void)
+{
+	std::cout << "\n\nRESET\n\n"
+			  << std::endl;
 	this->contentLength = 0;
 	this->bytesSent = 0;
 	this->rangeStart = 0;
@@ -414,62 +486,81 @@ void Response::reset( void ) {
 	this->path = "";
 	this->isError = false;
 	this->isBody = false;
+	this->isRedir = false;
+	this->redirUrl = "";
 }
 
-void Response::extractRange( void ) {
+void Response::extractRange(void)
+{
 	std::string rangeHeader = this->client->getRequest().getValue("Range");
 	std::string range;
 	int end = rangeHeader.length() - 1;
 	int start = end;
 
 	if (rangeHeader.length() == 0)
-		return ;
+		return;
 
-	for (int i = 0; i < (int) rangeHeader.length(); i++) {
+	for (int i = 0; i < (int)rangeHeader.length(); i++)
+	{
 		if (std::isdigit(rangeHeader[i]))
 		{
 			start = i;
-			break ;
+			break;
 		}
 	}
-	
-	if (start != end) {
+
+	if (start != end)
+	{
 		range = rangeHeader.substr(start, end - 1);
-		
+
 		range.erase(range.length() - 1);
-		
+
 		this->rangeStart = std::stoul(range);
 	}
 	this->statusCode = PARTIAL_CONTENT;
-	if (this->contentLength < this->rangeStart) {
+	if (this->contentLength < this->rangeStart)
+	{
 		exit(0);
 	}
 	this->contentLength -= this->rangeStart;
 }
 
-std::string Response::createGetResponse( void ) {
+std::string Response::createGetResponse(void)
+{
 	std::string path = this->client->getRequest().getUri();
+	std::string chunk;
 	size_t pos = 0;
 
-	while ((pos = path.find("%20", pos)) != path.npos) {
+	while ((pos = path.find("%20", pos)) != path.npos)
+	{
 		path.replace(pos, 3, " ");
 		pos += 1;
 	}
 
-	std::string chunk;
-	try {
 
-		/* 
-			only check full path is res on IDLE
-			if not in on IDLE, read file and send
+	try
+	{
+
+		/*
+			only check full path if res on IDLE
+			if not on IDLE, read file and send
 		*/
 
-		if (this->status == IDLE) {
-			this->checkAllowedMethod(path);
+		if (this->status == IDLE)
+		{
+			// this->checkAllowedMethod(path);
+
 			this->getFullPath(path);
 
+			if (this->isRedir)
+			{
+				this->status = FINISHED;
+				return constructHeader();
+			}
+
 			// empty filename means it's a dir
-			if (this->fileName == "") {
+			if (this->fileName == "")
+			{
 				this->body = getDirectoryLinks(this->path, path);
 				this->contentLength = body.length();
 				this->statusCode = SUCCESS;
@@ -477,7 +568,8 @@ std::string Response::createGetResponse( void ) {
 				this->isBody = true;
 				return constructHeader();
 			}
-			else {
+			else
+			{
 				// this is a file, set status to ONGOING to start sending chunks
 				this->status = ONGOING;
 				this->body = "";
@@ -486,23 +578,28 @@ std::string Response::createGetResponse( void ) {
 				this->extractRange();
 			}
 		}
-		else {
+		else
+		{
 			// read from file
-			if (this->isBody) {
+			if (this->isBody)
+			{
 				chunk = this->body.substr(0, CHUNK_SIZE);
-				if (this->body.length() >= CHUNK_SIZE) {
+				if (this->body.length() >= CHUNK_SIZE)
+				{
 					this->body = this->body.substr(CHUNK_SIZE, this->body.length());
 				}
 				else
 					this->status = FINISHED;
 			}
-			else 
+			else
 				chunk = this->getFileChunk();
-			
+
 			return chunk;
 		}
-	} catch (ResponseException e) {
-		std::cout << "Something went wrong with response: " << e.what() << std::endl;
+	}
+	catch (ResponseException e)
+	{
+		std::cout << "Something went wrong with response: " << e.what() << " PATH : " << this->path << std::endl;
 		if (!this->isError)
 		{
 			this->status = IDLE;
@@ -530,7 +627,8 @@ std::string Response::createGetResponse( void ) {
 // 	std::cout << "]\n";
 // }
 
-Location *Response::getPathLocation(std::string path) {
+Location *Response::getPathLocation(std::string path)
+{
 	ServerNode &server = this->client->getParentServer();
 	std::map<std::string, Location> &locations = server.getLocations();
 	std::map<std::string, Location>::iterator it;
@@ -540,7 +638,8 @@ Location *Response::getPathLocation(std::string path) {
 
 	for (it = locations.begin(); it != locations.end(); it++)
 	{
-		if (path.find(it->first) != path.npos) {
+		if (path.find(it->first) != path.npos)
+		{
 			// location match
 			if (it->first.length() > lastMatch.length())
 			{
@@ -549,19 +648,21 @@ Location *Response::getPathLocation(std::string path) {
 			}
 		}
 	}
-	if (location) {
-		
+	if (location)
+	{
+
 		// check location permission
 		root = location->getField("root").getValues()[0];
 		this->setPath(root + "/" + lastMatch);
-		this->checkPath();
+		// this->checkPath();
 	}
 
 	return location;
 }
 
-std::string Response::getErrorResponse( void ) {
-	/* 
+std::string Response::getErrorResponse(void)
+{
+	/*
 		steps:
 			- look for error directive value
 			- look for corresponding location
@@ -577,17 +678,20 @@ std::string Response::getErrorResponse( void ) {
 		errorPages = this->location->getField("error_page").getValues();
 	errorField = this->client->getParentServer().getField("error_page").getValues();
 	errorPages.insert(errorPages.end(), errorField.begin(), errorField.end());
-	
-	for (int i = 0; i < (int) errorPages.size(); i++) {
+
+	for (int i = 0; i < (int)errorPages.size(); i++)
+	{
 		if (Parser::isNumber(errorPages[i]))
 		{
 			if (std::stoi(errorPages[i]) == this->statusCode)
 				found = true;
 		}
-		else {
-			if (found) {
+		else
+		{
+			if (found)
+			{
 				path = errorPages[i];
-				break ;
+				break;
 			}
 		}
 	}
@@ -599,13 +703,15 @@ std::string Response::getErrorResponse( void ) {
 	return this->createGetResponse();
 }
 
-Response::~Response(){
+Response::~Response()
+{
 }
 
-const char* Response::ResponseException::what() const throw() {
-    return message.c_str();
+const char *Response::ResponseException::what() const throw()
+{
+	return message.c_str();
 };
 
-Response::ResponseException::ResponseException(std::string msg): message(msg) {};
+Response::ResponseException::ResponseException(std::string msg) : message(msg) {};
 
 Response::ResponseException::~ResponseException() throw() {};

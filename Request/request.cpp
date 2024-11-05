@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/04 18:49:02 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/05 16:50:05 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -354,10 +354,10 @@ int Request::ParsingTheRequest(Client &ClientData) {
 	else{
 		return (0);
 	}
-	if (this->isCgi() && this->compliteHeaderparser){
-		this->handleEnvForCgi();
-		return (1);
-	}
+	// if (this->isCgi() && this->compliteHeaderparser){
+	// 	this->handleEnvForCgi();
+	// 	return (1);
+	// }
 	if (this->methode == "GET" && this->compliteHeaderparser){
 		this->compliteHeaderparser = false;
 		this->finishReading = true;
