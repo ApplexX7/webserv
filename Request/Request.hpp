@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/04 16:19:25 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/05 14:58:57 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,6 +122,8 @@ class Request{
         std::string &getBody();
         std::map<std::string,std::string> &getHeaders( void );
 
+        void reset( void );
+        
         //parsing the request;
         void SetUri(std::string _Uri);
         int ParsingTheRequest(Client& ClientData);

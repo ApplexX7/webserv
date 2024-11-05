@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/27 11:47:05 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/05 18:09:00 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,6 +130,7 @@ std::string Response::getFullPath( std::string path ) {
 		root = location->getField("root").getValues()[0];
 	}
 
+	
 	this->setPath(root);
 	this->checkPath();
 	
@@ -193,6 +194,10 @@ std::string Response::getFullPath( std::string path ) {
 		this->fileName = "";
 	}
 	return fullPath;
+}
+
+std::string Response::getCginputFile( void ){
+	return (this->cgInputfile);
 }
 
 bool Response::checkPath( void ) {
@@ -450,6 +455,8 @@ void Response::extractRange( void ) {
 std::string Response::createGetResponse( void ) {
 	std::string path = this->client->getRequest().getUri();
 	size_t pos = 0;
+
+	std::cout << "HILALI DZEB: " << path << std::endl;
 
 	while ((pos = path.find("%20", pos)) != path.npos) {
 		path.replace(pos, 3, " ");

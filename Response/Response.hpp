@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/04 16:39:57 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/05 18:08:06 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,7 @@ class Response {
         void setFileName( std::string );
         void extractFileName( void );
         std::string getFileName( void );
-
+        std::string getCginputFile( void );
         std::string getBody( void ) const;
         void setBody( std::string );
         std::string generateFileName();

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/27 12:45:55 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/05 14:58:21 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,7 +244,7 @@ void Webserv::listen( void ) {
                     // }
                     message.assign(buf, bytes_read);
                     clients[fds[i].fd]->setMessage(message);
-                    // std::cout << clients[fds[i].fd]->getMessage() << std::endl;
+                    std::cout << "MESSAGE: " << clients[fds[i].fd]->getMessage() << std::endl;
                     clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
 
                     if ((*clients[fds[i].fd]).getRequest().getFinishReading())
@@ -281,6 +281,8 @@ void Webserv::listen( void ) {
                         if (connection == "keep-alive") {
                             fds[i].events = POLLIN | POLLHUP;
                             clients[fds[i].fd]->getResponse().reset();
+                            clients[fds[i].fd]->getRequest().reset();
+                            
                         }
                         else {
                             delete clients[fds[i].fd];

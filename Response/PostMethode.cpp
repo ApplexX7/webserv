@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/04 18:50:01 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/05 18:08:15 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -301,6 +301,7 @@ int Response::parseContentLenght(Client &clientData, std::string &body){
 	this->closeFileafterWriting();
 	return (0);
 }
+
 
 int Response::handleCgiPost(Client &clientData){
 	if (this->cgInputfile.empty()){
