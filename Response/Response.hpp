@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/05 18:08:06 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/05 19:18:37 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,8 @@ class Response {
         unsigned long rangeStart;
         bool isError;
         bool isBody;
+        bool isRedir;
+        std::string redirUrl;
 
         std::string path;
 

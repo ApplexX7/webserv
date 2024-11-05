@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/29 14:38:30 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/05 17:18:32 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -288,8 +288,8 @@ Parser::ParsingException::ParsingException(std::string msg): message(msg) {};
 Parser::ParsingException::~ParsingException() throw() {};
 
 void Parser::validateField( std::string key, std::vector<std::string> values ) {
-    if (key == "root")
-        Parser::validateRoot(values);
+    if (key == "root" || key == "index" || key == "upload_store")
+        Parser::validatePathDirective(values, key);
     if (key == "listen")
         Parser::validateListen(values);
     if (key == "limit_except")
@@ -304,11 +304,14 @@ void Parser::validateField( std::string key, std::vector<std::string> values ) {
         Parser::validateFileUpload(values);
     if (key == "cgi_path")
         Parser::validateCgiPath(values);
+    if (key == "return")
+        Parser::validateRedirection(values);
+    
 }
 
-void Parser::validateRoot( std::vector<std::string> values ) {
+void Parser::validatePathDirective( std::vector<std::string> values, std::string name ) {
     if (values.size() != 1)
-        throw Parser::ParsingException("Invalid number of arguments for \"root\"");
+        throw Parser::ParsingException("Invalid number of arguments for \"" + name + "\"");
 }
 
 void Parser::validateCgiPath( std::vector<std::string> values ) {
@@ -383,7 +386,6 @@ void Parser::validateBodySize( std::vector<std::string> values ) {
     
     length = values[0].length();
     
-    // todo: check unit and size is numeric
     size = values[0].substr(0, length - 1);
     unit = std::toupper(values[0].substr(length - 1, 1)[0]);
     
@@ -397,6 +399,19 @@ void Parser::validateBodySize( std::vector<std::string> values ) {
 void Parser::validateErrorPage( std::vector<std::string> values ) {
     if (values.size() < 2)
         throw Parser::ParsingException("Invalid number of arguments for \"error_page\"");
+}
+
+void Parser::validateRedirection( std::vector<std::string> values ) {
+
+    int status = 0;
+
+    if (values.size() != 2)
+        throw Parser::ParsingException("Invalid number of arguments for \"return\"");
+    if (!Parser::isNumber(values[0]))
+        throw Parser::ParsingException("First arg must be numeric for \"return\"");
+    status = std::atoi(values[0].data());
+    if (status < 300 || status >= 310)
+        throw Parser::ParsingException("Invalid redirection status code for \"return\"");
 }
 
 void Parser::validateAutoIndex( std::vector<std::string> values ) {

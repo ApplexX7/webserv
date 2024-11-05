@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/29 14:52:18 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/05 17:55:10 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,8 @@ void ServerNode::initializeServer( ListNode* server ) {
         splitField = (Parser::strSplit(trimedField, ' '));
         if (splitField.size() == 1)
             throw Parser::ParsingException("Directive has no arguments " + splitField[0]);
-        if (splitField[0] != "error_page" && this->fieldExists(splitField[0]))
+        if (splitField[0] != "error_page" && splitField[0] != "cgi_path"
+            && this->fieldExists(splitField[0]))
             throw Parser::ParsingException("Duplicate directives for " + splitField[0]);
 
         for (int j = 1; j < (int) splitField.size(); j++) {
@@ -56,10 +57,19 @@ void ServerNode::initializeServer( ListNode* server ) {
 
         values = this->getField(splitField[0]).getValues();
 
-        // Parser::validateField(splitField[0], values);
         if (splitField[0] == "listen" && values[0].find(":") == values[0].npos)
             this->getField(splitField[0]).updateValue("127.0.0.1:" + values[0], 0);
         Parser::validateField(splitField[0], this->getField(splitField[0]).getValues());
+
+        if (splitField[0] == "cgi_path")
+        {
+            for (int i = 0; i < (int) values.size(); i += 2)
+                this->addCgi(values[i], values[i + 1]);
+        }
+
+        if (splitField[0] == "return") {
+            // std::cout << "REDIRECTION: " << values[1] << std::endl;
+        }
     }
 
     // if server has no listen directive
@@ -81,6 +91,9 @@ void ServerNode::initializeServer( ListNode* server ) {
     // if server has no max size
     if (!this->fieldExists("client_max_body_size"))
         this->addField("client_max_body_size", "1m");
+    
+    if (!this->fieldExists("index"))
+        this->addField("index", "index.html");
 
     // insert locations
     while (child != NULL)
@@ -101,7 +114,8 @@ void ServerNode::initializeServer( ListNode* server ) {
             splitField = (Parser::strSplit(trimedField, ' '));
             if (splitField.size() == 1)
                 throw Parser::ParsingException("Directive has no arguments " + splitField[0]);
-            if (splitField[0] != "error_page" && this->locationFieldExists(path, splitField[0]))
+            if (splitField[0] != "error_page" && splitField[0] != "cgi_path"
+            && this->locationFieldExists(path, splitField[0]))
             {
                 throw Parser::ParsingException("Duplicate directives for " + splitField[0]);
             }
@@ -128,9 +142,7 @@ void ServerNode::initializeServer( ListNode* server ) {
             if (splitField[0] == "cgi_path")
             {
                 for (int i = 0; i < (int) values.size(); i += 2)
-                {
                     this->addLocationCgi(path, values[i], values[i + 1]);
-                }
             }
         }
         this->locations[path].setServer(this);
@@ -173,6 +185,10 @@ void setAllowedFields( ServerNode* server ) {
     server->allowedFields.push_back("client_max_body_size");
     server->allowedFields.push_back("error_page");
     server->allowedFields.push_back("autoindex");
+    server->allowedFields.push_back("cgi_path");
+    server->allowedFields.push_back("return");
+    server->allowedFields.push_back("index");
+    server->allowedFields.push_back("upload_store");
 
     // allowed location fields
     server->allowedLocationFields.push_back("root");
@@ -182,6 +198,9 @@ void setAllowedFields( ServerNode* server ) {
     server->allowedLocationFields.push_back("file_upload");
     server->allowedLocationFields.push_back("error_page");
     server->allowedLocationFields.push_back("cgi_path");
+    server->allowedLocationFields.push_back("return");
+    server->allowedLocationFields.push_back("index");
+    server->allowedLocationFields.push_back("upload_store");
 }
 
 ServerNode::ServerNode( ListNode *server ) {
@@ -210,6 +229,10 @@ void ServerNode::addLocationField( std::string path, std::string key, std::strin
 
 void ServerNode::addLocationCgi( std::string path, std::string key, std::string value) {
     this->locations[path].addCgiPath(key, value);
+}
+
+void ServerNode::addCgi( std::string key, std::string value) {
+    this->cgiPaths[key] = value;
 }
 
 std::map<std::string, Field > ServerNode::getFields( void ) {
