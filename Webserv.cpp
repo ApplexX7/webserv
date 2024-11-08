@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/08 13:50:34 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/08 17:30:57 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,6 @@ void Webserv::init( std::string configPath ) {
     std::vector<std::string> otherServerNames;
     std::map<std::string, std::vector<std::string> > servers;
     std::map<std::string, std::vector<std::string> >::iterator it;
-    int count = 0;
     int occurences = 0;
 
     if (Parser::checkValidContent(content) == false)
@@ -117,9 +116,7 @@ void Webserv::init( std::string configPath ) {
                continue ; 
             servers[listenValue].push_back(serverNames[j]);
         }
-
         tmp = tmp->getNext();
-        std::cout << count++ << std::endl;
     }
 
     for (it = servers.begin(); it != servers.end(); it++) {

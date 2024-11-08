@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/05 19:23:41 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/08 17:30:46 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,10 +122,19 @@ void Response::setClient(Client *client)
 	this->client = client;
 }
 
+void trimSlashes(std::string& path) {
+	int i = path.length() - 1;
+
+	if (i <= 0)
+		return ;
+	while (i >= 0 && path[i] == '/')
+		i--;
+	path = path.substr(0, i + 1);
+}
+
 std::string Response::getFullPath(std::string path)
 {
 
-	
 	ServerNode &server = this->client->getParentServer();
 	Location *location = NULL;
 	std::string root;
@@ -149,6 +158,9 @@ std::string Response::getFullPath(std::string path)
 		redirection = location->getField("return").getValues();
 	}
 
+	// trimSlashes(root);
+	// trimSlashes(path);
+
 	if (redirection.size())
 	{
 		this->isRedir = true;
@@ -162,6 +174,7 @@ std::string Response::getFullPath(std::string path)
 	this->setPath(root);
 	this->checkPath();
 
+	
 	fullPath = root + path;
 
 	std::cout << "FULL PATH: " << fullPath << std::endl;
@@ -192,7 +205,7 @@ std::string Response::getFullPath(std::string path)
 			autoIndex = location->getField("autoindex").getValues()[0] == "on";
 			index = location->getField("index").getValues()[0];
 		}
-		
+
 		else
 		{
 			autoIndex = server.getField("autoindex").getValues()[0] == "on";
@@ -202,7 +215,6 @@ std::string Response::getFullPath(std::string path)
 		if (index.length() == 0)
 			index = "index.html";
 		fullPath += index;
-
 		try
 		{
 			this->setPath(fullPath);
@@ -242,15 +254,13 @@ bool Response::checkPath(void)
 	if (access(this->path.data(), F_OK) != 0)
 	{
 		// doesn't exist
-		if (!this->isError)
-			this->statusCode = NOT_FOUND;
+		this->statusCode = NOT_FOUND;
 		throw ResponseException("Page Not Found");
 	}
 
 	if (access(this->path.data(), R_OK) != 0)
 	{
-		if (!this->isError)
-			this->statusCode = FORBIDDEN;
+		this->statusCode = FORBIDDEN;
 		throw ResponseException("Permission Denied");
 	}
 
@@ -335,31 +345,90 @@ std::string getDirectoryLinks(std::string path, std::string uri)
 {
 	DIR *dir = opendir(path.data());
 	struct dirent *entry;
-	std::string res = "<ul>";
 	std::string tmp;
+	
+	std::string head = "\
+			<head> \
+				<style> \
+					*, *::before, *::after {\
+						box-sizing: border-box; \
+						font-family: helvetica, arial, non-sans; \
+					}\
+					\
+					body { \
+						padding: 0; \
+						margin: 0; \
+						background-color: black; \
+						color: white; \
+					} \
+					a, a:visited, a:active { \
+						color: white; \
+						text-decoration: none; \
+						width: 100%; \
+						cursor: pointer; \
+						display: block \
+					} \
+					\
+					div { \
+						width: 100%; \
+						min-width: 100vw; \
+						height: 100%; \
+						min-height: 100hw; \
+						padding: 16px 32px; \
+					} \
+					\
+					ul { \
+						list-style: none; \
+						padding-left: 0; \
+					} \
+					\
+					li { \
+						padding: 8px; \
+						width: 100%; \
+						border-radius: 4px; \
+						transition: all 0.2s; \
+						border-bottom: 1px gray solid; \
+					} \
+					\
+					li:hover { \
+						background-color: gray; \
+					} \
+				</style> \
+			</head> \
+	";
 
+	std::string res = " \
+	<div>\
+	<h1> Index of " + uri + "</h1>\
+	<ul>\
+	";
+	std::string closing = "\
+	</ul>\
+	</div>\
+	";
+	
 	if (!dir)
 		return "";
 	entry = readdir(dir);
 	while (entry)
 	{
 		tmp = entry->d_name;
-
-		if (tmp[0] != '.')
+		if (tmp == ".." || tmp[0] != '.')
 		{
-			if (uri.length() == 0 || uri == "/")
+			if (entry->d_type == DT_DIR)
 			{
-				res += "<li><a href=\"/" + tmp + "\">";
+				tmp += "/";
+				res += "<li><a href=\"" + tmp + "\" style=\"color: deepskyblue; font-weight: bold; \">";
 			}
 			else
-				res += "<li><a href=\"" + uri + "/" + tmp + "\">";
+				res += "<li><a href=\"" + tmp + "\">";
 			res += tmp;
 			res += "</a></li>";
 		}
 		entry = readdir(dir);
 	}
 	closedir(dir);
-	return res + "</ul>";
+	return head + res + closing;
 }
 
 std::string getDateResponse()
@@ -473,8 +542,6 @@ bool Response::checkAllowedMethod(std::string path)
 
 void Response::reset(void)
 {
-	std::cout << "\n\nRESET\n\n"
-			  << std::endl;
 	this->contentLength = 0;
 	this->bytesSent = 0;
 	this->rangeStart = 0;
@@ -525,6 +592,17 @@ void Response::extractRange(void)
 	this->contentLength -= this->rangeStart;
 }
 
+std::string Response::constructErrorBody(void)
+{
+	std::string html = "<div style=\"text-align: center; \" >\
+		<h1>" + std::to_string(this->statusCode) + " " + this->getStatusText() + "</h1>\
+		<hr /> \
+		<bold>webserv 1.1</bold> \
+		</div>";
+
+	return html;
+}
+
 std::string Response::createGetResponse(void)
 {
 	std::string path = this->client->getRequest().getUri();
@@ -536,7 +614,6 @@ std::string Response::createGetResponse(void)
 		path.replace(pos, 3, " ");
 		pos += 1;
 	}
-
 
 	try
 	{
@@ -599,7 +676,7 @@ std::string Response::createGetResponse(void)
 	}
 	catch (ResponseException e)
 	{
-		std::cout << "Something went wrong with response: " << e.what() << " PATH : " << this->path << std::endl;
+		// std::cout << "Something went wrong with response: " << e.what() << " PATH : " << this->path << std::endl;
 		if (!this->isError)
 		{
 			this->status = IDLE;
@@ -608,24 +685,13 @@ std::string Response::createGetResponse(void)
 		else
 		{
 			this->status = FINISHED;
-			this->body = "<h1>" + std::to_string(this->statusCode) + " " + this->getStatusText() + "</h1>";
+			this->body = this->constructErrorBody();
 			this->contentLength = this->body.length();
 			return this->constructHeader() + this->body;
 		}
 	}
 	return this->constructHeader();
 }
-
-// void printVector(std::vector<std::string> arr) {
-// 	std::cout << "[";
-// 	for (int i = 0; i < (int) arr.size(); i++) {
-// 		std::cout << arr[i];
-
-// 		if (!(i == (int) arr.size() - 1))
-// 			std::cout << ", ";
-// 	}
-// 	std::cout << "]\n";
-// }
 
 Location *Response::getPathLocation(std::string path)
 {
@@ -635,13 +701,18 @@ Location *Response::getPathLocation(std::string path)
 	Location *location = NULL;
 	std::string lastMatch = "";
 	std::string root;
+	std::string rest;
+	size_t found;
 
 	for (it = locations.begin(); it != locations.end(); it++)
 	{
-		if (path.find(it->first) != path.npos)
+		found = path.find(it->first);
+		if (found != path.npos && found == 0)
 		{
+			rest = path.substr(found + it->first.length());
 			// location match
-			if (it->first.length() > lastMatch.length())
+			if (it->first.length() > lastMatch.length()
+			&& (rest.length() == 0 || rest[0] == '/' || it->first[it->first.length() - 1] == '/'))
 			{
 				location = &it->second;
 				lastMatch = it->first;
@@ -650,7 +721,6 @@ Location *Response::getPathLocation(std::string path)
 	}
 	if (location)
 	{
-
 		// check location permission
 		root = location->getField("root").getValues()[0];
 		this->setPath(root + "/" + lastMatch);
@@ -707,9 +777,7 @@ std::string Response::getErrorResponse(void)
 	return this->createGetResponse();
 }
 
-Response::~Response()
-{
-}
+Response::~Response() {}
 
 const char *Response::ResponseException::what() const throw()
 {

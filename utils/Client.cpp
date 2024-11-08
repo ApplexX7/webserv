@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:12:11 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/15 11:38:10 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/08 13:20:43 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,5 @@ void Client::findParentServer( void ) {
 }
 
 ServerNode& Client::getParentServer( void ) {
-    if (this->parentServer == NULL)
-        std::cout << "server is null" << std::endl;
     return *(this->parentServer);
 }

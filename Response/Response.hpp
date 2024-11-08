@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/05 19:18:37 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/08 17:30:53 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,6 +150,7 @@ class Response {
 
         // response handlers
         std::string constructHeader( void );
+        std::string constructErrorBody( void );
         std::string createGetResponse( void );
         std::string getErrorResponse( void );
         Location* getPathLocation( std::string );
