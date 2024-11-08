@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/08 20:12:10 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/08 20:20:09 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,7 @@ int Request::isCgi(){
 	if (pos == std::string::npos)
 		return (0);
 	cgiExtension = this->Uri.substr(pos);
+
 	if (!this->serverLocation.getCgiPath(cgiExtension).empty()){
 		this->handleCgi->setExtension(cgiExtension);
 		if(this->serverLocation.getField("root").getValues().size() > 0){
@@ -113,7 +114,6 @@ int Request::isCgi(){
 		return (1);
 	}
 	return (0);
-	
 }
 
 int Request::Validmethode(std::string &_Methode, Client &clientData){

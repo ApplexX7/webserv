@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/08 10:24:19 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/08 19:50:42 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,7 +163,9 @@ void ServerNode::initializeServer( ListNode* server ) {
         if (splitField[0] == "cgi_path")
         {
             for (int i = 0; i < (int) values.size(); i += 2)
+            {
                 this->addCgi(values[i], values[i + 1]);
+            }
         }
     }
 

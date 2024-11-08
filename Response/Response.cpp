@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/08 17:30:46 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/08 20:23:20 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,8 @@ void initializeStatusTexts(std::map<int, std::string> &statusTexts)
 
 Response::Response()
 {
-	this->statusCode = 200;
-	this->contentType = "text/html; charset=UTF-8";
+	this->statusCode = SUCCESS;
+	this->contentType = "text/plain; charset=UTF-8";
 	this->mimeTypes[".html"] = "text/html; charset=UTF-8";
 	this->mimeTypes[".css"] = "text/css";
 	this->mimeTypes[".js"] = "application/javascript";
@@ -65,6 +65,54 @@ Response::Response()
 	this->mimeTypes[".txt"] = "text/plain";
 	this->mimeTypes[".mp4"] = "video/mp4";
 	this->mimeTypes[".pdf"] = "application/pdf";
+	this->mimeTypes[".svg"] = "image/svg+xml";
+	this->mimeTypes[".woff"] = "font/woff";
+	this->mimeTypes[".woff2"] = "font/woff2";
+	this->mimeTypes[".ttf"] = "font/ttf";
+	this->mimeTypes[".eot"] = "application/vnd.ms-fontobject";
+	this->mimeTypes[".otf"] = "font/otf";
+	this->mimeTypes[".webp"] = "image/webp";
+	this->mimeTypes[".bmp"] = "image/bmp";
+	this->mimeTypes[".tiff"] = "image/tiff";
+	this->mimeTypes[".ico"] = "image/x-icon";
+	this->mimeTypes[".webm"] = "video/webm";
+	this->mimeTypes[".ogg"] = "audio/ogg";
+	this->mimeTypes[".mp3"] = "audio/mpeg";
+	this->mimeTypes[".wav"] = "audio/wav";
+	this->mimeTypes[".flac"] = "audio/flac";
+	this->mimeTypes[".zip"] = "application/zip";
+	this->mimeTypes[".tar"] = "application/x-tar";
+	this->mimeTypes[".gz"] = "application/gzip";
+	this->mimeTypes[".7z"] = "application/x-7z-compressed";
+	this->mimeTypes[".rar"] = "application/x-rar-compressed";
+	this->mimeTypes[".csv"] = "text/csv";
+	this->mimeTypes[".md"] = "text/markdown";
+	this->mimeTypes[".psd"] = "image/vnd.adobe.photoshop";
+	this->mimeTypes[".epub"] = "application/epub+zip";
+	this->mimeTypes[".apk"] = "application/vnd.android.package-archive";
+	this->mimeTypes[".jsonld"] = "application/ld+json";
+	this->mimeTypes[".xls"] = "application/vnd.ms-excel";
+	this->mimeTypes[".xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+	this->mimeTypes[".ppt"] = "application/vnd.ms-powerpoint";
+	this->mimeTypes[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+	this->mimeTypes[".doc"] = "application/msword";
+	this->mimeTypes[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+	this->mimeTypes[".json5"] = "application/json5";
+	this->mimeTypes[".mkv"] = "video/x-matroska";
+	this->mimeTypes[".flv"] = "video/x-flv";
+	this->mimeTypes[".exe"] = "application/vnd.microsoft.portable-executable";
+	this->mimeTypes[".iso"] = "application/x-iso9660-image";
+	this->mimeTypes[".dmg"] = "application/x-apple-diskimage";
+	this->mimeTypes[".bin"] = "application/octet-stream";
+	this->mimeTypes[".mid"] = "audio/midi";
+	this->mimeTypes[".midi"] = "audio/midi";
+	this->mimeTypes[".3gp"] = "video/3gpp";
+	this->mimeTypes[".3g2"] = "video/3gpp2";
+	this->mimeTypes[".swf"] = "application/x-shockwave-flash";
+	this->mimeTypes[".vtt"] = "text/vtt";
+	this->mimeTypes[".ts"] = "video/mp2t";
+	this->mimeTypes[".ics"] = "text/calendar";
+	this->mimeTypes[".vcf"] = "text/vcard";
 	this->status = IDLE;
 	initializeStatusTexts(this->statusTexts);
 	this->location = NULL;
@@ -122,11 +170,12 @@ void Response::setClient(Client *client)
 	this->client = client;
 }
 
-void trimSlashes(std::string& path) {
+void trimSlashes(std::string &path)
+{
 	int i = path.length() - 1;
 
 	if (i <= 0)
-		return ;
+		return;
 	while (i >= 0 && path[i] == '/')
 		i--;
 	path = path.substr(0, i + 1);
@@ -174,7 +223,6 @@ std::string Response::getFullPath(std::string path)
 	this->setPath(root);
 	this->checkPath();
 
-	
 	fullPath = root + path;
 
 	std::cout << "FULL PATH: " << fullPath << std::endl;
@@ -337,8 +385,15 @@ void Response::extractFileName(void)
 		}
 	}
 	extension = this->fileName.substr(start, this->fileName.length());
-	if (this->mimeTypes.find(extension) != this->mimeTypes.end())
-		this->contentType = this->mimeTypes[extension];
+	if (!this->client->getRequest().getIsACgi())
+	{
+		if (this->mimeTypes.find(extension) != this->mimeTypes.end())
+			this->contentType = this->mimeTypes[extension];
+		else
+			this->contentType = "application/octet-stream";
+	}
+	else
+		std::cout << "IS A CGI" << std::endl;
 }
 
 std::string getDirectoryLinks(std::string path, std::string uri)
@@ -346,7 +401,7 @@ std::string getDirectoryLinks(std::string path, std::string uri)
 	DIR *dir = opendir(path.data());
 	struct dirent *entry;
 	std::string tmp;
-	
+
 	std::string head = "\
 			<head> \
 				<style> \
@@ -399,14 +454,15 @@ std::string getDirectoryLinks(std::string path, std::string uri)
 
 	std::string res = " \
 	<div>\
-	<h1> Index of " + uri + "</h1>\
+	<h1> Index of " + uri +
+					  "</h1>\
 	<ul>\
 	";
 	std::string closing = "\
 	</ul>\
 	</div>\
 	";
-	
+
 	if (!dir)
 		return "";
 	entry = readdir(dir);
@@ -415,7 +471,7 @@ std::string getDirectoryLinks(std::string path, std::string uri)
 		tmp = entry->d_name;
 		if (tmp == ".." || tmp[0] != '.')
 		{
-			if (entry->d_type == DT_DIR)
+			if (entry->d_type != DT_REG)
 			{
 				tmp += "/";
 				res += "<li><a href=\"" + tmp + "\" style=\"color: deepskyblue; font-weight: bold; \">";
@@ -473,8 +529,6 @@ std::string Response::constructHeader(void)
 	{
 		this->status = FINISHED;
 	}
-
-	// std::cout << "HEADER: \n" << header << std::endl;
 
 	return header;
 }
@@ -545,7 +599,7 @@ void Response::reset(void)
 	this->contentLength = 0;
 	this->bytesSent = 0;
 	this->rangeStart = 0;
-	this->contentType = "text/html; charset=UTF-8";
+	this->contentType = "text/plain; charset=UTF-8";
 	this->fileName = "";
 	this->statusCode = SUCCESS;
 	this->status = IDLE;
@@ -587,6 +641,7 @@ void Response::extractRange(void)
 	this->statusCode = PARTIAL_CONTENT;
 	if (this->contentLength < this->rangeStart)
 	{
+		// todo: to check
 		exit(0);
 	}
 	this->contentLength -= this->rangeStart;
@@ -595,7 +650,8 @@ void Response::extractRange(void)
 std::string Response::constructErrorBody(void)
 {
 	std::string html = "<div style=\"text-align: center; \" >\
-		<h1>" + std::to_string(this->statusCode) + " " + this->getStatusText() + "</h1>\
+		<h1>" + std::to_string(this->statusCode) +
+					   " " + this->getStatusText() + "</h1>\
 		<hr /> \
 		<bold>webserv 1.1</bold> \
 		</div>";
@@ -639,6 +695,7 @@ std::string Response::createGetResponse(void)
 			if (this->fileName == "")
 			{
 				this->body = getDirectoryLinks(this->path, path);
+				this->contentType = this->mimeTypes[".html"];
 				this->contentLength = body.length();
 				this->statusCode = SUCCESS;
 				this->status = ONGOING;
@@ -711,8 +768,7 @@ Location *Response::getPathLocation(std::string path)
 		{
 			rest = path.substr(found + it->first.length());
 			// location match
-			if (it->first.length() > lastMatch.length()
-			&& (rest.length() == 0 || rest[0] == '/' || it->first[it->first.length() - 1] == '/'))
+			if (it->first.length() > lastMatch.length() && (rest.length() == 0 || rest[0] == '/' || it->first[it->first.length() - 1] == '/'))
 			{
 				location = &it->second;
 				lastMatch = it->first;
@@ -724,13 +780,13 @@ Location *Response::getPathLocation(std::string path)
 		// check location permission
 		root = location->getField("root").getValues()[0];
 		this->setPath(root + "/" + lastMatch);
-		// this->checkPath();
 	}
 
 	return location;
 }
 
-std::string Response::getCginputFile(void){
+std::string Response::getCginputFile(void)
+{
 	return (this->cgInputfile);
 }
 
@@ -760,13 +816,10 @@ std::string Response::getErrorResponse(void)
 			if (std::stoi(errorPages[i]) == this->statusCode)
 				found = true;
 		}
-		else
+		else if (found)
 		{
-			if (found)
-			{
-				path = errorPages[i];
-				break;
-			}
+			path = errorPages[i];
+			break;
 		}
 	}
 	if (path != "")
