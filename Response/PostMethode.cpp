@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/06 11:59:33 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/08 13:56:59 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,10 +33,13 @@ int Response::openFile(Client &clientData){
 	struct stat buffer;
 	Location *PathLocation = clientData.getRequest().getServerLocation();
 	if (PathLocation != NULL){
-		this->bFullPath = PathLocation->getField("root").getValues()[0] + "/" + this->bhFileName + this->getMimeType(this->bhConetentType);
+		this->bFullPath = PathLocation->getField("upload_store").getValues()[0] + "/" + this->bhFileName + this->getMimeType(this->bhConetentType);
 	}
 	else{
-		this->bFullPath = clientData.getRequest().getserverNode().getFields()["root"].getValues()[0] + "/" + this->bhFileName + this->getMimeType(this->contentType);
+		this->bFullPath = clientData.getRequest().getserverNode().getFields()["upload_store"].getValues()[0] + "/" + this->bhFileName + this->getMimeType(this->contentType);
+	}
+	if (this->bFullPath.empty()){
+		return (1);
 	}
 	if (this->outFile.is_open()){
 		return (0);
@@ -57,6 +60,7 @@ int Response::openFile(Client &clientData){
 
 int Response::writeChunkinfile(std::string content, Client &clientdata){
 	if (this->openFile(clientdata)){
+		this->statusCode = 400;
 		return (1);
 	}
 	this->outFile.write(content.c_str(), content.size());
@@ -156,7 +160,8 @@ int Response::handle_partchunkedformdataWriting(Client &clientData){
 			if (pos != 0 && pos < this->finaleBody.find(endBd)){
 				std::string segment = this->finaleBody.substr(0, pos - 2);
 				if (!this->checkforValidField()){
-					this->writeChunkinfile(segment, clientData);
+					if (this->writeChunkinfile(segment, clientData))
+						return (1);
 				}
 				this->finaleBody = this->finaleBody.substr(pos);
 				continue;
@@ -187,7 +192,8 @@ int Response::handle_partchunkedformdataWriting(Client &clientData){
 				break;
 			}
 			this->chunkedNotComplite = 0;
-			this->writeChunkinfile(this->finaleBody,clientData);
+			if (this->writeChunkinfile(this->finaleBody,clientData))
+				return (1);
 			if ((this->finaleBody.find(startBd)) == std::string::npos){
 				this->finaleBody.clear();
 			}
@@ -248,7 +254,8 @@ int Response::parseChunckedType(Client &clientData){
 		}
 		return (0);
 	}
-	this->handle_partchunkedformdataWriting(clientData);
+	if (this->handle_partchunkedformdataWriting(clientData))
+		return (1);
 	return (0);
 }
 
@@ -282,7 +289,8 @@ int Response::parseBoundarys(std::string &body, Client &clientData){
 		return (1);
 	}
 	this->finaleBody += body;
-	this->handle_partchunkedformdataWriting(clientData);
+	if (this->handle_partchunkedformdataWriting(clientData))
+		return (1);
 	return (0);
 }
 
@@ -296,7 +304,8 @@ int Response::parseContentLenght(Client &clientData, std::string &body){
 	}
 	else
 		this->finaleBody = body;
-	this->writeChunkinfile(this->finaleBody ,clientData);
+	if (this->writeChunkinfile(this->finaleBody ,clientData))
+		return (1);
 	this->closeFileafterWriting();
 	return (0);
 }

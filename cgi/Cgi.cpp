@@ -6,13 +6,15 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/05 18:14:03 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/08 17:22:07 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cgi.hpp"
 
-Cgi::Cgi( void ) {};
+Cgi::Cgi( void ) {
+	this->thereIsOne = false;
+}
 Cgi::~Cgi( void ) {};
 
 int &Cgi::getFileResponse(){
@@ -95,37 +97,49 @@ void Cgi::cgiExecution(Client &clientData){
 }
 
 int Cgi::executeCgi(Client &clientData) {
-	int pid;
 	int status;
 	std::string filename;
-
-	filename = "/tmp/" + clientData.getResponse().generateFileName() + ".txt";
-	this->fileResponse = open(filename.c_str(),O_CREAT | O_RDWR, 0644);
-	if (this->fileResponse == -1){
-		clientData.getResponse().setStatusCode(500);
-		return (1);
+	if (!this->thereIsOne){
+		filename = "/tmp/" + clientData.getResponse().generateFileName() + ".txt";
+		this->fileResponse = open(filename.c_str(),O_CREAT | O_RDWR, 0644);
+		if (this->fileResponse == -1){
+			clientData.getResponse().setStatusCode(500);
+			return (1);
+		}
+		this->pid = fork();
+		if (this->pid == -1){
+			clientData.getResponse().setStatusCode(500);
+			return (1);
+		}
+		if (this->pid == 0){
+			this->cgiExecution(clientData);
+			clientData.getResponse().setStatusCode(500);
+			return (1);
+		}
+		this->Cgi_timeout = time(NULL);
+		this->thereIsOne = true;
 	}
-	pid = fork();
-	if (pid == -1){
-		clientData.getResponse().setStatusCode(500);
-		return (1);
-	}
-	if (pid == 0){
-		this->cgiExecution(clientData);
-		clientData.getResponse().setStatusCode(500);
-		return (1);
-	}
-	waitpid(pid, &status, 0);
-	if (WEXITSTATUS(status) == 1){
-		clientData.getResponse().setStatusCode(500);
-		perror("Errro in child process:: ");
-		return (1);
-	}
-	if (lseek(this->fileResponse, 0, SEEK_SET) == -1){
+	if(this->Cgi_timeout - time(NULL) >= 10){
 		remove(filename.c_str());
+		close(this->fileResponse);
 		clientData.getResponse().setStatusCode(500);
 		return (1);
 	}
-	remove(filename.c_str());
+	if (waitpid(this->pid, &status, WNOHANG) == -1){
+		if (WEXITSTATUS(status) == 1){
+			remove(filename.c_str());
+			clientData.getResponse().setStatusCode(500);
+			this->thereIsOne = false;
+			return (1);
+		}
+		if (lseek(this->fileResponse, 0, SEEK_SET) == -1){
+			remove(filename.c_str());
+			clientData.getResponse().setStatusCode(500);
+			this->thereIsOne = false;
+			return (1);
+		}
+		remove(filename.c_str());
+		this->thereIsOne = false;
+	}
 	return (0);
 }

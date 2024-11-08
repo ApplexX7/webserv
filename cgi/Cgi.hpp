@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:43:59 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/05 17:44:17 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/08 17:22:01 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@
 # include "../utils/Client.hpp"
 # include "../Request/Request.hpp"
 # include "../utils/Client.hpp"
-
 class Client;
 
 class Cgi {
@@ -38,9 +37,12 @@ class Cgi {
         void cgiExecution(Client &clientData);
         int &getFileResponse();
     private:
+        time_t Cgi_timeout;
+        bool thereIsOne;
+        int fileResponse;
+        int pid;
         std::string direcpath;
         std::string cgiFullpath;
-        int fileResponse;
         std::string extension;
         std::vector<std::string> envCgi;
 };
