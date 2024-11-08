@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/05 19:17:37 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/05 19:21:36 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,7 +210,7 @@ void Request::findLocationtobeUsed(){
 	}
 	if (!LongestMatch.empty()){
 		this->serverLocation = this->listenningServer->getLocations()[LongestMatch];
-		std::cout << "root location: "<< this->serverLocation.getFields()["root"].getValues()[0] << std::endl;
+		// std::cout << "root location: "<< this->serverLocation.getFields()["root"].getValues()[0] << std::endl;
 		return ;
 	}
 	this->serverLocation = NULL;

@@ -6,12 +6,11 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/05 18:08:15 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/06 11:59:33 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
-
 
 std::string Response::generateFileName(){
 	char buffer[100];
