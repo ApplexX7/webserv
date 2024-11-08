@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/05 15:19:04 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/08 10:23:16 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ class ServerNode {
         ~ServerNode( void );
 
         void initializeServer( ListNode* );
+        void initializeLocation( ListNode* );
 
         void addField( std::string, std::string );
         std::map<std::string, Field > getFields( void );
@@ -64,6 +65,7 @@ class ServerNode {
         int generateServerFd( void );
         int getFd( void );
         void setFd( int );
+        void setMaxBodySize( void );
 
         std::string getListenField( void );
 

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/05 15:47:42 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/08 09:56:15 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,6 +168,7 @@ void Webserv::listen( void ) {
     socklen_t addr_size;
     int new_fd;
     char buf[CHUNK_SIZE + 1];
+    int bytes_read;
     std::string res;
 
     addr_size = sizeof(their_addr);
@@ -188,9 +189,7 @@ void Webserv::listen( void ) {
         fds[i].fd = serverFds[i];
         fds[i].events = POLLIN | POLLOUT | POLLHUP;
     }
-
-    std::cout << "SERVER STARTED LISTENING" << std::endl;
-
+    
     while (1) {
         if (poll(fds.data(), fds.size(), 100) > 0) {
             for (int i = 0; i < (int) fds.size(); i++)
@@ -231,20 +230,19 @@ void Webserv::listen( void ) {
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLIN)
                 {
-                    int bytes_read = 0;
+                    // read from client
                     bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, 0);
                     if (bytes_read <= 0)
                     {
                         std::cout << "error reading" << std::endl;
                         bytes_read = 0;
                     }
+                    
                     buf[bytes_read] = 0;
-                    // for(int i = 0; i < bytes_read;i++){
-                    //     std::cout << buf[i];
-                    // }
                     message.assign(buf, bytes_read);
                     clients[fds[i].fd]->setMessage(message);
-                    // std::cout << clients[fds[i].fd]->getMessage() << std::endl;
+
+                    // parse request
                     clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
 
                     if ((*clients[fds[i].fd]).getRequest().getFinishReading())
@@ -256,7 +254,6 @@ void Webserv::listen( void ) {
 
                         // listen for client readiness to receive
                         fds[i].events = POLLOUT;
-                    std::cout << "POLLOUT" << std::endl;
                     }
                 }
 
@@ -264,7 +261,6 @@ void Webserv::listen( void ) {
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLOUT && (clients[fds[i].fd]->responseReady))
                 {
-                    std::cout << "READY TO RECEIVE" << std::endl;
                     // send response
                     if (clients[fds[i].fd]->getRequest().getmethode() == "GET")
                         res = clients[fds[i].fd]->getResponse().createGetResponse();
@@ -279,6 +275,7 @@ void Webserv::listen( void ) {
 
                     std::string connection = clients[fds[i].fd]->getRequest().getValue("Connection");
 
+                    // finished sending response
                     if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
                         if (connection == "keep-alive") {
                             fds[i].events = POLLIN | POLLHUP;

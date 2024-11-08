@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/05 17:55:10 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/08 10:24:19 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,140 +14,58 @@
 #include "../parsing/Parser.hpp"
 #include <arpa/inet.h>
 
-void ServerNode::initializeServer( ListNode* server ) {
-    std::map<std::string,  Location>::iterator it;
-    std::vector<std::string> fields = server->getFields();
-    std::vector<std::string> splitField;
-    std::vector<std::string> values;
-    std::string path;
-    std::string trimedField;
+void setServerDefaults(ServerNode& server) {
+    // if server has no listen directive
+    if (!server.fieldExists("listen"))
+        server.addField("listen", "127.0.0.1:8080");
+    
+    // if server has no server_name
+    if (!server.fieldExists("server_name"))
+        server.addField("server_name", "");
+
+    // if server has no root
+    if (!server.fieldExists("root"))
+        server.addField("root", "/Users/wbelfatm");
+
+    // if server has no autoindex
+    if (!server.fieldExists("autoindex"))
+        server.addField("autoindex", "off");
+    
+    // if server has no max size
+    if (!server.fieldExists("client_max_body_size"))
+        server.addField("client_max_body_size", "1m");
+    
+    if (!server.fieldExists("index"))
+        server.addField("index", "index.html");
+}
+
+void checkErrorPage(std::vector<std::string>& splitField, int j) {
+    if (j < (int) splitField.size() - 1
+    && !Parser::isNumber(splitField[j]))
+        throw Parser::ParsingException("Status code must be numeric");
+    if (j < (int) splitField.size() - 1
+    && (std::stol(splitField[j]) < 300 || std::stol(splitField[j]) > 599))
+        throw Parser::ParsingException("Status code must be between 300 and 599");
+}
+
+void checkEmptyAndDuplicates(std::vector<std::string>& splitField, ServerNode& server, std::string op, std::string path) {
+    if (splitField.size() == 1)
+        throw Parser::ParsingException("Directive has no arguments " + splitField[0]);
+    if (splitField[0] != "error_page" && splitField[0] != "cgi_path")
+    {
+        if (op == "server" && server.fieldExists(splitField[0]))
+            throw Parser::ParsingException("Duplicate directives for " + splitField[0]);
+        else if (server.locationFieldExists(path, splitField[0]))
+            throw Parser::ParsingException("Duplicate directives for " + splitField[0]);
+    }
+}
+
+void ServerNode::setMaxBodySize( void ) {
     std::string sizeStr;
     unsigned long long size;
     char unit;
     int length;
 
-    ListNode *child = server->getChild();
-
-    for (int i = 0; i < (int) fields.size(); i++) {
-        trimedField = Parser::strTrim(fields[i]);
-        if (trimedField.length() == 0)
-            continue;
-        splitField = (Parser::strSplit(trimedField, ' '));
-        if (splitField.size() == 1)
-            throw Parser::ParsingException("Directive has no arguments " + splitField[0]);
-        if (splitField[0] != "error_page" && splitField[0] != "cgi_path"
-            && this->fieldExists(splitField[0]))
-            throw Parser::ParsingException("Duplicate directives for " + splitField[0]);
-
-        for (int j = 1; j < (int) splitField.size(); j++) {
-
-            // check for status code format in case of error pages
-            if (splitField[0] == "error_page")
-            {
-                if (j < (int) splitField.size() - 1
-                && !Parser::isNumber(splitField[j]))
-                    throw Parser::ParsingException("Status code must be numeric");
-                if (j < (int) splitField.size() - 1
-                && (std::stol(splitField[j]) < 300 || std::stol(splitField[j]) > 599))
-                    throw Parser::ParsingException("Status code must be between 300 and 599");
-            }
-
-            this->addField(splitField[0], splitField[j]);
-        }
-
-        values = this->getField(splitField[0]).getValues();
-
-        if (splitField[0] == "listen" && values[0].find(":") == values[0].npos)
-            this->getField(splitField[0]).updateValue("127.0.0.1:" + values[0], 0);
-        Parser::validateField(splitField[0], this->getField(splitField[0]).getValues());
-
-        if (splitField[0] == "cgi_path")
-        {
-            for (int i = 0; i < (int) values.size(); i += 2)
-                this->addCgi(values[i], values[i + 1]);
-        }
-
-        if (splitField[0] == "return") {
-            // std::cout << "REDIRECTION: " << values[1] << std::endl;
-        }
-    }
-
-    // if server has no listen directive
-    if (!this->fieldExists("listen"))
-        this->addField("listen", "127.0.0.1:8080");
-    
-    // if server has no server_name
-    if (!this->fieldExists("server_name"))
-        this->addField("server_name", "");
-
-    // if server has no root
-    if (!this->fieldExists("root"))
-        this->addField("root", "/Users/wbelfatm");
-
-    // if server has no autoindex
-    if (!this->fieldExists("autoindex"))
-        this->addField("autoindex", "off");
-    
-    // if server has no max size
-    if (!this->fieldExists("client_max_body_size"))
-        this->addField("client_max_body_size", "1m");
-    
-    if (!this->fieldExists("index"))
-        this->addField("index", "index.html");
-
-    // insert locations
-    while (child != NULL)
-    {
-        fields = child->getFields();
-        splitField = (Parser::strSplit(child->getContent(), ' '));
-        if (splitField.size() != 2 || splitField[0] != "location")
-            throw Parser::ParsingException("Expected location directive but got \"" + splitField[0] + "\"");
-
-        path = splitField[1];
-        if (this->locationExists(path))
-            throw Parser::ParsingException("Duplicate locations for path " + path);
-
-        for (int i = 0; i < (int) fields.size(); i++) {
-            trimedField = Parser::strTrim(fields[i]);
-            if (trimedField.length() == 0)
-                continue ;
-            splitField = (Parser::strSplit(trimedField, ' '));
-            if (splitField.size() == 1)
-                throw Parser::ParsingException("Directive has no arguments " + splitField[0]);
-            if (splitField[0] != "error_page" && splitField[0] != "cgi_path"
-            && this->locationFieldExists(path, splitField[0]))
-            {
-                throw Parser::ParsingException("Duplicate directives for " + splitField[0]);
-            }
-
-            for (int j = 1; j < (int) splitField.size(); j++) {
-                // check for status code format in case of error pages
-                if (splitField[0] == "error_page")
-                {
-                    if (j == (int) splitField.size() - 1
-                    && Parser::isNumber(splitField[j]))
-                        throw Parser::ParsingException("Invalid path for error pages");
-                    if (j < (int) splitField.size() - 1
-                    && !Parser::isNumber(splitField[j]))
-                        throw Parser::ParsingException("Status code must be numeric");
-                    if (j < (int) splitField.size() - 1
-                    && (std::stol(splitField[j]) < 300 || std::stol(splitField[j]) > 599))
-                        throw Parser::ParsingException("Status code must be between 300 and 599");
-                }
-                this->addLocationField(path, splitField[0], splitField[j]);
-            }
-            values = this->locations[path].getField(splitField[0]).getValues();
-            Parser::validateField(splitField[0], values);
-
-            if (splitField[0] == "cgi_path")
-            {
-                for (int i = 0; i < (int) values.size(); i += 2)
-                    this->addLocationCgi(path, values[i], values[i + 1]);
-            }
-        }
-        this->locations[path].setServer(this);
-        child = child->getNext();
-    }
     
     length = this->getField("client_max_body_size").getValues()[0].length();
     sizeStr = this->getField("client_max_body_size").getValues()[0].substr(0, length - 1);
@@ -162,6 +80,103 @@ void ServerNode::initializeServer( ListNode* server ) {
     if (unit == 'G')
         size *= 1024 * 1024 * 1024;
     this->maxSize = size;
+}
+
+void ServerNode::initializeLocation( ListNode* child ) {
+    std::vector<std::string> fields;
+    std::vector<std::string> splitField;
+    std::vector<std::string> values;
+    std::string path;
+    std::string trimedField;
+    
+
+    fields = child->getFields();
+    splitField = (Parser::strSplit(child->getContent(), ' '));
+    if (splitField.size() != 2 || splitField[0] != "location")
+        throw Parser::ParsingException("Expected location directive but got \"" + splitField[0] + "\"");
+
+    path = splitField[1];
+    if (this->locationExists(path))
+        throw Parser::ParsingException("Duplicate locations for path " + path);
+
+    for (int i = 0; i < (int) fields.size(); i++) {
+        trimedField = Parser::strTrim(fields[i]);
+        if (trimedField.length() == 0)
+            continue ;
+        splitField = (Parser::strSplit(trimedField, ' '));
+        
+        checkEmptyAndDuplicates(splitField, *this, "location", path);
+
+        for (int j = 1; j < (int) splitField.size(); j++) {
+            // check for status code format in case of error pages
+            if (splitField[0] == "error_page")
+                checkErrorPage(splitField, j);
+            this->addLocationField(path, splitField[0], splitField[j]);
+        }
+        values = this->locations[path].getField(splitField[0]).getValues();
+        Parser::validateField(splitField[0], values);
+
+        if (splitField[0] == "cgi_path")
+        {
+            for (int i = 0; i < (int) values.size(); i += 2)
+                this->addLocationCgi(path, values[i], values[i + 1]);
+        }
+    }
+    this->locations[path].setServer(this);
+}
+
+void ServerNode::initializeServer( ListNode* server ) {
+    std::map<std::string,  Location>::iterator it;
+    std::vector<std::string> fields = server->getFields();
+    std::vector<std::string> splitField;
+    std::vector<std::string> values;
+    std::string path;
+    std::string trimedField;
+    
+    ListNode *child = server->getChild();
+
+    for (int i = 0; i < (int) fields.size(); i++) {
+        trimedField = Parser::strTrim(fields[i]);
+        if (trimedField.length() == 0)
+            continue;
+        splitField = (Parser::strSplit(trimedField, ' '));
+        
+        checkEmptyAndDuplicates(splitField, *this, "server", "");
+
+        for (int j = 1; j < (int) splitField.size(); j++) {
+            // check for status code format in case of error pages
+            if (splitField[0] == "error_page")
+                checkErrorPage(splitField, j);
+            this->addField(splitField[0], splitField[j]);
+        }
+
+        values = this->getField(splitField[0]).getValues();
+
+        // if server has no host
+        if (splitField[0] == "listen" && values[0].find(":") == values[0].npos)
+            this->getField(splitField[0]).updateValue("127.0.0.1:" + values[0], 0);
+
+        // check directive values validity
+        Parser::validateField(splitField[0], this->getField(splitField[0]).getValues());
+
+        // add cgi paths
+        if (splitField[0] == "cgi_path")
+        {
+            for (int i = 0; i < (int) values.size(); i += 2)
+                this->addCgi(values[i], values[i + 1]);
+        }
+    }
+
+    // set default values for directives
+    setServerDefaults(*this);
+
+    // insert locations
+    while (child != NULL)
+    {
+        this->initializeLocation(child);
+        child = child->getNext();
+    }
+    this->setMaxBodySize();
 }
 
 // canonical form
