@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/08 17:22:07 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/08 20:12:33 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,12 +45,10 @@ void Cgi::cgiExecution(Client &clientData){
 	const char *path;
 	char **args;
 	char **env;
-	std::string pathCgifile = clientData.getRequest().getServerLocation()->getCgiPath(this->extension);
 
 	if (chdir(this->direcpath.c_str()) == -1){
 		exit (1);
 	}
-	path = pathCgifile.c_str();
 	args = (char **) new char *[3];
 	if (!args)
 		exit (1);
@@ -74,7 +72,7 @@ void Cgi::cgiExecution(Client &clientData){
 		exit (1);
 	}
 	close(this->fileResponse);
-	env = (char **) new char *[this->envCgi.size()];
+	env = (char **) new char *[this->envCgi.size() + 1];
 	if (!env){
 		clientData.getResponse().setStatusCode(500);
 		exit (1);
@@ -122,6 +120,7 @@ int Cgi::executeCgi(Client &clientData) {
 	if(this->Cgi_timeout - time(NULL) >= 10){
 		remove(filename.c_str());
 		close(this->fileResponse);
+		this->fileResponse = -1;
 		clientData.getResponse().setStatusCode(500);
 		return (1);
 	}
@@ -129,6 +128,8 @@ int Cgi::executeCgi(Client &clientData) {
 		if (WEXITSTATUS(status) == 1){
 			remove(filename.c_str());
 			clientData.getResponse().setStatusCode(500);
+			close(this->fileResponse);
+			this->fileResponse = -1;
 			this->thereIsOne = false;
 			return (1);
 		}
@@ -136,6 +137,8 @@ int Cgi::executeCgi(Client &clientData) {
 			remove(filename.c_str());
 			clientData.getResponse().setStatusCode(500);
 			this->thereIsOne = false;
+			this->fileResponse = -1;
+			close(this->fileResponse);
 			return (1);
 		}
 		remove(filename.c_str());

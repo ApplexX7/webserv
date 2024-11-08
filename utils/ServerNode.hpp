@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerNode.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/08 10:23:16 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/08 20:09:41 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,11 +32,11 @@ class ServerNode {
     private:
         std::map<std::string, Field > fields;
         std::map<std::string,  Location> locations;
-        std::map<std::string, std::string > cgiPaths;
         int fd;
         unsigned long long maxSize;
 
     public:
+        std::map<std::string, std::string > cgiPaths;
         std::vector<std::string> allowedFields;
         std::vector<std::string> allowedLocationFields;
         

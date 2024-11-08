@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/08 17:31:20 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/08 20:12:10 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ int Request::isCgi(){
 	cgiExtension = this->Uri.substr(pos);
 	if (!this->serverLocation.getCgiPath(cgiExtension).empty()){
 		this->handleCgi->setExtension(cgiExtension);
-		if(this->serverLocation.getFields()["root"].getValues().size() > 0){
+		if(this->serverLocation.getField("root").getValues().size() > 0){
 			this->handleCgi->setDirectPath(this->serverLocation.getFields()["root"].getValues()[0]);
 		}
 		else
@@ -106,11 +106,18 @@ int Request::isCgi(){
 		this->isaCgi = true;
 		return (1);
 	}
+	else if (!this->listenningServer->cgiPaths[cgiExtension].empty()){
+		this->handleCgi->setExtension(cgiExtension);
+		this->handleCgi->setDirectPath(this->listenningServer->getFields()["root"].getValues()[0]);
+		this->isaCgi = true;
+		return (1);
+	}
 	return (0);
 	
 }
 
-int Request::Validmethode(std::string &_Methode){
+int Request::Validmethode(std::string &_Methode, Client &clientData){
+	(void)clientData;
 	if (_Methode == "GET"){
 		this->methode = _Methode;
 	}
@@ -128,7 +135,7 @@ int Request::Validmethode(std::string &_Methode){
 int Request::parseUri(std::string &uri){
 	size_t pos = 0;
 
-	if (uri.length() > 2000){
+	if (uri.length() > 800){
 		return (1);
 	}
 	pos = uri.find("?");
@@ -142,45 +149,45 @@ int Request::parseUri(std::string &uri){
 	return (0);
 }
 
-int Request::ParseRequestLine(std::string &RqLine, Client &ClientData){
+int Request::ParseRequestLine(std::string &RqLine, Client &clientData){
 	std::vector<std::string> RequestLineChunks;
 	std::stringstream str(RqLine);
 	std::string token;
 
 	if (RqLine.empty()){
-		ClientData.getResponse().setStatusCode(400);
+		clientData.getResponse().setStatusCode(400);
 		return (1);
 	}
 	if (std::count(RqLine.begin(), RqLine.end(), ' ') != 2){
-		ClientData.getResponse().setStatusCode(400);
+		clientData.getResponse().setStatusCode(400);
 		return (1);
 	}
 	while (std::getline(str, token, ' ')){
 		RequestLineChunks.push_back(token);
 	}
 	if (RequestLineChunks.size() != 3){
-		ClientData.getResponse().setStatusCode(400);
+		clientData.getResponse().setStatusCode(400);
 		return (1);
 	}
 	for (size_t i = 0; i < RequestLineChunks.size(); i++){
 		if (RequestLineChunks[i].empty()){
-			ClientData.getResponse().setStatusCode(400);
+			clientData.getResponse().setStatusCode(400);
 			return (1);
 		}
 	}
-	//valide methode;
-	if (this->Validmethode(RequestLineChunks[0])){
-		ClientData.getResponse().setStatusCode(501);
-		return (1);
-	}
 	// check the Uri // and modify some check for the Uri
 	if (this->parseUri(RequestLineChunks[1])){
-		ClientData.getResponse().setStatusCode(414);
+		clientData.getResponse().setStatusCode(414);
 		return (1);
 	}
 	// checkk HTTPS VERSION;
 	if (RequestLineChunks[2] != "HTTP/1.1"){
-		ClientData.getResponse().setStatusCode(505);
+		clientData.getResponse().setStatusCode(505);
+		return (1);
+	}
+	//valide methode;
+	if (this->Validmethode(RequestLineChunks[0], clientData)){
+		clientData.getResponse().setStatusCode(501);
 		return (1);
 	}
 	return (0);
@@ -210,8 +217,6 @@ void Request::findLocationtobeUsed(){
 	}
 	if (!LongestMatch.empty()){
 		this->serverLocation = this->listenningServer->getLocations()[LongestMatch];
-		// std::cout << "root location: "<< this->serverLocation.getFields()["root"].getValues()[0] << std::endl;
-		return ;
 	}
 	this->serverLocation = NULL;
 }
@@ -318,7 +323,6 @@ int Request::ParsingTheRequest(Client &ClientData) {
 		this->finishReading = true;
 		return (1);
 	}
-	// headers parsing;
 	while (std::getline(Message, ChunkLine)){
 		if (ChunkLine == "\r" || ChunkLine.empty())
 			break;
@@ -387,6 +391,9 @@ int Request::ParsingTheRequest(Client &ClientData) {
 // this funct need to be modified later
 int Request::requestParserStart(Client &clientData) {
 	if (!this->compliteHeaderparser && this->ParsingTheRequest(clientData)){
+		if (this->finishReading == true){
+			clientData.responseReady = true;
+		}
 		return (1);
 	}
 	else if (this->isaCgi){
