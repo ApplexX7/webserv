@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/09 16:06:00 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/09 17:16:50 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,14 +123,14 @@ int Cgi::executeCgi(Client &clientData) {
 		this->Cgi_timeout = time(NULL);
 		this->thereIsOne = true;
 	}
-	if(this->Cgi_timeout - time(NULL) >= 10){
+	if(time(NULL) - this->Cgi_timeout >= 10){
 		remove(this->fileName.c_str());
 		close(this->fileResponse);
 		this->fileResponse = -1;
-		clientData.getResponse().setStatusCode(500);
+		clientData.getResponse().setStatusCode(408);
 		return (1);
 	}
-	if (waitpid(this->pid, &status, WNOHANG) == -1){
+	if (waitpid(this->pid, &status, WNOHANG) != 0){
 		if (WEXITSTATUS(status) == 1){
 			remove(this->fileName.c_str());
 			clientData.getResponse().setStatusCode(500);
@@ -150,6 +150,6 @@ int Cgi::executeCgi(Client &clientData) {
 		// }
 		// remove(filename.c_str());
 	}
-	close(this->fileResponse);
+	// close(this->fileResponse);
 	return (0);
 }

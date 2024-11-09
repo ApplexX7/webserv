@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/09 11:46:29 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/09 17:15:29 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -322,6 +322,14 @@ std::string Response::getFullPath(std::string path)
 			}
 		}
 	}
+
+	if (this->client->getRequest().getIsACgi())
+	{
+		fullPath = this->client->getRequest().handleCgi->getCgiFileName();
+		this->path = fullPath;
+		std::cout << fullPath << std::endl;
+	}
+
 	stat(fullPath.data(), &fileStat);
 	if (!S_ISDIR(fileStat.st_mode))
 	{
@@ -897,6 +905,8 @@ std::string Response::getErrorResponse(void)
 	if (path != "")
 		this->client->getRequest().SetUri(path);
 	this->isError = true;
+
+	this->contentType = this->mimeTypes[".html"];
 
 	if (this->client->getRequest().getmethode() == "GET" || path != "")
 		return this->createGetResponse();

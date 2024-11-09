@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/08 17:53:45 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/09 16:29:52 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,6 @@ enum TypeTransf{
 class Request{
     private:
     // for Cgi
-        Cgi *handleCgi;
         char **env;
 
         bool isaCgi;
@@ -67,6 +66,7 @@ class Request{
         std::string endofBoundary;
         std::string TransferCoding;
     public:
+        Cgi *handleCgi;
         Request();
         Request(const Request &obj);
         Request& operator=(const Request &ope);

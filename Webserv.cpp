@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/09 13:52:51 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/09 17:08:00 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -249,7 +249,7 @@ void Webserv::listen( void ) {
                     buf[bytes_read] = 0;
                     message.assign(buf, bytes_read);
                     clients[fds[i].fd]->setMessage(message);
-                    std::cout <<clients[fds[i].fd]->getMessage() << std::endl;
+                    std::cout << clients[fds[i].fd]->responseReady << std::endl;
                     clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
                     if ((*clients[fds[i].fd]).getRequest().getFinishReading())
                     {
@@ -265,26 +265,30 @@ void Webserv::listen( void ) {
 
                 // client wants ready to receive data
                 else if (!isServerFd(serverFds, fds[i].fd)
-                && fds[i].revents & POLLOUT && (clients[fds[i].fd]->responseReady))
+                && fds[i].revents & POLLOUT)
                 {
-                    // send response
-                    res = clients[fds[i].fd]->getResponse().generateResponse();
-                    send(fds[i].fd, res.data(), res.size(), MSG_SEND);
+                    clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
 
-                    // reset message
-                    clients[fds[i].fd]->setMessage("");
+                    if ((clients[fds[i].fd]->responseReady)) {
+                        // send response
+                        res = clients[fds[i].fd]->getResponse().generateResponse();
+                        send(fds[i].fd, res.data(), res.size(), MSG_SEND);
 
-                    std::string connection = clients[fds[i].fd]->getRequest().getValue("Connection");
+                        // reset message
+                        clients[fds[i].fd]->setMessage("");
 
-                    // finished sending response
-                    if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
-                        if (connection == "keep-alive") {
-                            fds[i].events = POLLIN | POLLHUP;
-                            clients[fds[i].fd]->getResponse().reset();
-                            clients[fds[i].fd]->getRequest().reset();
+                        std::string connection = clients[fds[i].fd]->getRequest().getValue("Connection");
+
+                        // finished sending response
+                        if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
+                            if (connection == "keep-alive") {
+                                fds[i].events = POLLIN | POLLHUP;
+                                clients[fds[i].fd]->getResponse().reset();
+                                clients[fds[i].fd]->getRequest().reset();
+                            }
+                            else
+                                disconnectClient(clients, fds, clientFds, i);
                         }
-                        else
-                            disconnectClient(clients, fds, clientFds, i);
                     }
             }
         }

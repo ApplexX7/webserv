@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/09 16:04:56 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/09 17:17:52 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -392,7 +392,7 @@ int Request::ParsingTheRequest(Client &ClientData) {
 
 // this funct need to be modified later
 int Request::requestParserStart(Client &clientData) {
-	if (!this->compliteHeaderparser && this->ParsingTheRequest(clientData)){
+	if (!this->isaCgi && !this->compliteHeaderparser && this->ParsingTheRequest(clientData)){
 		if (this->finishReading == true){
 			clientData.responseReady = true;
 		}
@@ -402,6 +402,7 @@ int Request::requestParserStart(Client &clientData) {
 		if (this->finishReading){
 			if (this->handleCgi->executeCgi(clientData))
 				clientData.responseReady = true;
+			return (0);
 		}
 	}
 	if (this->methode == "POST" && this->compliteHeaderparser){
