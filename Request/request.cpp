@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/09 14:30:47 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/09 16:04:56 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -400,8 +400,8 @@ int Request::requestParserStart(Client &clientData) {
 	}
 	else if (this->isaCgi){
 		if (this->finishReading){
-			this->handleCgi->executeCgi(clientData);
-			clientData.responseReady = true;
+			if (this->handleCgi->executeCgi(clientData))
+				clientData.responseReady = true;
 		}
 	}
 	if (this->methode == "POST" && this->compliteHeaderparser){
