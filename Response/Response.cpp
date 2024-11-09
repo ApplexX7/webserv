@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/09 17:15:29 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/09 17:57:07 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -773,6 +773,15 @@ std::string Response::createGetResponse(void)
 			// empty filename means it's a dir
 			if (this->fileName == "")
 			{
+				if (this->path[this->path.length() - 1] != '/')
+				{
+					this->isRedir = true;
+					this->redirUrl = this->client->getRequest().getUri() + "/";
+					this->status = FINISHED;
+					this->statusCode = 301;
+					return constructHeader();
+				}
+				
 				this->body = this->getDirectoryLinks(this->path, path);
 				this->contentType = this->mimeTypes[".html"];
 				this->contentLength = body.length();

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/09 17:08:00 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/09 17:42:15 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -267,7 +267,8 @@ void Webserv::listen( void ) {
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLOUT)
                 {
-                    clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
+                    if (clients[fds[i].fd]->getRequest().getIsACgi())
+                        clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
 
                     if ((clients[fds[i].fd]->responseReady)) {
                         // send response
