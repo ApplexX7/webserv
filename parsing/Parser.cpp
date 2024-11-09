@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/05 17:18:32 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/09 11:28:23 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -337,11 +337,11 @@ void Parser::validateListen( std::vector<std::string> values ) {
         splitListen = Parser::strSplit(listen, ':');
         if (splitListen.size() != 2 || listen[0] == ':' || listen[listen.size() - 1] == ':')
             throw Parser::ParsingException("Invalid host:port");
-        if (!Parser::isNumber(splitListen[1]) || std::stoi(splitListen[1]) < 1 || std::stoi(splitListen[1]) > 65535)
+        if (!Parser::isNumber(splitListen[1]) || std::atoi(splitListen[1].data()) < 1 || std::atoi(splitListen[1].data()) > 65535)
             throw Parser::ParsingException("Invalid port number");
     }
     else {
-        if (!Parser::isNumber(listen) || std::stoi(listen) < 1 || std::stoi(listen) > 65535)
+        if (!Parser::isNumber(listen) || std::atoi(listen.data()) < 1 || std::atoi(listen.data()) > 65535)
             throw Parser::ParsingException("Invalid port number");
     }
 

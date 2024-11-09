@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/09 10:57:32 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/09 11:46:29 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,16 +37,16 @@ void initializeStatusTexts(std::map<int, std::string> &statusTexts)
 	statusTexts[METHOD_NOT_ALLOWED] = "Method Not Allowed";
 	statusTexts[NOT_ACCEPTABLE] = "Not Acceptable";
 	statusTexts[REQUEST_TIMEOUT] = "Request Timeout";
-	statusTexts[413] = "Payload too Large";
-	statusTexts[414] = "URI Too Long";
-	statusTexts[415] = "Unsupported Media Type";
-	statusTexts[416] = "Range Not Satisfiable";
-	statusTexts[422] = "Unprocessable Entity";
+	statusTexts[PAYLOAD_TOO_LARGE] = "Payload too Large";
+	statusTexts[URI_TOO_LONG] = "URI Too Long";
+	statusTexts[UNSUPPORTED_MEDIA_TYPE] = "Unsupported Media Type";
+	statusTexts[RANGE_NOT_SATISFIABLE] = "Range Not Satisfiable";
+	statusTexts[UNPROCESSABLE_ENTITY] = "Unprocessable Entity";
 
 	// 5xx
 	statusTexts[INTERNAL_SERVER_ERROR] = "Internal Server Error";
-	statusTexts[501] = "Not Implemented";
-	statusTexts[505] = "HTTP Version Not Supported";
+	statusTexts[NOT_IMPLEMENTED] = "Not Implemented";
+	statusTexts[HTTP_VERSION_NOT_SUPPORTED] = "HTTP Version Not Supported";
 }
 
 Response::Response()
@@ -329,9 +329,7 @@ std::string Response::getFullPath(std::string path)
 		this->extractFileName();
 	}
 	else
-	{
 		this->fileName = "";
-	}
 	return fullPath;
 }
 
@@ -419,7 +417,7 @@ void Response::extractFileName(void)
 		if (this->fileName[i] == '.')
 		{
 			start = i;
-			break;
+			break ;
 		}
 	}
 	extension = this->fileName.substr(start, this->fileName.length());
@@ -431,7 +429,10 @@ void Response::extractFileName(void)
 			this->contentType = "application/octet-stream";
 	}
 	else
-		std::cout << "IS A CGI" << std::endl;
+	{
+		// todo: read from cgi fd
+		
+	}
 }
 
 std::string Response::getDirectoryLinks(std::string path, std::string uri)
@@ -545,10 +546,6 @@ std::string Response::constructHeader(void)
 {
 	std::string header = "HTTP/1.1 ";
 
-	// if (this->isError && this->contentLength == 0) {
-	// 	this->statusCode = NOT_FOUND;
-	// }
-
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
 
 	header += "Content-Type: " + this->contentType + "\r\n";
@@ -583,12 +580,12 @@ std::string Response::getFileChunk(void)
 	if (!this->file.is_open())
 	{
 		this->file.open(this->path, std::ios::binary);
-		this->file.seekg(this->rangeStart, std::ios::beg);
 		if (!this->file.is_open())
 		{
 			this->status = FINISHED;
 			throw ResponseException("Couldn't open file");
 		}
+		this->file.seekg(this->rangeStart, std::ios::beg);
 	}
 
 	file.read(buff.data(), CHUNK_SIZE);
@@ -596,8 +593,8 @@ std::string Response::getFileChunk(void)
 	std::streamsize bytesRead = this->file.gcount();
 	if (bytesRead < 0)
 	{
-		std::cout << "ERROR READING FROM FILE" << std::endl;
 		this->status = FINISHED;
+		throw ResponseException("Couldn't read from file");
 	}
 
 	std::string chunk(buff.data(), bytesRead);
@@ -605,10 +602,7 @@ std::string Response::getFileChunk(void)
 	this->bytesSent += bytesRead;
 
 	if (this->bytesSent >= this->contentLength)
-	{
 		this->status = FINISHED;
-		// this->file.close();
-	}
 	return chunk;
 }
 
@@ -679,7 +673,7 @@ void Response::extractRange(void)
 
 		range.erase(range.length() - 1);
 
-		this->rangeStart = std::stoul(range);
+		this->rangeStart = std::atoll(range.data());
 	}
 	this->statusCode = PARTIAL_CONTENT;
 	if (this->contentLength < this->rangeStart)
@@ -791,14 +785,12 @@ std::string Response::createGetResponse(void)
 		}
 		else
 		{
-			// read from file
+			// read from body or file
 			if (this->isBody)
 			{
 				chunk = this->body.substr(0, CHUNK_SIZE);
 				if (this->body.length() >= CHUNK_SIZE)
-				{
 					this->body = this->body.substr(CHUNK_SIZE, this->body.length());
-				}
 				else
 					this->status = FINISHED;
 			}
@@ -810,7 +802,11 @@ std::string Response::createGetResponse(void)
 	}
 	catch (ResponseException e)
 	{
+		if (this->statusCode < 400)
+			this->statusCode = INTERNAL_SERVER_ERROR;
+			
 		// std::cout << "Something went wrong with response: " << e.what() << " PATH : " << this->path << std::endl;
+		
 		if (!this->isError)
 		{
 			this->status = IDLE;
@@ -889,20 +885,18 @@ std::string Response::getErrorResponse(void)
 	{
 		if (Parser::isNumber(errorPages[i]))
 		{
-			if (std::stoi(errorPages[i]) == this->statusCode)
+			if (std::atoi(errorPages[i].data()) == this->statusCode)
 				found = true;
 		}
 		else if (found)
 		{
 			path = errorPages[i];
-			break;
+			break ;
 		}
 	}
 	if (path != "")
 		this->client->getRequest().SetUri(path);
 	this->isError = true;
-
-	std::cout << "ERROR PATH: " << path << std::endl;
 
 	if (this->client->getRequest().getmethode() == "GET" || path != "")
 		return this->createGetResponse();

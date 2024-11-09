@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 09:31:10 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/08 19:52:47 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/09 11:39:03 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ void Location::addField( std::string key, std::string value ) {
     this->fields[key].addValue(value);
 }
 
-
 Field &Location::getField( std::string key ) {
     if (this->fields.find(key) != this->fields.end())
         return this->fields[key];
@@ -43,19 +42,5 @@ void Location::addCgiPath( std::string key, std::string value ) {
 }
 
 std::string Location::getCgiPath( std::string key ) {
-    
-    std::map<std::string, std::string> cgiPaths = this->cgiPaths;
-
-    if (cgiPaths.size() == 0)
-    {
-        
-    }
-
-    std::map<std::string, std::string>::iterator it;
-
-    for (it = this->cgiPaths.begin(); it != this->cgiPaths.end(); it++)
-        std::cout << it->first << " => " << it->second << std::endl;
-
-    std::cout << "Key: " << this->cgiPaths[key] << std::endl;
    return this->cgiPaths[key];
 }

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/08 19:50:42 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/09 11:43:06 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ void checkErrorPage(std::vector<std::string>& splitField, int j) {
     && !Parser::isNumber(splitField[j]))
         throw Parser::ParsingException("Status code must be numeric");
     if (j < (int) splitField.size() - 1
-    && (std::stol(splitField[j]) < 300 || std::stol(splitField[j]) > 599))
+    && (std::atol(splitField[j].data()) < 300 || std::atol(splitField[j].data()) > 599))
         throw Parser::ParsingException("Status code must be between 300 and 599");
 }
 
@@ -71,7 +71,7 @@ void ServerNode::setMaxBodySize( void ) {
     sizeStr = this->getField("client_max_body_size").getValues()[0].substr(0, length - 1);
     unit = std::toupper(this->getField("client_max_body_size").getValues()[0].substr(length - 1, 1)[0]);
     
-    size = std::stoull(sizeStr);
+    size = std::atoll(sizeStr.data());
 
     if (unit == 'K')
         size *= 1024;

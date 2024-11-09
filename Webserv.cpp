@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/09 09:57:22 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/09 11:23:36 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,6 +144,19 @@ bool isServerFd(std::vector<int> serverFds, int fd) {
     return (std::find(serverFds.begin(), serverFds.end(), fd) != serverFds.end());
 }
 
+void disconnectClient(
+    std::map<int, Client*>& clients,
+    std::vector<struct pollfd>& fds,
+    std::vector<int> &clientFds,
+    int i
+    ) {
+
+    delete clients[fds[i].fd];
+    close(fds[i].fd);
+    clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
+    fds.erase(fds.begin() + i);
+}
+
 
 /*
     - Starts up the web server
@@ -168,6 +181,8 @@ void Webserv::listen( void ) {
     std::string res;
 
     addr_size = sizeof(their_addr);
+    
+    // open server sockets
     for (int i = 0; i < (int) this->servers.size(); i++) {
         try {
             serverFds.push_back(this->servers[i]->generateServerFd());
@@ -194,10 +209,7 @@ void Webserv::listen( void ) {
                 if (fds[i].revents & POLLHUP)
                 {
                     std::cout << "client disconnected " << fds[i].fd << std::endl;
-                    delete clients[fds[i].fd];
-                    close(fds[i].fd);
-                    clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
-                    fds.erase(fds.begin() + i);
+                    disconnectClient(clients, fds, clientFds, i);
                     continue ;
                 }
 
@@ -228,7 +240,7 @@ void Webserv::listen( void ) {
                 {
                     // read from client
                     bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, 0);
-                    if (bytes_read <= 0)
+                    if (bytes_read < 0)
                     {
                         std::cout << "error reading" << std::endl;
                         bytes_read = 0;
@@ -257,7 +269,6 @@ void Webserv::listen( void ) {
                 {
                     // send response
                     res = clients[fds[i].fd]->getResponse().generateResponse();
-                    
                     send(fds[i].fd, res.data(), res.size(), MSG_SEND);
 
                     // reset message
@@ -271,14 +282,9 @@ void Webserv::listen( void ) {
                             fds[i].events = POLLIN | POLLHUP;
                             clients[fds[i].fd]->getResponse().reset();
                             clients[fds[i].fd]->getRequest().reset();
-                            
                         }
-                        else {
-                            delete clients[fds[i].fd];
-                            close(fds[i].fd);
-                            clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
-                            fds.erase(fds.begin() + i);
-                        }
+                        else
+                            disconnectClient(clients, fds, clientFds, i);
                     }
             }
         }

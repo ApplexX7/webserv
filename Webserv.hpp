@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:14:22 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/27 08:56:49 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/09 11:16:25 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@
 # include "utils/Client.hpp"
 # include <sys/poll.h>
 
-
 class Webserv {
     private:
         ListNode* listHead;
@@ -37,6 +36,8 @@ class Webserv {
         void init( std::string );
         void listen( void );
         ServerNode *getServerByFd( int );
+
+        
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/09 10:46:31 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/09 11:47:08 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,33 +27,40 @@
 # define CHUNK_SIZE 1024
 
 //information Response
-#define CONTINUE 100
-#define SWITCHING_PROTOCOLS 101
-#define PROCESSING 102
-#define EARLY_HINTS 103
+# define CONTINUE 100
+# define SWITCHING_PROTOCOLS 101
+# define PROCESSING 102
+# define EARLY_HINTS 103
 
 // Successful response
-#define SUCCESS 200
-#define CREATED 201
-#define ACCEPTED 202
-#define NO_CONTENT 204
-#define PARTIAL_CONTENT 206
+# define SUCCESS 200
+# define CREATED 201
+# define ACCEPTED 202
+# define NO_CONTENT 204
+# define PARTIAL_CONTENT 206
 
 // 30x
-#define NOT_MODIFIED 304
+# define NOT_MODIFIED 304
 
 //client error response
-#define BAD_REQUEST 400
-#define UNAUTHORIZED 401
-#define FORBIDDEN 403
-#define NOT_FOUND 404
-#define METHOD_NOT_ALLOWED 405
-#define NOT_ACCEPTABLE 406
-#define REQUEST_TIMEOUT 408
-#define CONFLICT 409
+# define BAD_REQUEST 400
+# define UNAUTHORIZED 401
+# define FORBIDDEN 403
+# define NOT_FOUND 404
+# define METHOD_NOT_ALLOWED 405
+# define NOT_ACCEPTABLE 406
+# define REQUEST_TIMEOUT 408
+# define CONFLICT 409
+# define PAYLOAD_TOO_LARGE 413
+# define URI_TOO_LONG 414
+# define UNSUPPORTED_MEDIA_TYPE 415
+# define RANGE_NOT_SATISFIABLE 416
+# define UNPROCESSABLE_ENTITY 422
 
 // server errors
 #define INTERNAL_SERVER_ERROR 500
+#define NOT_IMPLEMENTED 501
+#define HTTP_VERSION_NOT_SUPPORTED 505
 
 
 typedef enum e_response_status {
@@ -162,9 +169,9 @@ class Response {
         // MIMETYPE
         std::string getMimeType(std::string &contentType);
         
-
         //cgi
         int handleCgiPost(Client &clientData);
+
         // Post Response;
         void resetBodyHeader( void );
         int parseContentLenght(Client &cliendata, std::string &body);
