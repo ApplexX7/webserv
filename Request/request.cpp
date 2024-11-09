@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/09 17:17:52 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/09 18:17:41 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define DEFAULT_MAX_BODY 2000000000
 
 Request::Request(){
+	this->requestLine = false;
 	this->handleCgi = new Cgi;
 	this->isaCgi = false;
 	this->maxBodySize = CHUNK_SIZE;
@@ -321,10 +322,11 @@ int Request::ParsingTheRequest(Client &ClientData) {
 
 	std::getline(Message, ChunkLine, '\r');
 	Message.ignore(1);
-	if (this->ParseRequestLine(ChunkLine, ClientData)){
+	if (!this->requestLine && this->ParseRequestLine(ChunkLine, ClientData)){
 		this->finishReading = true;
 		return (1);
 	}
+	this->requestLine = true;
 	while (std::getline(Message, ChunkLine)){
 		if (ChunkLine == "\r" || ChunkLine.empty())
 			break;
@@ -516,6 +518,8 @@ void Request::reset( void ) {
 	this->finishReading = false;
 	this->compliteHeaderparser = false;
 	this->isaCgi = false;
+	this->requestLine = false;
+	this->handleCgi->reset();
 }
 
 Request::~Request() {

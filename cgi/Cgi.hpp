@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:43:59 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/09 14:33:28 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/09 18:16:15 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ class Cgi {
         void setCgiPath(std::string _cgiPath);
         std::string &getCgiFileName();
         int &getFileResponse();
+        void reset();
     private:
         time_t Cgi_timeout;
         bool thereIsOne;

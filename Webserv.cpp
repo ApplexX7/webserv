@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/09 17:42:15 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/09 18:27:00 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -267,9 +267,9 @@ void Webserv::listen( void ) {
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLOUT)
                 {
+                    std::cout << clients[fds[i].fd]->responseReady << std::endl;
                     if (clients[fds[i].fd]->getRequest().getIsACgi())
                         clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
-
                     if ((clients[fds[i].fd]->responseReady)) {
                         // send response
                         res = clients[fds[i].fd]->getResponse().generateResponse();
@@ -285,6 +285,7 @@ void Webserv::listen( void ) {
                             if (connection == "keep-alive") {
                                 fds[i].events = POLLIN | POLLHUP;
                                 clients[fds[i].fd]->getResponse().reset();
+                                clients[fds[i].fd]->responseReady = false;
                                 clients[fds[i].fd]->getRequest().reset();
                             }
                             else

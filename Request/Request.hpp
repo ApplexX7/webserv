@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/09 16:29:52 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/09 17:52:01 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ class Request{
         char **env;
 
         bool isaCgi;
+        bool requestLine;
         bool finishReading;
         bool compliteHeaderparser;
         long int maxBodySize;
