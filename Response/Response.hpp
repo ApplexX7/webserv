@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/08 17:30:53 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/09 10:46:31 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,7 @@ class Response {
         std::string fileName;
         std::map<std::string, std::string> ResponseMeth;
         std::map<std::string, std::string> mimeTypes;
+        std::map<std::string, std::string> encodingSymbols;
         std::string body;
         std::string contentType;
         unsigned long contentLength;
@@ -83,7 +84,6 @@ class Response {
         bool isBody;
         bool isRedir;
         std::string redirUrl;
-
         std::string path;
 
         Client *client;
@@ -147,6 +147,9 @@ class Response {
         bool checkAllowedMethod( std::string );
         void reset( void );
         void extractRange( void );
+        void decodeUri( std::string& );
+        void encodeUri( std::string& );
+        std::string getDirectoryLinks(std::string, std::string );
 
         // response handlers
         std::string constructHeader( void );
@@ -154,10 +157,11 @@ class Response {
         std::string createGetResponse( void );
         std::string getErrorResponse( void );
         Location* getPathLocation( std::string );
+        std::string generateResponse( void );
 
         // MIMETYPE
         std::string getMimeType(std::string &contentType);
-
+        
 
         //cgi
         int handleCgiPost(Client &clientData);
@@ -178,9 +182,11 @@ class Response {
         int hexaToDecima(std::string hexa);
         void extractSizeChunk(std::string &body);
         int handle_partchunkedformdataWriting(Client &clientData);
+
         //temporay
         void handleRemainingBody(Client &clientdata, const std::string &endBoundary);
         void processBoundaryBuffer(size_t pos, Client &clientdata);
+
         // exceptions
         class ResponseException: public std::exception {
             private:

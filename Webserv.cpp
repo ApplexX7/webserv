@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/08 17:48:29 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/09 09:57:22 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -256,11 +256,7 @@ void Webserv::listen( void ) {
                 && fds[i].revents & POLLOUT && (clients[fds[i].fd]->responseReady))
                 {
                     // send response
-                    if (clients[fds[i].fd]->getRequest().getmethode() == "GET")
-                        res = clients[fds[i].fd]->getResponse().createGetResponse();
-                    else {
-                        res = clients[fds[i].fd]->getResponse().constructHeader();
-                    }
+                    res = clients[fds[i].fd]->getResponse().generateResponse();
                     
                     send(fds[i].fd, res.data(), res.size(), MSG_SEND);
 

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/08 20:23:20 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/09 10:57:32 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ void initializeStatusTexts(std::map<int, std::string> &statusTexts)
 
 Response::Response()
 {
-	this->statusCode = SUCCESS;
+	// initialize mime types
 	this->contentType = "text/plain; charset=UTF-8";
 	this->mimeTypes[".html"] = "text/html; charset=UTF-8";
 	this->mimeTypes[".css"] = "text/css";
@@ -113,6 +113,44 @@ Response::Response()
 	this->mimeTypes[".ts"] = "video/mp2t";
 	this->mimeTypes[".ics"] = "text/calendar";
 	this->mimeTypes[".vcf"] = "text/vcard";
+
+	// initialize encoding symbols
+	this->encodingSymbols["%20"] = ' ';
+	this->encodingSymbols["%21"] = '!';
+	this->encodingSymbols["%22"] = '"';
+	this->encodingSymbols["%23"] = '#';
+	this->encodingSymbols["%24"] = '$';
+	this->encodingSymbols["%25"] = '%';
+	this->encodingSymbols["%26"] = '&';
+	this->encodingSymbols["%27"] = '\'';
+	this->encodingSymbols["%28"] = '(';
+	this->encodingSymbols["%29"] = ')';
+	this->encodingSymbols["%2A"] = '*';
+	this->encodingSymbols["%2B"] = '+';
+	this->encodingSymbols["%2C"] = ',';
+	this->encodingSymbols["%2D"] = '-';
+	this->encodingSymbols["%2E"] = '.';
+	this->encodingSymbols["%2F"] = '/';
+	this->encodingSymbols["%3A"] = ':';
+	this->encodingSymbols["%3B"] = ';';
+	this->encodingSymbols["%3C"] = '<';
+	this->encodingSymbols["%3D"] = '=';
+	this->encodingSymbols["%3E"] = '>';
+	this->encodingSymbols["%3F"] = '?';
+	this->encodingSymbols["%40"] = '@';
+	this->encodingSymbols["%5B"] = '[';
+	this->encodingSymbols["%5C"] = '\\';
+	this->encodingSymbols["%5D"] = ']';
+	this->encodingSymbols["%5E"] = '^';
+	this->encodingSymbols["%5F"] = '_';
+	this->encodingSymbols["%60"] = '`';
+	this->encodingSymbols["%7B"] = '{';
+	this->encodingSymbols["%7C"] = '|';
+	this->encodingSymbols["%7D"] = '}';
+	this->encodingSymbols["%7E"] = '~';
+
+	// initialize defaults
+	this->statusCode = SUCCESS;
 	this->status = IDLE;
 	initializeStatusTexts(this->statusTexts);
 	this->location = NULL;
@@ -396,7 +434,7 @@ void Response::extractFileName(void)
 		std::cout << "IS A CGI" << std::endl;
 }
 
-std::string getDirectoryLinks(std::string path, std::string uri)
+std::string Response::getDirectoryLinks(std::string path, std::string uri)
 {
 	DIR *dir = opendir(path.data());
 	struct dirent *entry;
@@ -463,6 +501,8 @@ std::string getDirectoryLinks(std::string path, std::string uri)
 	</div>\
 	";
 
+	std::string name;
+
 	if (!dir)
 		return "";
 	entry = readdir(dir);
@@ -471,14 +511,17 @@ std::string getDirectoryLinks(std::string path, std::string uri)
 		tmp = entry->d_name;
 		if (tmp == ".." || tmp[0] != '.')
 		{
+			name = tmp;
+			this->encodeUri(tmp);
 			if (entry->d_type != DT_REG)
 			{
 				tmp += "/";
+				name += "/";
 				res += "<li><a href=\"" + tmp + "\" style=\"color: deepskyblue; font-weight: bold; \">";
 			}
 			else
 				res += "<li><a href=\"" + tmp + "\">";
-			res += tmp;
+			res += name;
 			res += "</a></li>";
 		}
 		entry = readdir(dir);
@@ -655,25 +698,61 @@ std::string Response::constructErrorBody(void)
 		<hr /> \
 		<bold>webserv 1.1</bold> \
 		</div>";
-
+	this->contentType = this->mimeTypes[".html"];
 	return html;
+}
+
+void Response::decodeUri(std::string &path)
+{
+	std::map<std::string, std::string>::iterator it;
+	size_t pos = 0;
+
+	for (it = this->encodingSymbols.begin(); it != this->encodingSymbols.end(); it++)
+	{
+		while ((pos = path.find(it->first, pos)) != path.npos)
+		{
+			path.replace(pos, 3, it->second);
+			pos += 1;
+		}
+		pos = 0;
+	}
+}
+
+void Response::encodeUri(std::string &path)
+{
+	std::map<std::string, std::string>::iterator it;
+	size_t pos = 0;
+
+	while ((pos = path.find("%", pos)) != path.npos)
+	{
+		path.replace(pos, 1, "%25");
+		pos += 3;
+	}
+	pos = 0;
+
+	for (it = this->encodingSymbols.begin(); it != this->encodingSymbols.end(); it++)
+	{
+		if (it->second != "%")
+		{
+			while ((pos = path.find(it->second, pos)) != path.npos)
+			{
+				path.replace(pos, it->second.length(), it->first);
+				pos += it->first.length();
+			}
+			pos = 0;
+		}
+	}
 }
 
 std::string Response::createGetResponse(void)
 {
 	std::string path = this->client->getRequest().getUri();
 	std::string chunk;
-	size_t pos = 0;
 
-	while ((pos = path.find("%20", pos)) != path.npos)
-	{
-		path.replace(pos, 3, " ");
-		pos += 1;
-	}
+	this->decodeUri(path);
 
 	try
 	{
-
 		/*
 			only check full path if res on IDLE
 			if not on IDLE, read file and send
@@ -681,8 +760,6 @@ std::string Response::createGetResponse(void)
 
 		if (this->status == IDLE)
 		{
-			// this->checkAllowedMethod(path);
-
 			this->getFullPath(path);
 
 			if (this->isRedir)
@@ -694,7 +771,7 @@ std::string Response::createGetResponse(void)
 			// empty filename means it's a dir
 			if (this->fileName == "")
 			{
-				this->body = getDirectoryLinks(this->path, path);
+				this->body = this->getDirectoryLinks(this->path, path);
 				this->contentType = this->mimeTypes[".html"];
 				this->contentLength = body.length();
 				this->statusCode = SUCCESS;
@@ -781,7 +858,6 @@ Location *Response::getPathLocation(std::string path)
 		root = location->getField("root").getValues()[0];
 		this->setPath(root + "/" + lastMatch);
 	}
-
 	return location;
 }
 
@@ -825,9 +901,28 @@ std::string Response::getErrorResponse(void)
 	if (path != "")
 		this->client->getRequest().SetUri(path);
 	this->isError = true;
+
 	std::cout << "ERROR PATH: " << path << std::endl;
 
-	return this->createGetResponse();
+	if (this->client->getRequest().getmethode() == "GET" || path != "")
+		return this->createGetResponse();
+
+	this->status = FINISHED;
+	this->body = this->constructErrorBody();
+	this->contentLength = this->body.length();
+	return this->constructHeader() + this->body;
+}
+
+std::string Response::generateResponse(void)
+{
+	if (this->statusCode >= 400)
+		return this->getErrorResponse();
+
+	if (this->client->getRequest().getmethode() == "GET")
+		return this->createGetResponse();
+
+	this->status = FINISHED;
+	return this->constructHeader();
 }
 
 Response::~Response() {}
