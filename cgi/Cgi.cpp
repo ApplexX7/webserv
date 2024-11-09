@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/08 20:20:03 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/09 14:33:56 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,10 @@ Cgi::~Cgi( void ) {};
 
 int &Cgi::getFileResponse(){
 	return (this->fileResponse);
+}
+
+std::string &Cgi::getCgiFileName(){
+	return (this->fileName);
 }
 
 std::vector<std::string> &Cgi::getCgiEnv(){
@@ -41,18 +45,21 @@ void Cgi::setDirectPath(std::string _path){
 	this->direcpath = _path;
 }
 
+void Cgi::setCgiPath(std::string _CgiPath){
+	this->cgiPath = _CgiPath;
+}
+
 void Cgi::cgiExecution(Client &clientData){
-	const char *path;
 	char **args;
 	char **env;
-
+	
 	if (chdir(this->direcpath.c_str()) == -1){
 		exit (1);
 	}
 	args = (char **) new char *[3];
 	if (!args)
 		exit (1);
-	args[0] = strdup(path);
+	args[0] = strdup(this->cgiPath.c_str());
 	std::string path3 = clientData.getRequest().getUri().erase(0, 1);
 	args[1] = strdup(path3.c_str());
 	if (!args[1])
@@ -84,7 +91,7 @@ void Cgi::cgiExecution(Client &clientData){
 		}
 	}
 	env[this->envCgi.size()] = 0;
-	if (execve(path, args, env) == -1){
+	if (execve(this->cgiPath.c_str(), args, env) == -1){
 		for (int i = 0; env[i] != NULL; i++){
 			delete [] env[i];
 		}
@@ -96,10 +103,9 @@ void Cgi::cgiExecution(Client &clientData){
 
 int Cgi::executeCgi(Client &clientData) {
 	int status;
-	std::string filename;
 	if (!this->thereIsOne){
-		filename = "/tmp/" + clientData.getResponse().generateFileName() + ".txt";
-		this->fileResponse = open(filename.c_str(),O_CREAT | O_RDWR, 0644);
+		this->fileName = "/tmp/." +  clientData.getResponse().generateFileName() + ".txt";
+		this->fileResponse = open(this->fileName.c_str(),O_CREAT | O_RDWR, 0644);
 		if (this->fileResponse == -1){
 			clientData.getResponse().setStatusCode(500);
 			return (1);
@@ -118,7 +124,7 @@ int Cgi::executeCgi(Client &clientData) {
 		this->thereIsOne = true;
 	}
 	if(this->Cgi_timeout - time(NULL) >= 10){
-		remove(filename.c_str());
+		remove(this->fileName.c_str());
 		close(this->fileResponse);
 		this->fileResponse = -1;
 		clientData.getResponse().setStatusCode(500);
@@ -126,23 +132,24 @@ int Cgi::executeCgi(Client &clientData) {
 	}
 	if (waitpid(this->pid, &status, WNOHANG) == -1){
 		if (WEXITSTATUS(status) == 1){
-			remove(filename.c_str());
+			remove(this->fileName.c_str());
 			clientData.getResponse().setStatusCode(500);
 			close(this->fileResponse);
 			this->fileResponse = -1;
 			this->thereIsOne = false;
 			return (1);
 		}
-		if (lseek(this->fileResponse, 0, SEEK_SET) == -1){
-			remove(filename.c_str());
-			clientData.getResponse().setStatusCode(500);
-			this->thereIsOne = false;
-			this->fileResponse = -1;
-			close(this->fileResponse);
-			return (1);
-		}
-		remove(filename.c_str());
+		// if (lseek(this->fileResponse, 0, SEEK_SET) == -1){
+		// 	remove(filename.c_str());
+		// 	clientData.getResponse().setStatusCode(500);
+		// 	this->thereIsOne = false;
+		// 	this->fileResponse = -1;
+		// 	close(this->fileResponse);
+		// 	return (1);
+		// }
+		// remove(filename.c_str());
 		this->thereIsOne = false;
 	}
+	close(this->fileResponse);
 	return (0);
 }

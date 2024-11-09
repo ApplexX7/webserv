@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/08 20:20:09 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/09 14:30:47 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,7 @@ int Request::isCgi(){
 
 	if (!this->serverLocation.getCgiPath(cgiExtension).empty()){
 		this->handleCgi->setExtension(cgiExtension);
+		this->handleCgi->setCgiPath(this->serverLocation.getCgiPath(cgiExtension));
 		if(this->serverLocation.getField("root").getValues().size() > 0){
 			this->handleCgi->setDirectPath(this->serverLocation.getFields()["root"].getValues()[0]);
 		}
@@ -109,6 +110,7 @@ int Request::isCgi(){
 	}
 	else if (!this->listenningServer->cgiPaths[cgiExtension].empty()){
 		this->handleCgi->setExtension(cgiExtension);
+		this->handleCgi->setCgiPath(this->listenningServer->cgiPaths[cgiExtension]);
 		this->handleCgi->setDirectPath(this->listenningServer->getFields()["root"].getValues()[0]);
 		this->isaCgi = true;
 		return (1);
@@ -402,7 +404,7 @@ int Request::requestParserStart(Client &clientData) {
 			clientData.responseReady = true;
 		}
 	}
-	if (this->methode == "POST" && this->compliteHeaderparser && !clientData.getMessage().empty()){
+	if (this->methode == "POST" && this->compliteHeaderparser){
  		this->bodybuffer = clientData.getMessage();
 		if (this->parseBodyTypeBuffer(this->bodybuffer)){
 			this->finishReading = true;

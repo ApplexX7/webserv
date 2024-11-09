@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/09 11:23:36 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/09 13:52:51 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -249,11 +249,11 @@ void Webserv::listen( void ) {
                     buf[bytes_read] = 0;
                     message.assign(buf, bytes_read);
                     clients[fds[i].fd]->setMessage(message);
+                    std::cout <<clients[fds[i].fd]->getMessage() << std::endl;
                     clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
-
                     if ((*clients[fds[i].fd]).getRequest().getFinishReading())
                     {
-                        std::cout << "client finished writing on: " << (*clients[fds[i].fd]).getRequest().getUri() << std::endl;
+                        // std::cout << "client finished writing on: " << (*clients[fds[i].fd]).getRequest().getUri() << std::endl;
     
                         // find server responsible for this client
                         clients[fds[i].fd]->findParentServer();

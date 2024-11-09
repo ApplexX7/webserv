@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/07 09:49:44 by mohilali          #+#    #+#             */
-/*   Updated: 2024/10/20 21:06:45 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/09 14:10:13 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ int Request::ParsePostHeaders(){
 		this->contentLenght = lenght;
 	}
 	else
-		this->contentLenght = 0;
+		this->contentLenght = -1;
 	this->TransferCoding = this->getValue("Transfer-Encoding");
 	if (!this->TransferCoding.empty()){
 		this->bodyType = ENCODING;
@@ -64,12 +64,13 @@ int Request::parseBodyTypeBuffer(std::string &bufferedBody){
 			return (1);
 		}
 	}
-	else if (this->contentLenght){
+	else if (this->contentLenght != -1){
 		if ((size_t)this->contentLenght <= this->bodybuffer.size()){
 			this->bodyType = FIXEDSIZE;
 			return (1);
 		}
 	}
+	std::cout << "ttttttt"<< std::endl;
 	return (0);
 }
 

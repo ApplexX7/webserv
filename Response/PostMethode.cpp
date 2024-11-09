@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/08 13:56:59 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/09 14:06:17 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,10 @@ int Response::openFile(Client &clientData){
 		this->bFullPath = PathLocation->getField("upload_store").getValues()[0] + "/" + this->bhFileName + this->getMimeType(this->bhConetentType);
 	}
 	else{
-		this->bFullPath = clientData.getRequest().getserverNode().getFields()["upload_store"].getValues()[0] + "/" + this->bhFileName + this->getMimeType(this->contentType);
+		if (clientData.getRequest().getserverNode().getFields()["upload_store"].getValues().size() > 0)
+			this->bFullPath = clientData.getRequest().getserverNode().getFields()["upload_store"].getValues()[0] + "/" + this->bhFileName + this->getMimeType(this->contentType);
+		else
+			return (1);
 	}
 	if (this->bFullPath.empty()){
 		return (1);
@@ -60,6 +63,7 @@ int Response::openFile(Client &clientData){
 
 int Response::writeChunkinfile(std::string content, Client &clientdata){
 	if (this->openFile(clientdata)){
+	std::cout << "Hellooooo"<< std::endl;
 		this->statusCode = 400;
 		return (1);
 	}
@@ -296,7 +300,6 @@ int Response::parseBoundarys(std::string &body, Client &clientData){
 
 int Response::parseContentLenght(Client &clientData, std::string &body){
 	size_t pos = 0;
-	this->bhFileName = this->generateFileName();
 	this->bhConetentType = clientData.getRequest().getValue("Content-Type");
 	pos = body.find("\r\n\r\n");
 	if (pos != std::string::npos){
@@ -304,9 +307,6 @@ int Response::parseContentLenght(Client &clientData, std::string &body){
 	}
 	else
 		this->finaleBody = body;
-	if (this->writeChunkinfile(this->finaleBody ,clientData))
-		return (1);
-	this->closeFileafterWriting();
 	return (0);
 }
 
@@ -377,9 +377,18 @@ int  Response::postBodyResponse(Client &clientData){
 			return (1);
 		}
 		else{
-			if (this->parseContentLenght(clientData, clientData.getMessage())){
+			if (clientData.getRequest().getContentLenght() == 0){
 				clientData.responseReady = true;
 				this->statusCode = 201;
+			}
+			if (!this->parseContentLenght(clientData, clientData.getMessage())){
+				clientData.responseReady = true;
+				this->statusCode = 201;
+			}
+			else{
+				clientData.responseReady = true;
+				this->statusCode = 400;
+				return (1);
 			}
 		}
 	}

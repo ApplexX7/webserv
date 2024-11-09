@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:43:59 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/08 17:22:01 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/09 14:33:28 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,16 @@ class Cgi {
         std::vector<std::string> &getCgiEnv();
         int executeCgi(Client &clientData);
         void cgiExecution(Client &clientData);
+        void setCgiPath(std::string _cgiPath);
+        std::string &getCgiFileName();
         int &getFileResponse();
     private:
         time_t Cgi_timeout;
         bool thereIsOne;
         int fileResponse;
         int pid;
+        std::string cgiPath;
+        std::string fileName;
         std::string direcpath;
         std::string cgiFullpath;
         std::string extension;
