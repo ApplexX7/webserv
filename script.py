@@ -1,6 +1,6 @@
 import time
 
-for i in range(1000000000):
-    pass
+input();
+
 print("Finished")
 

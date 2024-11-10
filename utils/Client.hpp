@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:11:02 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/20 12:05:12 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/10 13:39:37 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ class Client {
         void resetResponse( void );
 
         bool responseReady;
+        
     private:
         std::vector<ServerNode*> &servers;
         ServerNode* parentServer;
