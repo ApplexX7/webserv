@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostMethode.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/09 14:06:17 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/10 14:33:34 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -325,7 +325,11 @@ int Response::handleCgiPost(Client &clientData){
 		}
 		return (0);
 	}
-	this->cgiFile.write(clientData.getMessage().c_str(), clientData.getMessage().length());
+	if (clientData.getMessage().empty()){
+		this->cgiFile.write("\n", 1);
+	}
+	else
+		this->cgiFile.write(clientData.getMessage().c_str(), clientData.getMessage().length());
 	if (!this->cgiFile){
 		this->statusCode = 500;
 		return (1);

@@ -6,11 +6,12 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/10 10:59:42 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/10 14:37:37 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cgi.hpp"
+#include "signal.h"
 
 Cgi::Cgi( void ) {
 	this->thereIsOne = false;
@@ -110,8 +111,10 @@ void Cgi::cgiExecution(Client &clientData){
 
 int Cgi::executeCgi(Client &clientData) {
 	int status;
+
+	std::srand(time(NULL));
 	if (!this->thereIsOne){
-		this->fileName = "/tmp/." +  clientData.getResponse().generateFileName() + ".txt";
+		this->fileName = "/tmp/." +  clientData.getResponse().generateFileName() + std::to_string(std::rand());
 		this->fileResponse = open(this->fileName.c_str(),O_CREAT | O_RDWR, 0644);
 		if (this->fileResponse == -1){
 			clientData.getResponse().setStatusCode(500);
@@ -124,15 +127,16 @@ int Cgi::executeCgi(Client &clientData) {
 		}
 		if (this->pid == 0){
 			this->cgiExecution(clientData);
-			clientData.getResponse().setStatusCode(500);
 			return (1);
 		}
 		this->Cgi_timeout = time(NULL);
 		this->thereIsOne = true;
 	}
 	if(time(NULL) - this->Cgi_timeout >= 10){
+		kill(pid, SIGKILL);
 		remove(this->fileName.c_str());
 		close(this->fileResponse);
+		this->thereIsOne = false;
 		this->fileResponse = -1;
 		clientData.getResponse().setStatusCode(408);
 		return (1);

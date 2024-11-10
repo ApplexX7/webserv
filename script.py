@@ -1,6 +1,5 @@
 import time
 
-input();
+input()
 
 print("Finished")
-
