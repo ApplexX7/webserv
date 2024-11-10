@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/10 14:15:48 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/10 14:17:59 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -580,7 +580,7 @@ std::string Response::getFileChunk(void)
 	if (!this->file.is_open())
 	{
 		this->file.open(this->path, std::ios::binary);
-		if (this->client->getRequest().getIsACgi())
+		if (this->client->getRequest().getIsACgi() && !this->isError)
 		{
 			int ret = std::remove(this->path.c_str());
 			std::cout << "RET: " << ret << std::endl;
