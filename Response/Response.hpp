@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/09 11:47:08 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/10 13:33:12 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,7 @@ class Response {
     private:
         int statusCode;
         std::map<int, std::string> statusTexts;
+        std::map<std::string, std::string>CgiHeaders;
         t_response_status status;
         std::ifstream file;
         std::string fileName;
