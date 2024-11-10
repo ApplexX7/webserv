@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/10 11:59:39 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/10 14:15:48 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -263,8 +263,6 @@ std::string Response::getFullPath(std::string path)
 
 	fullPath = root + path;
 
-	// std::cout << "FULL PATH: " << fullPath << std::endl;
-
 	this->setPath(fullPath);
 	this->checkPath();
 
@@ -323,7 +321,7 @@ std::string Response::getFullPath(std::string path)
 		}
 	}
 
-	if (this->client->getRequest().getIsACgi())
+	if (this->client->getRequest().getIsACgi() && !this->isError)
 	{
 		fullPath = this->client->getRequest().handleCgi->getCgiFileName();
 		this->path = fullPath;
@@ -434,11 +432,6 @@ void Response::extractFileName(void)
 			this->contentType = this->mimeTypes[extension];
 		else
 			this->contentType = "application/octet-stream";
-	}
-	else
-	{
-		// todo: read from cgi fd
-		
 	}
 }
 
@@ -688,12 +681,9 @@ void Response::extractRange(void)
 		this->rangeStart = std::atoll(range.data());
 	}
 	this->statusCode = PARTIAL_CONTENT;
-	if (this->contentLength < this->rangeStart)
-	{
-		// todo: to check
-		exit(0);
-	}
 	this->contentLength -= this->rangeStart;
+	if (this->contentLength < 0)
+		this->contentLength = 0;
 }
 
 std::string Response::constructErrorBody(void)
@@ -767,7 +757,6 @@ std::string Response::createGetResponse(void)
 		if (this->status == IDLE)
 		{
 			this->getFullPath(path);
-
 			if (this->isRedir)
 			{
 				this->status = FINISHED;
@@ -932,6 +921,7 @@ std::string Response::getErrorResponse(void)
 
 std::string Response::generateResponse(void)
 {
+	
 	if (this->statusCode >= 400)
 		return this->getErrorResponse();
 

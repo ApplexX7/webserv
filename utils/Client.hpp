@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:11:02 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/10 13:39:37 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/10 14:02:55 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,12 +51,14 @@ class Client {
         void resetResponse( void );
 
         bool responseReady;
-        
+
     private:
         std::vector<ServerNode*> &servers;
         ServerNode* parentServer;
         std::string message;
         std::string listen;
+        // std::string sessionId;
+        // time_t sessionExpiry;
         int fd;
         bool keepAlive;
 
