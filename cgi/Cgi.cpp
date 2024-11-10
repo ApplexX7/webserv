@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/09 18:23:25 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/10 10:59:42 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,7 +130,6 @@ int Cgi::executeCgi(Client &clientData) {
 		this->Cgi_timeout = time(NULL);
 		this->thereIsOne = true;
 	}
-	std::cout << "Helooooo" << std::endl;
 	if(time(NULL) - this->Cgi_timeout >= 10){
 		remove(this->fileName.c_str());
 		close(this->fileResponse);

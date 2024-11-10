@@ -1,4 +1,6 @@
+import time
 
-for i in range(10000):
-    print("hello mn E1")
+for i in range(1000000000):
+    pass
+print("Finished")
 

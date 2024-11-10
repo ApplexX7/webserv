@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/09 17:57:07 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/10 11:59:39 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -263,7 +263,7 @@ std::string Response::getFullPath(std::string path)
 
 	fullPath = root + path;
 
-	std::cout << "FULL PATH: " << fullPath << std::endl;
+	// std::cout << "FULL PATH: " << fullPath << std::endl;
 
 	this->setPath(fullPath);
 	this->checkPath();
@@ -327,7 +327,6 @@ std::string Response::getFullPath(std::string path)
 	{
 		fullPath = this->client->getRequest().handleCgi->getCgiFileName();
 		this->path = fullPath;
-		std::cout << fullPath << std::endl;
 	}
 
 	stat(fullPath.data(), &fileStat);
@@ -574,9 +573,9 @@ std::string Response::constructHeader(void)
 	header += "\r\n";
 
 	if (this->contentLength == 0)
-	{
 		this->status = FINISHED;
-	}
+
+	this->headerSent = true;
 
 	return header;
 }
@@ -588,6 +587,11 @@ std::string Response::getFileChunk(void)
 	if (!this->file.is_open())
 	{
 		this->file.open(this->path, std::ios::binary);
+		if (this->client->getRequest().getIsACgi())
+		{
+			int ret = std::remove(this->path.c_str());
+			std::cout << "RET: " << ret << std::endl;
+		}
 		if (!this->file.is_open())
 		{
 			this->status = FINISHED;
@@ -759,7 +763,7 @@ std::string Response::createGetResponse(void)
 			only check full path if res on IDLE
 			if not on IDLE, read file and send
 		*/
-
+		
 		if (this->status == IDLE)
 		{
 			this->getFullPath(path);
@@ -769,7 +773,6 @@ std::string Response::createGetResponse(void)
 				this->status = FINISHED;
 				return constructHeader();
 			}
-
 			// empty filename means it's a dir
 			if (this->fileName == "")
 			{
@@ -837,6 +840,7 @@ std::string Response::createGetResponse(void)
 			return this->constructHeader() + this->body;
 		}
 	}
+
 	return this->constructHeader();
 }
 
@@ -917,7 +921,7 @@ std::string Response::getErrorResponse(void)
 
 	this->contentType = this->mimeTypes[".html"];
 
-	if (this->client->getRequest().getmethode() == "GET" || path != "")
+	if (path != "")
 		return this->createGetResponse();
 
 	this->status = FINISHED;

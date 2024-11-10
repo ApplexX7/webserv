@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/09 18:27:00 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/10 11:57:53 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,6 @@ void Webserv::init( std::string configPath ) {
         serverNames = it->second;
         for (int i = 0; i < (int) serverNames.size(); i++) {
             occurences = std::count(serverNames.begin(), serverNames.end(), serverNames[i]);
-            // std::cout << serverNames[i] << " " << occurences << std::endl;
             if (occurences > 1) {
                 std::cout << "[WARN] Conflicting server name \"|" << serverNames[i] << "|\" at " << it->first << std::endl;
                 std::string tmp = serverNames[i];
@@ -224,7 +223,7 @@ void Webserv::listen( void ) {
                         std::cout << "Error opening connection on " << fds[i].fd << std::endl;
                     }
                     else {
-                        std::cout << "new connection on " << new_fd << std::endl;
+                        // std::cout << "new connection on " << new_fd << std::endl;
                         newPollFd.events = POLLIN | POLLHUP;
                         clientFds.push_back(new_fd);
                         newPollFd.fd = new_fd;
@@ -249,7 +248,6 @@ void Webserv::listen( void ) {
                     buf[bytes_read] = 0;
                     message.assign(buf, bytes_read);
                     clients[fds[i].fd]->setMessage(message);
-                    std::cout << clients[fds[i].fd]->responseReady << std::endl;
                     clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
                     if ((*clients[fds[i].fd]).getRequest().getFinishReading())
                     {
@@ -267,12 +265,12 @@ void Webserv::listen( void ) {
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLOUT)
                 {
-                    std::cout << clients[fds[i].fd]->responseReady << std::endl;
                     if (clients[fds[i].fd]->getRequest().getIsACgi())
                         clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
                     if ((clients[fds[i].fd]->responseReady)) {
                         // send response
                         res = clients[fds[i].fd]->getResponse().generateResponse();
+
                         send(fds[i].fd, res.data(), res.size(), MSG_SEND);
 
                         // reset message

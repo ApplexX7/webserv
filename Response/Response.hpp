@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/09 11:47:08 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/10 11:41:19 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ class Response {
         bool isError;
         bool isBody;
         bool isRedir;
+        bool headerSent;
         std::string redirUrl;
         std::string path;
 
