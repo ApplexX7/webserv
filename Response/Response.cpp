@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/09 17:57:07 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/10 14:17:59 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -263,8 +263,6 @@ std::string Response::getFullPath(std::string path)
 
 	fullPath = root + path;
 
-	std::cout << "FULL PATH: " << fullPath << std::endl;
-
 	this->setPath(fullPath);
 	this->checkPath();
 
@@ -323,11 +321,10 @@ std::string Response::getFullPath(std::string path)
 		}
 	}
 
-	if (this->client->getRequest().getIsACgi())
+	if (this->client->getRequest().getIsACgi() && !this->isError)
 	{
 		fullPath = this->client->getRequest().handleCgi->getCgiFileName();
 		this->path = fullPath;
-		std::cout << fullPath << std::endl;
 	}
 
 	stat(fullPath.data(), &fileStat);
@@ -435,11 +432,6 @@ void Response::extractFileName(void)
 			this->contentType = this->mimeTypes[extension];
 		else
 			this->contentType = "application/octet-stream";
-	}
-	else
-	{
-		// todo: read from cgi fd
-		
 	}
 }
 
@@ -574,9 +566,9 @@ std::string Response::constructHeader(void)
 	header += "\r\n";
 
 	if (this->contentLength == 0)
-	{
 		this->status = FINISHED;
-	}
+
+	this->headerSent = true;
 
 	return header;
 }
@@ -588,6 +580,11 @@ std::string Response::getFileChunk(void)
 	if (!this->file.is_open())
 	{
 		this->file.open(this->path, std::ios::binary);
+		if (this->client->getRequest().getIsACgi() && !this->isError)
+		{
+			int ret = std::remove(this->path.c_str());
+			std::cout << "RET: " << ret << std::endl;
+		}
 		if (!this->file.is_open())
 		{
 			this->status = FINISHED;
@@ -684,12 +681,9 @@ void Response::extractRange(void)
 		this->rangeStart = std::atoll(range.data());
 	}
 	this->statusCode = PARTIAL_CONTENT;
-	if (this->contentLength < this->rangeStart)
-	{
-		// todo: to check
-		exit(0);
-	}
 	this->contentLength -= this->rangeStart;
+	if (this->contentLength < 0)
+		this->contentLength = 0;
 }
 
 std::string Response::constructErrorBody(void)
@@ -759,17 +753,15 @@ std::string Response::createGetResponse(void)
 			only check full path if res on IDLE
 			if not on IDLE, read file and send
 		*/
-
+		
 		if (this->status == IDLE)
 		{
 			this->getFullPath(path);
-
 			if (this->isRedir)
 			{
 				this->status = FINISHED;
 				return constructHeader();
 			}
-
 			// empty filename means it's a dir
 			if (this->fileName == "")
 			{
@@ -837,6 +829,7 @@ std::string Response::createGetResponse(void)
 			return this->constructHeader() + this->body;
 		}
 	}
+
 	return this->constructHeader();
 }
 
@@ -917,7 +910,7 @@ std::string Response::getErrorResponse(void)
 
 	this->contentType = this->mimeTypes[".html"];
 
-	if (this->client->getRequest().getmethode() == "GET" || path != "")
+	if (path != "")
 		return this->createGetResponse();
 
 	this->status = FINISHED;
@@ -928,6 +921,7 @@ std::string Response::getErrorResponse(void)
 
 std::string Response::generateResponse(void)
 {
+	
 	if (this->statusCode >= 400)
 		return this->getErrorResponse();
 

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:14:22 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/09 11:16:25 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/10 13:26:24 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,17 @@ class Webserv {
         void listen( void );
         ServerNode *getServerByFd( int );
 
+        class ServerException: public std::exception {
+            private:
+                std::string message;
+
+            public:
+                ServerException(std::string);
+
+                virtual const char* what() const throw();
+
+                virtual ~ServerException() throw();
+        };
         
 };
 

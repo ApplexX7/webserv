@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/10 13:33:12 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/10 15:07:22 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,7 @@ class Response {
         bool isError;
         bool isBody;
         bool isRedir;
+        bool headerSent;
         std::string redirUrl;
         std::string path;
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/09 18:27:00 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/10 13:47:39 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,6 @@ void Webserv::init( std::string configPath ) {
         serverNames = it->second;
         for (int i = 0; i < (int) serverNames.size(); i++) {
             occurences = std::count(serverNames.begin(), serverNames.end(), serverNames[i]);
-            // std::cout << serverNames[i] << " " << occurences << std::endl;
             if (occurences > 1) {
                 std::cout << "[WARN] Conflicting server name \"|" << serverNames[i] << "|\" at " << it->first << std::endl;
                 std::string tmp = serverNames[i];
@@ -217,20 +216,21 @@ void Webserv::listen( void ) {
                 if (fds[i].revents & POLLIN
                 && isServerFd(serverFds, fds[i].fd))
                 {
-                    new_fd = accept(fds[i].fd, (struct sockaddr *)&their_addr, &addr_size);
+                    try {
+                        new_fd = accept(fds[i].fd, (struct sockaddr *)&their_addr, &addr_size);
 
-                    if (new_fd < 0)
-                    {
-                        std::cout << "Error opening connection on " << fds[i].fd << std::endl;
-                    }
-                    else {
-                        std::cout << "new connection on " << new_fd << std::endl;
-                        newPollFd.events = POLLIN | POLLHUP;
-                        clientFds.push_back(new_fd);
-                        newPollFd.fd = new_fd;
-                        fds.push_back(newPollFd);
-                        clients[new_fd] = new Client(this->servers, "", new_fd);
-                        clients[new_fd]->setListen(this->getServerByFd(fds[i].fd)->getListenField());
+                        if (new_fd < 0)
+                            throw Webserv::ServerException("Error accepting opening connection");
+                        else {
+                            newPollFd.events = POLLIN | POLLHUP;
+                            clientFds.push_back(new_fd);
+                            newPollFd.fd = new_fd;
+                            fds.push_back(newPollFd);
+                            clients[new_fd] = new Client(this->servers, "", new_fd);
+                            clients[new_fd]->setListen(this->getServerByFd(fds[i].fd)->getListenField());
+                        }
+                    } catch (std::exception& e) {
+                        // do nothing, connection was refused
                     }
                 }
 
@@ -238,24 +238,32 @@ void Webserv::listen( void ) {
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLIN)
                 {
-                    // read from client
-                    bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, 0);
-                    if (bytes_read < 0)
+                    try
                     {
-                        std::cout << "error reading" << std::endl;
-                        bytes_read = 0;
+                        // read from client
+                        bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, 0);
+                        if (bytes_read < 0)
+                            throw Webserv::ServerException("Error reading from client");
+                        
+                        buf[bytes_read] = 0;
+                        message.assign(buf, bytes_read);
+                        clients[fds[i].fd]->setMessage(message);
+                        clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
+                        if ((*clients[fds[i].fd]).getRequest().getFinishReading())
+                        {
+                            // find server responsible for this client
+                            clients[fds[i].fd]->findParentServer();
+
+                            // listen for client readiness to receive
+                            fds[i].events = POLLOUT;
+                        }
                     }
-                    
-                    buf[bytes_read] = 0;
-                    message.assign(buf, bytes_read);
-                    clients[fds[i].fd]->setMessage(message);
-                    std::cout << clients[fds[i].fd]->responseReady << std::endl;
-                    clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
-                    if ((*clients[fds[i].fd]).getRequest().getFinishReading())
+                    catch(std::exception& e)
                     {
-                        // std::cout << "client finished writing on: " << (*clients[fds[i].fd]).getRequest().getUri() << std::endl;
-    
-                        // find server responsible for this client
+                        clients[fds[i].fd]->getResponse().setStatusCode(INTERNAL_SERVER_ERROR);
+                        clients[fds[i].fd]->responseReady = true;
+
+                         // find server responsible for this client
                         clients[fds[i].fd]->findParentServer();
 
                         // listen for client readiness to receive
@@ -267,30 +275,39 @@ void Webserv::listen( void ) {
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLOUT)
                 {
-                    std::cout << clients[fds[i].fd]->responseReady << std::endl;
-                    if (clients[fds[i].fd]->getRequest().getIsACgi())
-                        clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
-                    if ((clients[fds[i].fd]->responseReady)) {
-                        // send response
+                    try
+                    {
+                        if (clients[fds[i].fd]->getRequest().getIsACgi())
+                            clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
+                        if ((clients[fds[i].fd]->responseReady)) {
+                            // send response
+                            res = clients[fds[i].fd]->getResponse().generateResponse();
+
+                            if (send(fds[i].fd, res.data(), res.size(), MSG_SEND) < 0)
+                                throw Webserv::ServerException("Error sending data");
+
+                            // reset message
+                            clients[fds[i].fd]->setMessage("");
+
+                            std::string connection = clients[fds[i].fd]->getRequest().getValue("Connection");
+
+                            // finished sending response
+                            if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
+                                if (connection == "keep-alive") {
+                                    fds[i].events = POLLIN | POLLHUP;
+                                    clients[fds[i].fd]->getResponse().reset();
+                                    clients[fds[i].fd]->responseReady = false;
+                                    clients[fds[i].fd]->getRequest().reset();
+                                }
+                                else
+                                    disconnectClient(clients, fds, clientFds, i);
+                            }
+                        }
+                    } catch (std::exception& e) {
+                        clients[fds[i].fd]->getResponse().setStatusCode(INTERNAL_SERVER_ERROR);
                         res = clients[fds[i].fd]->getResponse().generateResponse();
                         send(fds[i].fd, res.data(), res.size(), MSG_SEND);
-
-                        // reset message
-                        clients[fds[i].fd]->setMessage("");
-
-                        std::string connection = clients[fds[i].fd]->getRequest().getValue("Connection");
-
-                        // finished sending response
-                        if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
-                            if (connection == "keep-alive") {
-                                fds[i].events = POLLIN | POLLHUP;
-                                clients[fds[i].fd]->getResponse().reset();
-                                clients[fds[i].fd]->responseReady = false;
-                                clients[fds[i].fd]->getRequest().reset();
-                            }
-                            else
-                                disconnectClient(clients, fds, clientFds, i);
-                        }
+                        disconnectClient(clients, fds, clientFds, i);
                     }
             }
         }
@@ -310,6 +327,15 @@ ServerNode *Webserv::getServerByFd( int fd ) {
     - Frees up parsing linked list's resources
     - Closes server sockets
 */
+
+const char* Webserv::ServerException::what() const throw() {
+    return message.c_str();
+};
+
+Webserv::ServerException::ServerException(std::string msg): message(msg) {};
+
+Webserv::ServerException::~ServerException() throw() {};
+
 Webserv::~Webserv( void ) {
     ListNode::freeListNode(this->listHead);
     
