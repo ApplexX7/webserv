@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/10 14:37:37 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/10 21:12:09 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,8 +65,9 @@ void Cgi::cgiExecution(Client &clientData){
 		exit (1);
 	}
 	args = (char **) new char *[3];
-	if (!args)
+	if (!args){
 		exit (1);
+	}
 	args[0] = strdup(this->cgiPath.c_str());
 	std::string path3 = clientData.getRequest().getUri().erase(0, 1);
 	args[1] = strdup(path3.c_str());
@@ -74,6 +75,7 @@ void Cgi::cgiExecution(Client &clientData){
 		exit (1);
 	args[2] = NULL;
 	if (clientData.getRequest().getmethode() == "POST"){
+		std::cout << clientData.getResponse().getCginputFile().c_str() << std::endl;
 		int fd_input = open(clientData.getResponse().getCginputFile().c_str(), O_RDONLY);
 		if (fd_input == -1){
 			exit(1);
@@ -89,7 +91,6 @@ void Cgi::cgiExecution(Client &clientData){
 	close(this->fileResponse);
 	env = (char **) new char *[this->envCgi.size() + 1];
 	if (!env){
-		clientData.getResponse().setStatusCode(500);
 		exit (1);
 	}
 	for (size_t i = 0; i < this->envCgi.size(); i++){
@@ -99,7 +100,9 @@ void Cgi::cgiExecution(Client &clientData){
 		}
 	}
 	env[this->envCgi.size()] = 0;
-	if (execve(this->cgiPath.c_str(), args, env) == -1){
+	// fclose(stderr);
+	if (execve(this->cgiPath.c_str(), args , env) == -1){
+		perror("Erorrr :");
 		for (int i = 0; env[i] != NULL; i++){
 			delete [] env[i];
 		}
@@ -108,6 +111,52 @@ void Cgi::cgiExecution(Client &clientData){
 		exit (1);
 	}
 }
+
+int Cgi::extractHeadrs(Client &clientData){
+	size_t pos = 0;
+	int _offset = 0;
+	std::string line;
+	std::string name;
+	std::string Value;
+	std::ifstream parseFile(this->fileName);
+
+	if (!parseFile.good())
+		return (1);
+	while (std::getline(parseFile, line)){
+		if (line == "/r" || line.empty()){
+			_offset += 4;
+			break;
+		}
+		pos = line.find(':');
+		if (pos == std::string::npos){
+			break;
+		}
+		_offset += line.length() + 1;
+		name = line.substr(0, pos);
+		Value = line.substr(pos + 1);
+		size_t spa = name.find(' ');
+		size_t tab = name.find('\t');
+		if (spa != std::string::npos || tab != std::string::npos){
+			clientData.getResponse().setStatusCode(400);
+			return (0);
+		}
+		Value.erase(std::remove_if(Value.begin(),Value.end(), ::isspace), Value.end());
+		clientData.getResponse().setCgiHeaders(name, Value);
+	}
+	if (clientData.getResponse().getCgiHeaderValue("Content-Type").empty()){
+		clientData.getResponse().setCgiHeaders("Content-Type", "text/plain");
+	}
+	if (clientData.getResponse().getCgiHeaderValue("Content-Length").empty()){
+		size_t size;
+		parseFile.seekg(0, std::ios::end);
+		size = parseFile.tellg();
+		clientData.getResponse().setCgiHeaders("Content-Length", std::to_string(size - _offset));
+	}
+	this->fileOfsset = _offset;
+	parseFile.close();
+	return (0);
+}
+
 
 int Cgi::executeCgi(Client &clientData) {
 	int status;
@@ -142,13 +191,21 @@ int Cgi::executeCgi(Client &clientData) {
 		return (1);
 	}
 	if (waitpid(this->pid, &status, WNOHANG) != 0){
-		if (WEXITSTATUS(status) == 1){
+		if (WIFEXITED(status) && WEXITSTATUS(status) == 1){
 			remove(this->fileName.c_str());
 			clientData.getResponse().setStatusCode(500);
 			close(this->fileResponse);
 			this->fileResponse = -1;
 			this->thereIsOne = false;
 		}
+		else if (this->extractHeadrs(clientData)){
+			remove(this->fileName.c_str());
+			clientData.getResponse().setStatusCode(500);
+			close(this->fileResponse);
+			this->fileResponse = -1;
+			this->thereIsOne = false;
+		}
+		close(this->fileResponse);
 		this->thereIsOne = false;
 		return (1);
 	}

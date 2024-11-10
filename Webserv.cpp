@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/10 13:47:39 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/10 20:53:50 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -211,7 +211,6 @@ void Webserv::listen( void ) {
                     disconnectClient(clients, fds, clientFds, i);
                     continue ;
                 }
-
                 // client wants to connect
                 if (fds[i].revents & POLLIN
                 && isServerFd(serverFds, fds[i].fd))
@@ -244,7 +243,6 @@ void Webserv::listen( void ) {
                         bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, 0);
                         if (bytes_read < 0)
                             throw Webserv::ServerException("Error reading from client");
-                        
                         buf[bytes_read] = 0;
                         message.assign(buf, bytes_read);
                         clients[fds[i].fd]->setMessage(message);
@@ -253,7 +251,6 @@ void Webserv::listen( void ) {
                         {
                             // find server responsible for this client
                             clients[fds[i].fd]->findParentServer();
-
                             // listen for client readiness to receive
                             fds[i].events = POLLOUT;
                         }
@@ -261,11 +258,8 @@ void Webserv::listen( void ) {
                     catch(std::exception& e)
                     {
                         clients[fds[i].fd]->getResponse().setStatusCode(INTERNAL_SERVER_ERROR);
-                        clients[fds[i].fd]->responseReady = true;
-
                          // find server responsible for this client
                         clients[fds[i].fd]->findParentServer();
-
                         // listen for client readiness to receive
                         fds[i].events = POLLOUT;
                     }

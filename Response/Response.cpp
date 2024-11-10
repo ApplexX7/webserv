@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/10 14:17:59 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/10 21:11:15 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -356,6 +356,21 @@ bool Response::checkPath(void)
 	return true;
 }
 
+std::string Response::getCgiHeaderValue(std::string _Key){
+	std::map<std::string, std::string>::iterator it = this->CgiHeaders.find(_Key);
+	if (it != this->CgiHeaders.end()){
+		return (this->CgiHeaders[_Key]);
+	}
+	else
+		return ("");
+}
+
+void Response::setCgiHeaders(std::string _Name, std::string _Value){
+	if (!_Name.empty() && !_Value.empty()){
+		this->CgiHeaders[_Name] = _Value;
+	}
+}
+
 std::string Response::getPath(void) const
 {
 	return this->path;
@@ -638,6 +653,8 @@ bool Response::checkAllowedMethod(std::string path)
 
 void Response::reset(void)
 {
+	this->cgiFile.close();
+	this->cgInputfile = "";
 	this->contentLength = 0;
 	this->bytesSent = 0;
 	this->rangeStart = 0;

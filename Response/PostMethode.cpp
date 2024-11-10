@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostMethode.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/10 14:33:34 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/10 21:03:31 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,6 @@ int Response::openFile(Client &clientData){
 
 int Response::writeChunkinfile(std::string content, Client &clientdata){
 	if (this->openFile(clientdata)){
-	std::cout << "Hellooooo"<< std::endl;
 		this->statusCode = 400;
 		return (1);
 	}
@@ -312,11 +311,14 @@ int Response::parseContentLenght(Client &clientData, std::string &body){
 
 
 int Response::handleCgiPost(Client &clientData){
+	std::srand(time(NULL));
 	if (this->cgInputfile.empty()){
-		this->cgInputfile = this->generateFileName();
+		this->cgInputfile = "/tmp/" + this->generateFileName() + std::to_string(std::rand());
 		this->cgiFile.open(this->cgInputfile, std::ios::binary);
-		if (this->cgiFile.is_open())
+		if (!this->cgiFile.is_open()){
+			std::cout << "NOOO " << std::endl;
 			return (1);
+		}
 	}
 	if (clientData.getRequest().getTheBodyType() == ENCODING){
 		if (this->parseChunckedType(clientData)){
@@ -328,9 +330,11 @@ int Response::handleCgiPost(Client &clientData){
 	if (clientData.getMessage().empty()){
 		this->cgiFile.write("\n", 1);
 	}
-	else
+	else{
 		this->cgiFile.write(clientData.getMessage().c_str(), clientData.getMessage().length());
-	if (!this->cgiFile){
+		clientData.getMessage().clear();
+	}
+	if (this->cgiFile.fail()){
 		this->statusCode = 500;
 		return (1);
 	}

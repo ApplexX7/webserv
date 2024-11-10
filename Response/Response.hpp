@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/10 15:07:22 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/10 15:50:54 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,10 +75,10 @@ class Response {
     private:
         int statusCode;
         std::map<int, std::string> statusTexts;
-        std::map<std::string, std::string>CgiHeaders;
         t_response_status status;
         std::ifstream file;
         std::string fileName;
+        std::map<std::string, std::string> CgiHeaders;
         std::map<std::string, std::string> ResponseMeth;
         std::map<std::string, std::string> mimeTypes;
         std::map<std::string, std::string> encodingSymbols;
@@ -137,7 +137,8 @@ class Response {
         
         int getStatusCode( void );
         void setStatusCode( int );
-        
+        void setCgiHeaders(std::string _Name, std::string _Value);
+        std::string getCgiHeaderValue(std::string _key);
         t_response_status getStatus( void ) const;
         void setStatus( t_response_status );
 

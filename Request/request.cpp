@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/09 18:17:41 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/10 20:56:25 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -365,6 +365,9 @@ int Request::ParsingTheRequest(Client &ClientData) {
 		this->handleEnvForCgi();
 		if (this->methode == "GET")
 			this->finishReading = true;
+		else if (this->methode == "POST" && this->compliteHeaderparser){
+			this->ParsePostHeaders();
+		}
 		return (0);
 	}
 	if (this->methode == "GET" && this->compliteHeaderparser){
@@ -392,6 +395,27 @@ int Request::ParsingTheRequest(Client &ClientData) {
 	return 0;
 }
 
+
+int Request::ParsePostMethode(Client &clientData){
+ 	this->bodybuffer = clientData.getMessage();
+	int returValue = this->parseBodyTypeBuffer(this->bodybuffer);
+	if (returValue != 3 && returValue != 0){
+		this->finishReading = true;
+	}
+	else if (returValue == 3){
+		size_t pos = this->bodybuffer.find("\r\n");
+		std::cout << this->bodybuffer << std::endl;
+		if (pos != std::string::npos){
+			this->finishReading =  true;
+		}
+	}
+	if (clientData.getResponse().postBodyResponse(clientData)){
+		this->finishReading = true;
+		return (1);
+	}
+	return (0);
+}
+
 // this funct need to be modified later
 int Request::requestParserStart(Client &clientData) {
 	if (!this->isaCgi && !this->compliteHeaderparser && this->ParsingTheRequest(clientData)){
@@ -401,22 +425,18 @@ int Request::requestParserStart(Client &clientData) {
 		return (1);
 	}
 	else if (this->isaCgi){
+		if (this->methode == "POST" &&  this->compliteHeaderparser)
+			if (this->ParsePostMethode(clientData))
+				return (1);
 		if (this->finishReading){
 			if (this->handleCgi->executeCgi(clientData))
 				clientData.responseReady = true;
-			return (0);
-		}
-	}
-	if (this->methode == "POST" && this->compliteHeaderparser){
- 		this->bodybuffer = clientData.getMessage();
-		if (this->parseBodyTypeBuffer(this->bodybuffer)){
-			this->finishReading = true;
-		}
-		if (clientData.getResponse().postBodyResponse(clientData)){
-			this->finishReading = true;
-			return (1);
 		}
 		return (0);
+	}
+	if (this->methode == "POST" && this->compliteHeaderparser){
+		if (this->ParsePostMethode(clientData))
+			return (1);
 	}
 	return (0);
 }

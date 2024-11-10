@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/09 17:52:01 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/10 20:15:31 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,6 +111,7 @@ class Request{
         void sethostName(std::string _hostName);
         void deleteMethode(Client &clientData);
         // POST parse Body
+        int ParsePostMethode(Client &clientData);
         int ParsePostHeaders();
         int parseBodytype();
         int parseBodyTypeBuffer(std::string &bufferedBody);

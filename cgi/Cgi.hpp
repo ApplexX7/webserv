@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:43:59 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/09 18:16:15 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/10 16:16:24 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ class Cgi {
     public:
         Cgi( void );
         ~Cgi( void );
+        int extractHeadrs(Client &clientData);
         void setCgiFullPath(std::string &_Path);
         void setExtension(std::string _extension);
         void setUpCgenv(std::vector<std::string> &_extension);
@@ -44,6 +45,7 @@ class Cgi {
         bool thereIsOne;
         int fileResponse;
         int pid;
+        int fileOfsset;
         std::string cgiPath;
         std::string fileName;
         std::string direcpath;
