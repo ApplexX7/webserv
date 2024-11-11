@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostMethode.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 19:13:47 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 20:23:29 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -283,7 +283,6 @@ int checkforPartienltboundary(std::string &partielData, std::string &body){
 	return (0);
 }
 
-
 int Response::parseBoundarys(std::string &body, Client &clientData){
 	clientData.getRequest().getClientMaxSizeBody() -= body.length();
 	if (clientData.getRequest().getClientMaxSizeBody() < 0){
@@ -313,7 +312,7 @@ int Response::parseContentLenght(Client &clientData, std::string &body){
 int Response::handleCgiPost(Client &clientData){
 	std::srand(time(NULL));
 	if (this->cgInputfile.empty()){
-		this->cgInputfile = "/tmp/" + this->generateFileName() + std::to_string(std::rand());
+		this->cgInputfile = "/tmp/" + this->generateFileName() + std::to_string(std::rand()) + std::to_string(clientData.getFd());
 		this->cgiFile.open(this->cgInputfile, std::ios::binary);
 		if (!this->cgiFile.is_open()){
 			return (1);

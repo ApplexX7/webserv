@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 18:28:26 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 20:38:17 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -616,7 +616,7 @@ std::string Response::constructHeader(void)
 		this->status = FINISHED;
 
 	this->headerSent = true;
-	std::cout << header << std::endl;
+	// std::cout << header << std::endl;
 
 	return header;
 }

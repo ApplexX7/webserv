@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 17:28:04 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 20:51:36 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -280,7 +280,7 @@ void Webserv::listen( void ) {
                     }
                 }
 
-                // client wants ready to receive data
+                // client wants to receive data
                 else if (!isServerFd(serverFds, fds[i].fd)
                 && fds[i].revents & POLLOUT)
                 {
@@ -291,7 +291,7 @@ void Webserv::listen( void ) {
 
                         // if it's a cgi request check if execve finished
                         if (clients[fds[i].fd]->getRequest().getIsACgi())
-                            clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
+                            clients[fds[i].fd]->getRequest().handleCgi->CgiMonitore(*clients[fds[i].fd]);
                         
                         
                         // send response

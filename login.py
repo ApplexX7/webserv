@@ -11,7 +11,6 @@ method = env['REQUEST_METHOD']
 cookie = env.get('COOKIE')
 
 
-
 if method == 'GET':
     # todo: handle get
     body = """
@@ -90,8 +89,11 @@ else:
     # for line in sys.stdin:
     #     body += line
 
-    body = str(cookie).split(';')
+    body = str(cookie)
     
     header = f"Content-Length: {len(body)}\r\nStatus: 200\r\nSet-Cookie: session=hello\r\n\r\n"
 
 print(header + body)
+
+
+#Get HTTp    1.1

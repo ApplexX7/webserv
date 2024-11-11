@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:43:59 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 09:00:54 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 20:48:21 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ class Cgi {
         int executeCgi(Client &clientData);
         void cgiExecution(Client &clientData);
         void setCgiPath(std::string _cgiPath);
+        int CgiMonitore(Client &clientData);
         std::string &getCgiFileName();
         int &getFileResponse();
         void reset();
