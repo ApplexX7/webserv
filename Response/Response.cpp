@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 10:36:41 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 15:08:58 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -560,33 +560,98 @@ std::string getDateResponse()
 std::string Response::constructHeader(void)
 {
 	std::string header = "HTTP/1.1 ";
+	std::map<std::string, std::string> headers;
+	std::map<std::string, std::string> cgiHeaders;
+	std::map<std::string, std::string>::iterator it;
 
+	if (this->client->getRequest().getIsACgi() && !this->isError) {
+		cgiHeaders = this->CgiHeaders;
+		if (cgiHeaders.count("Status") > 0)
+		{
+			this->statusCode = std::atoi(cgiHeaders["Status"].data());
+			if (this->statusCode >= 600 || this->statusCode < 200)
+				this->statusCode = SUCCESS;
+		}
+	}
+	
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
 
-	header += "Content-Type: " + this->contentType + "\r\n";
-	header += "Connection: keep-alive\r\n";
+	headers["Content-Type"] = this->contentType;
+	headers["Connection"] = "keep-alive";
+	
 	if (this->isRedir)
 	{
-		header += "Location: " + this->redirUrl + "\r\n";
+		headers["Location"] = this->redirUrl;
 	}
 	if (this->statusCode == PARTIAL_CONTENT)
 	{
 		unsigned long totalSize = this->rangeStart + this->contentLength;
-		header += "Content-Range: bytes " + std::to_string(this->rangeStart) + "-" + std::to_string(totalSize - 1) + "/" + std::to_string(totalSize) + "\r\n";
+		headers["Content-Range"] = "bytes " + std::to_string(this->rangeStart) + "-" + std::to_string(totalSize - 1) + "/" + std::to_string(totalSize);
 	}
-	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
-	header += "Accept-Ranges: bytes\r\n";
-	header += "Date: " + getDateResponse() + "\r\n";
-	header += "Server: webserv/1.1\r\n";
+
+	headers["Content-Length"] = std::to_string(this->contentLength);
+	headers["Accept-Ranges"] = "bytes";
+	headers["Date"] = getDateResponse();
+	headers["Server"] = "webserv/1.1";
+
+	if (cgiHeaders.size() > 0) {
+		for (it = cgiHeaders.begin(); it != cgiHeaders.end(); it++)
+		{
+			if (it->first == "Status")
+				continue;
+			headers[it->first] = it->second;
+		}
+	}
+
+	for (it = headers.begin(); it != headers.end(); it++)
+		header += it->first + ": " + it->second + "\r\n";
 	header += "\r\n";
 
 	if (this->contentLength == 0)
 		this->status = FINISHED;
 
 	this->headerSent = true;
+	std::cout << header << std::endl;
 
 	return header;
 }
+
+// std::string Response::constructHeader(void)
+// {
+// 	std::string header = "HTTP/1.1 ";
+// 	std::map<std::string, std::string> headers;
+
+// 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
+
+// 	header += "Content-Type: " + this->contentType + "\r\n";
+// 	header += "Connection: keep-alive\r\n";
+
+// 	headers["Content-Type"] = this->contentType;
+	
+// 	if (this->isRedir)
+// 	{
+// 		header += "Location: " + this->redirUrl + "\r\n";
+// 	}
+// 	if (this->statusCode == PARTIAL_CONTENT)
+// 	{
+// 		unsigned long totalSize = this->rangeStart + this->contentLength;
+// 		header += "Content-Range: bytes " + std::to_string(this->rangeStart) + "-" + std::to_string(totalSize - 1) + "/" + std::to_string(totalSize) + "\r\n";
+// 	}
+// 	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
+// 	header += "Accept-Ranges: bytes\r\n";
+// 	header += "Date: " + getDateResponse() + "\r\n";
+// 	header += "Server: webserv/1.1\r\n";
+// 	header += "\r\n";
+
+// 	if (this->contentLength == 0)
+// 		this->status = FINISHED;
+
+// 	this->headerSent = true;
+
+// 	std::cout << "OLD:\n" << header << std::endl;
+
+// 	return header;
+// }
 
 std::string Response::getFileChunk(void)
 {
@@ -599,6 +664,8 @@ std::string Response::getFileChunk(void)
 		{
 			int ret = std::remove(this->path.c_str());
 			std::cout << "RET: " << ret << std::endl;
+			this->rangeStart = this->client->getRequest().handleCgi->getFileOffset();
+			// std::cout << "OFFSET: " << this->rangeStart << std::endl;
 		}
 		if (!this->file.is_open())
 		{

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:11:02 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/10 14:02:55 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/11 11:03:56 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,9 @@ class Client {
         Response &getResponse( void );
         void resetResponse( void );
 
+        // public vars
         bool responseReady;
+        time_t timerStart;
 
     private:
         std::vector<ServerNode*> &servers;

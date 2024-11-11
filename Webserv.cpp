@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 13:46:37 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 16:43:55 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,10 +208,19 @@ void Webserv::listen( void ) {
         if (poll(fds.data(), fds.size(), 100) > 0) {
             for (int i = 0; i < (int) fds.size(); i++)
             {
+
+                // check client timeout
+                if (!isServerFd(serverFds, fds[i].fd)) {
+                    if (time(NULL) - clients[fds[i].fd]->timerStart > 15)
+                    {
+                        disconnectClient(clients, fds, clientFds, i);
+                        continue;
+                    }
+                }
+
                 // client disconnected
                 if (fds[i].revents & POLLHUP)
                 {
-                    std::cout << "client disconnected " << fds[i].fd << std::endl;
                     disconnectClient(clients, fds, clientFds, i);
                     continue ;
                 }
@@ -225,6 +234,7 @@ void Webserv::listen( void ) {
                         if (new_fd < 0)
                             throw Webserv::ServerException("Error accepting opening connection");
                         else {
+                            std::cout << "new client " << new_fd << std::endl;
                             newPollFd.events = POLLIN | POLLHUP;
                             clientFds.push_back(new_fd);
                             newPollFd.fd = new_fd;
@@ -243,6 +253,9 @@ void Webserv::listen( void ) {
                 {
                     try
                     {
+                        // reset client timer
+                        clients[fds[i].fd]->timerStart = time(NULL);
+                        
                         // read from client
                         bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, 0);
                         if (bytes_read < 0)
@@ -273,12 +286,18 @@ void Webserv::listen( void ) {
                 {
                     try
                     {
+                        // reset client timer
+                        clients[fds[i].fd]->timerStart = time(NULL);
+
+                        // if it's a cgi request check if execve finished
                         if (clients[fds[i].fd]->getRequest().getIsACgi())
                             clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
+                        
+                        
+                        // send response
                         if ((clients[fds[i].fd]->responseReady)) {
-                            // send response
                             res = clients[fds[i].fd]->getResponse().generateResponse();
-                            if (send(fds[i].fd, res.data(), res.size(), MSG_SEND) <= 0)
+                            if (send(fds[i].fd, res.data(), res.size(), MSG_SEND) <= 0 && res.length() > 0)
                                 throw Webserv::ServerException("Error sending data");
                             
                             // reset message
@@ -304,9 +323,22 @@ void Webserv::listen( void ) {
                         send(fds[i].fd, res.data(), res.size(), MSG_SEND);
                         disconnectClient(clients, fds, clientFds, i);
                     }
+                }
             }
         }
-    }
+        else {
+            for (int i = 0; i < (int) fds.size(); i++)
+            {
+                // check client timeout
+                if (!isServerFd(serverFds, fds[i].fd)) {
+                    if (time(NULL) - clients[fds[i].fd]->timerStart > 15)
+                    {
+                        disconnectClient(clients, fds, clientFds, i);
+                        continue;
+                    }
+                }
+            }
+        }
     }
 }
 

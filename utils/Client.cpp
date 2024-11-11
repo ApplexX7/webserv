@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:12:11 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/10 17:52:27 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 11:04:49 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ keepAlive(false) {
     this->response->setClient(this);
     this->parentServer = NULL;
     this->responseReady = false;
+    this->timerStart = time(NULL);
 };
 
 Client::Client( std::vector<ServerNode*>& servers, std::string message, int fd):
@@ -27,7 +28,9 @@ servers(servers), message(message), fd(fd), keepAlive(false) {
     this->response = new Response();
     this->request = new Request();
     this->response->setClient(this);
-     this->parentServer = NULL;
+    this->parentServer = NULL;
+    this->responseReady = false;
+    this->timerStart = time(NULL);
 }
 
 Client::~Client( void ) {
