@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 11:15:32 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/11 15:12:59 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,11 +150,14 @@ void disconnectClient(
     int i
     ) {
 
-    std::cout << "client disconnected " << fds[i].fd << std::endl;
-    delete clients[fds[i].fd];
-    close(fds[i].fd);
-    clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
-    fds.erase(fds.begin() + i);
+    if (clients[fds[i].fd])
+    {
+        delete clients[fds[i].fd];
+        clients.erase(fds[i].fd);
+        close(fds[i].fd);
+        clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
+        fds.erase(fds.begin() + i);    
+    }
 }
 
 
@@ -296,7 +299,7 @@ void Webserv::listen( void ) {
                         // send response
                         if ((clients[fds[i].fd]->responseReady)) {
                             res = clients[fds[i].fd]->getResponse().generateResponse();
-                            if (send(fds[i].fd, res.data(), res.size(), MSG_SEND) <= 0)
+                            if (send(fds[i].fd, res.data(), res.size(), MSG_SEND) <= 0 && res.length() > 0)
                                 throw Webserv::ServerException("Error sending data");
                             
                             // reset message

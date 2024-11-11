@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 10:42:14 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/11 15:10:16 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,10 +131,10 @@ int Cgi::extractHeadrs(Client &clientData){
 			break;
 		}
 		pos = line.find(':');
+		_offset += line.length() + 1;
 		if (pos == std::string::npos){
 			break;
 		}
-		_offset += line.length() + 1;
 		name = line.substr(0, pos);
 		Value = line.substr(pos + 1);
 		size_t spa = name.find(' ');
