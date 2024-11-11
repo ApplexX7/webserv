@@ -1,3 +1,7 @@
 import time
 
-print("Finished")
+body = input()
+
+header = f"Content-Length: {len(body)}\r\n\r\n"
+
+print(body)

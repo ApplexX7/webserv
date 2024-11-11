@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 16:44:03 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 18:58:01 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,10 @@ void Cgi::cgiExecution(Client &clientData){
 		}
 		close(fd_input);
 	}
+	this->fileResponse = open(this->fileName.c_str(),O_CREAT | O_RDWR, 0644);
+	if (this->fileResponse == -1){
+		exit (1);
+	}
 	if (dup2(this->fileResponse, STDOUT_FILENO) == -1){
 		exit (1);
 	}
@@ -123,11 +127,17 @@ int Cgi::extractHeadrs(Client &clientData){
 	std::string Value;
 	std::ifstream parseFile(this->fileName);
 
-	// if (!parseFile.good())
-	// 	return (1);
 	while (std::getline(parseFile, line)){
-		if (line == "/r" || line.empty()){
+		if (line.empty())
+			break;
+		if (line == "/r"){
 			_offset += 4;
+			break;
+		}
+		size_t secpos = line.find("\r");
+		if (secpos == std::string::npos)
+		{
+			_offset = 0;
 			break;
 		}
 		pos = line.find(':');
@@ -152,6 +162,7 @@ int Cgi::extractHeadrs(Client &clientData){
 		size_t size;
 		parseFile.seekg(0, std::ios::end);
 		size = parseFile.tellg();
+		std::cout << "size : " << size << std::endl;
 		clientData.getResponse().setCgiHeaders("Content-Length", std::to_string(size - _offset));
 	}
 	this->fileOfsset = _offset;
@@ -166,11 +177,6 @@ int Cgi::executeCgi(Client &clientData) {
 	std::srand(std::time(NULL));
 	if (!this->thereIsOne){
 		this->fileName = "/tmp/." +  clientData.getResponse().generateFileName() + std::to_string(std::rand());
-		this->fileResponse = open(this->fileName.c_str(),O_CREAT | O_RDWR, 0644);
-		if (this->fileResponse == -1){
-			clientData.getResponse().setStatusCode(500);
-			return (1);
-		}
 		this->pid = fork();
 		if (this->pid == -1){
 			clientData.getResponse().setStatusCode(500);
@@ -201,15 +207,15 @@ int Cgi::executeCgi(Client &clientData) {
 			this->fileResponse = -1;
 			this->thereIsOne = false;
 		}
-		// else if (this->extractHeadrs(clientData)){
-		// 	remove(this->fileName.c_str());
-		// 	clientData.getResponse().setStatusCode(500);
-		// 	close(this->fileResponse);
-		// 	this->fileResponse = -1;
-		// 	this->thereIsOne = false;
-		// }
-		// close(this->fileResponse);
-		// this->thereIsOne = false;
+		else if (this->extractHeadrs(clientData)){
+			remove(this->fileName.c_str());
+			clientData.getResponse().setStatusCode(500);
+			close(this->fileResponse);
+			this->fileResponse = -1;
+			this->thereIsOne = false;
+		}
+		close(this->fileResponse);
+		this->thereIsOne = false;
 		return (1);
 	}
 	close(this->fileResponse);

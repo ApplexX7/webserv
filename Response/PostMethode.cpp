@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/10 21:03:31 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 19:13:47 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -316,7 +316,6 @@ int Response::handleCgiPost(Client &clientData){
 		this->cgInputfile = "/tmp/" + this->generateFileName() + std::to_string(std::rand());
 		this->cgiFile.open(this->cgInputfile, std::ios::binary);
 		if (!this->cgiFile.is_open()){
-			std::cout << "NOOO " << std::endl;
 			return (1);
 		}
 	}
@@ -332,6 +331,7 @@ int Response::handleCgiPost(Client &clientData){
 	}
 	else{
 		this->cgiFile.write(clientData.getMessage().c_str(), clientData.getMessage().length());
+		this->cgiFile.write("\n", 1);
 		clientData.getMessage().clear();
 	}
 	if (this->cgiFile.fail()){

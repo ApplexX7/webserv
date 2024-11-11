@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 16:43:55 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 17:28:04 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,6 +172,7 @@ void Webserv::listen( void ) {
     std::vector<int> serverFds;
     std::vector<int> &clientFds = this->clientFds;
     std::string message;
+    std::string connection;
     std::map<int, Client*> clients;
 
     struct pollfd newPollFd;
@@ -208,7 +209,6 @@ void Webserv::listen( void ) {
         if (poll(fds.data(), fds.size(), 100) > 0) {
             for (int i = 0; i < (int) fds.size(); i++)
             {
-
                 // check client timeout
                 if (!isServerFd(serverFds, fds[i].fd)) {
                     if (time(NULL) - clients[fds[i].fd]->timerStart > 15)
@@ -297,13 +297,13 @@ void Webserv::listen( void ) {
                         // send response
                         if ((clients[fds[i].fd]->responseReady)) {
                             res = clients[fds[i].fd]->getResponse().generateResponse();
-                            if (send(fds[i].fd, res.data(), res.size(), MSG_SEND) <= 0 && res.length() > 0)
+                            if (send(fds[i].fd, res.data(), res.size(), MSG_SEND) <= 0)
                                 throw Webserv::ServerException("Error sending data");
                             
                             // reset message
                             clients[fds[i].fd]->setMessage("");
 
-                            std::string connection = clients[fds[i].fd]->getRequest().getValue("Connection");
+                            connection = clients[fds[i].fd]->getRequest().getValue("Connection");
 
                             // finished sending response
                             if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
@@ -318,10 +318,28 @@ void Webserv::listen( void ) {
                             }
                         }
                     } catch (std::exception& e) {
-                        clients[fds[i].fd]->getResponse().setStatusCode(INTERNAL_SERVER_ERROR);
-                        res = clients[fds[i].fd]->getResponse().generateResponse();
-                        send(fds[i].fd, res.data(), res.size(), MSG_SEND);
-                        disconnectClient(clients, fds, clientFds, i);
+                        if (res.length())
+                        {
+                            clients[fds[i].fd]->getResponse().setStatusCode(INTERNAL_SERVER_ERROR);
+                            res = clients[fds[i].fd]->getResponse().generateResponse();
+                            send(fds[i].fd, res.data(), res.size(), MSG_SEND);
+                            disconnectClient(clients, fds, clientFds, i);
+                        }
+                        else
+                        {
+                            connection = clients[fds[i].fd]->getRequest().getValue("Connection");
+
+                            // finished sending response
+                            if (connection == "keep-alive") {
+                                fds[i].events = POLLIN | POLLHUP;
+                                clients[fds[i].fd]->getResponse().reset();
+                                clients[fds[i].fd]->responseReady = false;
+                                clients[fds[i].fd]->getRequest().reset();
+                            }
+                            else
+                                disconnectClient(clients, fds, clientFds, i);
+                            
+                        }
                     }
                 }
             }

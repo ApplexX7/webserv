@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 15:08:58 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/11 18:28:26 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,6 +217,10 @@ void trimSlashes(std::string &path)
 	while (i >= 0 && path[i] == '/')
 		i--;
 	path = path.substr(0, i + 1);
+}
+
+void Response::closeCgiFileInput( void ){
+	this->cgiFile.close();
 }
 
 std::string Response::getFullPath(std::string path)
@@ -564,8 +568,9 @@ std::string Response::constructHeader(void)
 	std::map<std::string, std::string> cgiHeaders;
 	std::map<std::string, std::string>::iterator it;
 
+
 	if (this->client->getRequest().getIsACgi() && !this->isError) {
-		cgiHeaders = this->CgiHeaders;
+		cgiHeaders = this->CgiHeaders; 
 		if (cgiHeaders.count("Status") > 0)
 		{
 			this->statusCode = std::atoi(cgiHeaders["Status"].data());
@@ -662,10 +667,9 @@ std::string Response::getFileChunk(void)
 		this->file.open(this->path, std::ios::binary);
 		if (this->client->getRequest().getIsACgi() && !this->isError)
 		{
-			int ret = std::remove(this->path.c_str());
-			std::cout << "RET: " << ret << std::endl;
+			std::remove(this->path.c_str());
 			this->rangeStart = this->client->getRequest().handleCgi->getFileOffset();
-			// std::cout << "OFFSET: " << this->rangeStart << std::endl;
+			std::cout << "path: " << this->rangeStart << std::endl;
 		}
 		if (!this->file.is_open())
 		{
@@ -841,6 +845,7 @@ std::string Response::createGetResponse(void)
 		if (this->status == IDLE)
 		{
 			this->getFullPath(path);
+			
 			if (this->isRedir)
 			{
 				this->status = FINISHED;
@@ -888,7 +893,9 @@ std::string Response::createGetResponse(void)
 					this->status = FINISHED;
 			}
 			else
+			{
 				chunk = this->getFileChunk();
+			}
 
 			return chunk;
 		}
@@ -1014,6 +1021,13 @@ std::string Response::generateResponse(void)
 
 	if (this->client->getRequest().getmethode() == "GET")
 		return this->createGetResponse();
+
+	else if (this->client->getRequest().getmethode() == "POST"
+	&& this->client->getRequest().getIsACgi())
+	{
+		
+		return this->createGetResponse();
+	}
 
 	this->status = FINISHED;
 	return this->constructHeader();

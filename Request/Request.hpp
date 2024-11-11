@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 10:20:23 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 19:17:39 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,11 @@
 #include <cstdio>
 #include "../utils/Client.hpp"
 #include "../cgi/Cgi.hpp"
+# define MAX_BODY_SIZE 4096
 
 class Cgi;
 class Client;
+
 
 enum TypeTransf{
     NONE,
@@ -77,6 +79,7 @@ class Request{
         int isCgi();
         int handleEnvForCgi();
         /*******************************/
+        int checkAllowedMethode();
         int getContentLenght();
         bool getFinishReading();
         bool getIsACgi();
@@ -104,7 +107,6 @@ class Request{
         long int &getClientMaxSizeBody();
     
         void findServer(Client &ClientData);
-        // int CheckserverhostName(Client& ClientData);
         //GET parser function
         int CheckDirectory(Client &ClientData);
         

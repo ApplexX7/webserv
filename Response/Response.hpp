@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/10 15:50:54 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 17:53:21 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,8 +120,8 @@ class Response {
         Response(const Response &Obj);
         Response& operator=(const Response & Obj);
         ~Response();
-        
         //seters and geters
+        void closeCgiFileInput( void );
         void setStatusMaps();
         void setFileName( std::string );
         void extractFileName( void );

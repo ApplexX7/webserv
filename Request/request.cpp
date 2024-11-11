@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 16:43:28 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 19:13:15 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -317,6 +317,22 @@ int Request::handleEnvForCgi(){
 	return (0);
 }
 
+
+int Request::checkAllowedMethode( void ){
+	std::vector<std::string> allowedMythode;
+	if (!this->serverLocation){
+		return (1);
+	}
+	allowedMythode = this->serverLocation->getField("limit_except").getValues();
+	if (allowedMythode.size() == 0)
+		return (1);
+	if (std::find(allowedMythode.begin(), allowedMythode.end(), this->methode) == allowedMythode.end()){
+		return (0);
+	}
+	return (1);
+}
+
+
 int Request::ParsingTheRequest(Client &ClientData) {
 	size_t pos;
 	std::string name;
@@ -358,6 +374,12 @@ int Request::ParsingTheRequest(Client &ClientData) {
 	}
 	this->findServer(ClientData);
 	this->serverLocation  = this->findLocationtobeUsed();
+	if (!this->checkAllowedMethode()){
+		ClientData.getResponse().setStatusCode(405);
+		this->finishReading = true;
+		ClientData.responseReady = true;
+		return (1);
+	}
 	size_t headerEnd = ClientData.getMessage().find("\r\n\r\n");
 	if (headerEnd != std::string::npos){
 		ClientData.getMessage().erase(0,headerEnd + 4);
@@ -392,6 +414,9 @@ int Request::ParsingTheRequest(Client &ClientData) {
 		if (this->serverLocation){
 			this->maxBodySize = std::atoi(this->serverLocation->getField("client_max_body_size").getValues()[0].c_str());
 		}
+		else{
+			this->maxBodySize = MAX_BODY_SIZE;
+		}
 		return (0);
 	}
 	if (this->methode == "DELETE"){
@@ -412,8 +437,7 @@ int Request::ParsePostMethode(Client &clientData){
 	}
 	else if (returValue == 3){
 		size_t pos = this->bodybuffer.find("\r\n");
-		std::cout << this->bodybuffer << std::endl;
-		if (pos != std::string::npos){
+		if (pos != std::string::npos || this->bodybuffer.empty()){
 			this->finishReading =  true;
 		}
 	}
@@ -432,10 +456,11 @@ int Request::requestParserStart(Client &clientData) {
 		return (1);
 	}
 	else if (this->isaCgi){
-		if (this->methode == "POST" &&  this->compliteHeaderparser)
+		if (this->methode == "POST" &&  this->compliteHeaderparser && !this->finishReading)
 			if (this->ParsePostMethode(clientData))
 				return (1);
 		if (this->finishReading){
+			clientData.getResponse().closeCgiFileInput();
 			if (this->handleCgi->executeCgi(clientData))
 				clientData.responseReady = true;
 		}
