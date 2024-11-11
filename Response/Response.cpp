@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 15:08:58 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/11 15:42:39 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -662,10 +662,8 @@ std::string Response::getFileChunk(void)
 		this->file.open(this->path, std::ios::binary);
 		if (this->client->getRequest().getIsACgi() && !this->isError)
 		{
-			int ret = std::remove(this->path.c_str());
-			std::cout << "RET: " << ret << std::endl;
+			std::remove(this->path.c_str());
 			this->rangeStart = this->client->getRequest().handleCgi->getFileOffset();
-			// std::cout << "OFFSET: " << this->rangeStart << std::endl;
 		}
 		if (!this->file.is_open())
 		{
@@ -1014,6 +1012,12 @@ std::string Response::generateResponse(void)
 
 	if (this->client->getRequest().getmethode() == "GET")
 		return this->createGetResponse();
+
+	else if (this->client->getRequest().getmethode() == "POST"
+	&& this->client->getRequest().getIsACgi())
+	{
+		return this->createGetResponse();
+	}
 
 	this->status = FINISHED;
 	return this->constructHeader();

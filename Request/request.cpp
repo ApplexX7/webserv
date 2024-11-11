@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   request.cpp                                        :+:      :+:    :+:   */
+/*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 10:42:07 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/11 17:25:31 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -437,7 +437,7 @@ int Request::requestParserStart(Client &clientData) {
 		return (1);
 	}
 	else if (this->isaCgi){
-		if (this->methode == "POST" &&  this->compliteHeaderparser)
+		if (this->methode == "POST" &&  this->compliteHeaderparser && !this->finishReading)
 			if (this->ParsePostMethode(clientData))
 				return (1);
 		if (this->finishReading){
