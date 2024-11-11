@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 10:36:41 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 10:45:54 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -560,11 +560,15 @@ std::string getDateResponse()
 std::string Response::constructHeader(void)
 {
 	std::string header = "HTTP/1.1 ";
+	std::map<std::string, std::string> headers;
 
 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
 
 	header += "Content-Type: " + this->contentType + "\r\n";
 	header += "Connection: keep-alive\r\n";
+
+	headers["Content-Type"] = this->contentType;
+	
 	if (this->isRedir)
 	{
 		header += "Location: " + this->redirUrl + "\r\n";
