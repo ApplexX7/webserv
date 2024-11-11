@@ -6,12 +6,11 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/10 20:56:25 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 10:23:22 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
-# define DEFAULT_MAX_BODY 2000000000
 
 Request::Request(){
 	this->requestLine = false;
@@ -95,15 +94,15 @@ int Request::isCgi(){
 		return (0);
 	cgiExtension = this->Uri.substr(pos);
 
-	if (!this->serverLocation.getCgiPath(cgiExtension).empty()){
+	if (this->serverLocation && !this->serverLocation->getCgiPath(cgiExtension).empty()){
 		this->handleCgi->setExtension(cgiExtension);
-		this->handleCgi->setCgiPath(this->serverLocation.getCgiPath(cgiExtension));
-		if(this->serverLocation.getField("root").getValues().size() > 0){
-			this->handleCgi->setDirectPath(this->serverLocation.getFields()["root"].getValues()[0]);
+		this->handleCgi->setCgiPath(this->serverLocation->getCgiPath(cgiExtension));
+		if(this->serverLocation->getField("root").getValues().size() > 0){
+			this->handleCgi->setDirectPath(this->serverLocation->getFields()["root"].getValues()[0]);
 		}
 		else
 			this->handleCgi->setDirectPath(this->listenningServer->getFields()["root"].getValues()[0]);
-		if (this->serverLocation.getCgiPath(cgiExtension).empty()){
+		if (this->serverLocation->getCgiPath(cgiExtension).empty()){
 			return (0);
 		}
 		this->isaCgi = true;
@@ -197,31 +196,42 @@ int Request::ParseRequestLine(std::string &RqLine, Client &clientData){
 }
 
 Location *Request::getServerLocation(){
-	if (this->serverLocation.getFields().size() == 0)
-		return NULL;
-	return (&this->serverLocation);
+	return (this->serverLocation);
 }
 
+Location *Request::findLocationtobeUsed(){
+	std::map<std::string, Location> locations = this->listenningServer->getLocations();
+	std::map<std::string, Location>::iterator it;
+	std::string path = this->Uri;
+	Location *location = NULL;
+	std::string lastMatch = "";
+	std::string root;
+	std::string rest;
+	size_t found;
 
-void Request::findLocationtobeUsed(){
-	std::string LongestMatch = "";
-	if (this->listenningServer && this->listenningServer->getLocations().size() == 0){
-		this->serverLocation = NULL;
-		return ;
-	}
-	for (std::map<std::string, Location>::iterator it = this->listenningServer->getLocations().begin();
-		it != this->listenningServer->getLocations().end(); it++){
-
-			if (this->getUri().find(it->first) == 0){
-				if (it->first.length() > LongestMatch.length()){
-					LongestMatch = it->first;
+	if (locations.size()) {
+		for (it = locations.begin(); it != locations.end(); it++)
+		{
+			found = path.find(it->first);
+			if (found != path.npos && found == 0)
+			{
+				rest = path.substr(found + it->first.length());
+				// location match
+				if (it->first.length() > lastMatch.length() && (rest.length() == 0 || rest[0] == '/' || it->first[it->first.length() - 1] == '/'))
+				{
+					location = &it->second;
+					lastMatch = it->first;
+				}
 			}
 		}
+		
 	}
-	if (!LongestMatch.empty()){
-		this->serverLocation = this->listenningServer->getLocations()[LongestMatch];
-	}
-	this->serverLocation = NULL;
+	// if (location)
+	// {
+	// 	// check location permission
+	// 	root = location->getField("root").getValues()[0];
+	// }
+	return location;
 }
 
 std::string Request::FindHost(std::string HostLine){
@@ -352,7 +362,7 @@ int Request::ParsingTheRequest(Client &ClientData) {
 		this->setHeaders(name, Value);
 	}
 	this->findServer(ClientData);
-	this->findLocationtobeUsed();
+	this->serverLocation  = this->findLocationtobeUsed();
 	size_t headerEnd = ClientData.getMessage().find("\r\n\r\n");
 	if (headerEnd != std::string::npos){
 		ClientData.getMessage().erase(0,headerEnd + 4);
@@ -368,6 +378,12 @@ int Request::ParsingTheRequest(Client &ClientData) {
 		else if (this->methode == "POST" && this->compliteHeaderparser){
 			this->ParsePostHeaders();
 		}
+		else{
+			this->isaCgi = false;
+			ClientData.getResponse().setStatusCode(406);
+			this->finishReading= true;
+			return (1);
+		}
 		return (0);
 	}
 	if (this->methode == "GET" && this->compliteHeaderparser){
@@ -378,11 +394,8 @@ int Request::ParsingTheRequest(Client &ClientData) {
 	}
 	else if (this->methode == "POST" && this->compliteHeaderparser){
 		this->ParsePostHeaders();
-		if (this->serverLocation.getFields().size() > 0){
-			this->maxBodySize = std::atoi(this->serverLocation.getField("client_max_body_size").getValues()[0].c_str());
-		}
-		else{
-			this->maxBodySize = DEFAULT_MAX_BODY;
+		if (this->serverLocation){
+			this->maxBodySize = std::atoi(this->serverLocation->getField("client_max_body_size").getValues()[0].c_str());
 		}
 		return (0);
 	}
@@ -416,7 +429,6 @@ int Request::ParsePostMethode(Client &clientData){
 	return (0);
 }
 
-// this funct need to be modified later
 int Request::requestParserStart(Client &clientData) {
 	if (!this->isaCgi && !this->compliteHeaderparser && this->ParsingTheRequest(clientData)){
 		if (this->finishReading == true){

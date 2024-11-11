@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/10 20:53:50 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 10:36:09 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -276,10 +276,9 @@ void Webserv::listen( void ) {
                         if ((clients[fds[i].fd]->responseReady)) {
                             // send response
                             res = clients[fds[i].fd]->getResponse().generateResponse();
-
-                            if (send(fds[i].fd, res.data(), res.size(), MSG_SEND) < 0)
+                            if (send(fds[i].fd, res.data(), res.size(), MSG_SEND) <= 0)
                                 throw Webserv::ServerException("Error sending data");
-
+                            
                             // reset message
                             clients[fds[i].fd]->setMessage("");
 

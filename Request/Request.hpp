@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/10 20:15:31 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 10:20:23 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ class Request{
         std::string Uri;
         std::map<std::string,std::string> headers;
         std::string bodybuffer;
-        Location serverLocation;
+        Location *serverLocation;
 
         // for the Post Methode
         int contentLenght;
@@ -99,7 +99,7 @@ class Request{
         std::string getEndofBoundary();
         std::string getTransferCoding();
         void setFinishReading(bool var);
-        void    findLocationtobeUsed();
+        Location *findLocationtobeUsed();
 
         long int &getClientMaxSizeBody();
     

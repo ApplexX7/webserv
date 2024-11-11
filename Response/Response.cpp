@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/10 21:11:15 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 10:36:41 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -853,7 +853,7 @@ std::string Response::createGetResponse(void)
 Location *Response::getPathLocation(std::string path)
 {
 	ServerNode &server = this->client->getParentServer();
-	std::map<std::string, Location> &locations = server.getLocations();
+	std::map<std::string, Location>& locations = server.getLocations();
 	std::map<std::string, Location>::iterator it;
 	Location *location = NULL;
 	std::string lastMatch = "";
@@ -861,19 +861,22 @@ Location *Response::getPathLocation(std::string path)
 	std::string rest;
 	size_t found;
 
-	for (it = locations.begin(); it != locations.end(); it++)
-	{
-		found = path.find(it->first);
-		if (found != path.npos && found == 0)
+	if (locations.size()) {
+		for (it = locations.begin(); it != locations.end(); it++)
 		{
-			rest = path.substr(found + it->first.length());
-			// location match
-			if (it->first.length() > lastMatch.length() && (rest.length() == 0 || rest[0] == '/' || it->first[it->first.length() - 1] == '/'))
+			found = path.find(it->first);
+			if (found != path.npos && found == 0)
 			{
-				location = &it->second;
-				lastMatch = it->first;
+				rest = path.substr(found + it->first.length());
+				// location match
+				if (it->first.length() > lastMatch.length() && (rest.length() == 0 || rest[0] == '/' || it->first[it->first.length() - 1] == '/'))
+				{
+					location = &it->second;
+					lastMatch = it->first;
+				}
 			}
 		}
+		
 	}
 	if (location)
 	{
