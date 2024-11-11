@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 10:39:31 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 10:42:14 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,8 +123,8 @@ int Cgi::extractHeadrs(Client &clientData){
 	std::string Value;
 	std::ifstream parseFile(this->fileName);
 
-	if (!parseFile.good())
-		return (1);
+	// if (!parseFile.good())
+	// 	return (1);
 	while (std::getline(parseFile, line)){
 		if (line == "/r" || line.empty()){
 			_offset += 4;
@@ -140,8 +140,7 @@ int Cgi::extractHeadrs(Client &clientData){
 		size_t spa = name.find(' ');
 		size_t tab = name.find('\t');
 		if (spa != std::string::npos || tab != std::string::npos){
-			clientData.getResponse().setStatusCode(400);
-			return (0);
+			break;
 		}
 		Value.erase(std::remove_if(Value.begin(),Value.end(), ::isspace), Value.end());
 		clientData.getResponse().setCgiHeaders(name, Value);
@@ -197,7 +196,7 @@ int Cgi::executeCgi(Client &clientData) {
 	else if (waitpid(this->pid, &status, WNOHANG) != 0){
 		if (WIFEXITED(status) && WEXITSTATUS(status) == 1){
 			remove(this->fileName.c_str());
-			clientData.getResponse().setStatusCode(500);
+			clientData.getResponse().setStatusCode(505);
 			close(this->fileResponse);
 			this->fileResponse = -1;
 			this->thereIsOne = false;

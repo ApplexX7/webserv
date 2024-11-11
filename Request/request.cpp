@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Request.cpp                                        :+:      :+:    :+:   */
+/*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 10:23:22 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 10:42:07 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -368,7 +368,7 @@ int Request::ParsingTheRequest(Client &ClientData) {
 		ClientData.getMessage().erase(0,headerEnd + 4);
     	this->compliteHeaderparser = true;
 	}
-	else{
+	else {
 		return (0);
 	}
 	if (this->isCgi() && this->compliteHeaderparser){
