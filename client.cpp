@@ -60,23 +60,3 @@ void run_client(int client_id) {
     std::cout << "\nClient " << client_id << " finished.\n";
 }
 
-int main() {
-    const int num_clients = 1000;
-    int currentMax = 100;  // Set the number of clients to spawn
-    std::vector<std::thread> clients;
-
-    int count = 0;
-    while (count++ < num_clients) {
-        for (int i = 0; i < currentMax; i++) {
-            clients.emplace_back(run_client, i + 1 + count * currentMax);
-        }
-
-        // Join all threads
-        for (auto &client : clients) {
-            client.join();
-        }
-        clients.clear();
-    }
-
-    return 0;
-}

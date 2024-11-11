@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 10:36:09 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 13:46:37 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,10 +150,14 @@ void disconnectClient(
     int i
     ) {
 
-    delete clients[fds[i].fd];
-    close(fds[i].fd);
-    clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
-    fds.erase(fds.begin() + i);
+    if (clients[fds[i].fd])
+    {
+        delete clients[fds[i].fd];
+        clients.erase(fds[i].fd);
+        close(fds[i].fd);
+        clientFds.erase(std::remove(clientFds.begin(), clientFds.end(), fds[i].fd), clientFds.end());
+        fds.erase(fds.begin() + i);
+    }
 }
 
 
@@ -258,9 +262,7 @@ void Webserv::listen( void ) {
                     catch(std::exception& e)
                     {
                         clients[fds[i].fd]->getResponse().setStatusCode(INTERNAL_SERVER_ERROR);
-                         // find server responsible for this client
                         clients[fds[i].fd]->findParentServer();
-                        // listen for client readiness to receive
                         fds[i].events = POLLOUT;
                     }
                 }

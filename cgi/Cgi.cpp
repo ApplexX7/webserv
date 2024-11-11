@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 10:39:31 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/11 13:37:36 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,7 +185,7 @@ int Cgi::executeCgi(Client &clientData) {
 		this->thereIsOne = true;
 	}
 	if(std::time(NULL) - this->Cgi_timeout >= 10){
-		std::cout << std::time(NULL) - this->Cgi_timeout << std::endl;
+		std::cout << "Time Out" << std::endl;
 		kill(pid, SIGTERM);
 		remove(this->fileName.c_str());
 		close(this->fileResponse);
@@ -194,7 +194,7 @@ int Cgi::executeCgi(Client &clientData) {
 		clientData.getResponse().setStatusCode(408);
 		return (1);
 	}
-	else if (waitpid(this->pid, &status, WNOHANG) != 0){
+	if (waitpid(this->pid, &status, WNOHANG) != 0){
 		if (WIFEXITED(status) && WEXITSTATUS(status) == 1){
 			remove(this->fileName.c_str());
 			clientData.getResponse().setStatusCode(500);
@@ -202,16 +202,17 @@ int Cgi::executeCgi(Client &clientData) {
 			this->fileResponse = -1;
 			this->thereIsOne = false;
 		}
-		else if (this->extractHeadrs(clientData)){
-			remove(this->fileName.c_str());
-			clientData.getResponse().setStatusCode(500);
-			close(this->fileResponse);
-			this->fileResponse = -1;
-			this->thereIsOne = false;
-		}
-		close(this->fileResponse);
-		this->thereIsOne = false;
+		// else if (this->extractHeadrs(clientData)){
+		// 	remove(this->fileName.c_str());
+		// 	clientData.getResponse().setStatusCode(500);
+		// 	close(this->fileResponse);
+		// 	this->fileResponse = -1;
+		// 	this->thereIsOne = false;
+		// }
+		// close(this->fileResponse);
+		// this->thereIsOne = false;
 		return (1);
 	}
+	close(this->fileResponse);
 	return (0);
 }
