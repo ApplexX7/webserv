@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/12 11:32:05 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/12 16:19:32 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,7 +175,8 @@ static std::string int_to_string(int num){
 int Cgi::CgiMonitore(Client &clientData){
 	int status;
 	if(std::time(NULL) - this->Cgi_timeout >= 10){
-		kill(pid, SIGTERM);
+		if (this->pid != -1)
+			kill(this->pid, SIGTERM);
 		remove(this->fileName.c_str());
 		close(this->fileResponse);
 		this->thereIsOne = false;
@@ -198,7 +199,8 @@ int Cgi::CgiMonitore(Client &clientData){
 			close(this->fileResponse);
 			this->fileResponse = -1;
 		}
-		kill(this->pid, SIGKILL);
+		if (this->pid != -1)
+			kill(this->pid, SIGTERM);
 		return (1);
 	}
 	return (0);
@@ -209,7 +211,6 @@ int Cgi::executeCgi(Client &clientData) {
 	this->fileName = "/tmp/." +  clientData.getResponse().generateFileName() + std::to_string(std::rand()) + int_to_string(clientData.getFd());
 	this->pid = fork();
 	if (this->pid == -1){
-		kill(0, SIGTERM);
 		clientData.getResponse().setStatusCode(500);
 		return (1);
 	}

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/12 11:44:51 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 17:00:52 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,8 +56,9 @@ void Webserv::init(std::string configPath)
     if (Parser::checkValidList(head, 0) == false)
         throw Parser::ParsingException("Invalid server block name");
 
+    
     tmp = head;
-
+    
     while (tmp)
     {
         this->servers.push_back(new ServerNode(tmp));
@@ -65,6 +66,7 @@ void Webserv::init(std::string configPath)
         // check servername conflicts
         listenValue = this->servers[this->servers.size() - 1]->getField("listen").getValues()[0];
         serverNames = this->servers[this->servers.size() - 1]->getField("server_name").getValues();
+        
         for (int j = 0; j < (int)serverNames.size(); j++)
         {
             if (std::count(servers[listenValue].begin(), servers[listenValue].end(), serverNames[j]) > 1)
@@ -205,16 +207,17 @@ void Webserv::listen(void)
                         else
                         {
                             newPollFd.events = POLLIN | POLLHUP;
+                            clients[new_fd] = new Client(this->servers, "", new_fd);
                             clientFds.push_back(new_fd);
                             newPollFd.fd = new_fd;
                             fds.push_back(newPollFd);
-                            clients[new_fd] = new Client(this->servers, "", new_fd);
                             clients[new_fd]->setListen(this->getServerByFd(fds[i].fd)->getListenField());
                         }
                     }
                     catch (std::exception &e)
                     {
-                        // do nothing, connection was refused
+                        if (new_fd != -1)
+                            close(new_fd);
                     }
                 }
 
@@ -238,6 +241,7 @@ void Webserv::listen(void)
                         {
                             // find server responsible for this client
                             clients[fds[i].fd]->findParentServer();
+
                             // listen for client readiness to receive
                             fds[i].events = POLLOUT;
                         }
