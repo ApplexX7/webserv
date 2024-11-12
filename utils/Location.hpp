@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 09:30:53 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/10/29 14:48:19 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 10:43:07 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ class Location {
     private:
         std::map<std::string, Field > fields;
         std::map<std::string, std::string > cgiPaths;
+        unsigned long long maxSize;
         
         ServerNode* server;
 
@@ -37,6 +38,9 @@ class Location {
         Field &getField( std::string );
         void addCgiPath( std::string, std::string );
         std::string getCgiPath( std::string );
+
+        void setMaxBodySize( void );
+        unsigned long long getMaxBodySize( void ) const;
 };
 
 #endif

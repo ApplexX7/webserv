@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/12 11:31:55 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/12 12:36:05 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ int Response::openFile(Client &clientData){
 			return (1);
 	}
 	if (this->bFullPath.empty()){
-		return (1);
+		return (2);
 	}
 	if (this->outFile.is_open()){
 		return (0);
@@ -259,7 +259,7 @@ int Response::parseChunckedType(Client &clientData){
 	if (clientData.getRequest().getIsACgi()){
 		this->cgiFile.write(this->finaleBody.c_str(), this->finaleBody.size());
 		if (!this->cgiFile){
-			std::cerr << "Error: failed to write in file"<< this->cgInputfile << std::endl;
+			this->statusCode = 500;
 			return (1);
 		}
 		return (0);
@@ -306,7 +306,7 @@ int Response::parseBoundarys(std::string &body, Client &clientData){
 int Response::parseContentLenght(Client &clientData, std::string &body){
 	size_t pos = 0;
 	this->bhConetentType = clientData.getRequest().getValue("Content-Type");
-	this->bhFileName = "/tmp/" + this->generateFileName() + int_to_string(clientData.getFd());
+	this->bhFileName = "/tmp/." + this->generateFileName() + int_to_string(clientData.getFd());
 	pos = body.find("\r\n\r\n");
 	if (pos != std::string::npos){
 		this->finaleBody = body.substr(0, pos);
@@ -338,7 +338,6 @@ int Response::handleCgiPost(Client &clientData){
 	}
 	if (clientData.getRequest().getTheBodyType() == ENCODING){
 		if (this->parseChunckedType(clientData)){
-			this->statusCode = 500;
 			return (1);
 		}
 		return (0);
@@ -347,6 +346,12 @@ int Response::handleCgiPost(Client &clientData){
 		this->cgiFile.write("\n", 1);
 	}
 	else{
+		clientData.getRequest().getClientMaxSizeBody() -= clientData.getMessage().length();
+		if (clientData.getRequest().getClientMaxSizeBody() < 0){
+			remove(this->bFullPath.c_str());
+			this->statusCode = 413;
+			return (1);
+		}
 		this->cgiFile.write(clientData.getMessage().c_str(), clientData.getMessage().length());
 		this->cgiFile.write("\n", 1);
 		clientData.getMessage().clear();

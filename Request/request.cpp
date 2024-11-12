@@ -6,13 +6,14 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/12 11:24:48 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/12 12:23:43 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 
-Request::Request(){
+Request::Request()
+{
 	this->requestLine = false;
 	this->handleCgi = new Cgi;
 	this->isaCgi = false;
@@ -24,69 +25,88 @@ Request::Request(){
 	this->serverLocation = NULL;
 }
 
-bool Request::getFinishReading(){
+bool Request::getFinishReading()
+{
 	return (this->finishReading);
 }
 
-Request::Request(const Request &obj){
+Request::Request(const Request &obj)
+{
 	*this = obj;
 }
 
-Request &Request::operator=(const Request &ope){
-	if (this != &ope){
+Request &Request::operator=(const Request &ope)
+{
+	if (this != &ope)
+	{
 		this->methode = ope.methode;
 		this->Uri = ope.Uri;
 	}
 	return (*this);
 }
 
-bool Request::getIsACgi(){
+bool Request::getIsACgi()
+{
 	return (this->isaCgi);
 }
 
-void Request::setHeaders(std::string &name, std::string &value){
-	if (!name.empty() && !value.empty()) {
+void Request::setHeaders(std::string &name, std::string &value)
+{
+	if (!name.empty() && !value.empty())
+	{
 		this->headers[name] = value;
-	} else {
+	}
+	else
+	{
 		std::cerr << "Error: Header name or value is empty!" << std::endl;
 	}
 }
 
-void Request::findServer(Client &clientData){
+void Request::findServer(Client &clientData)
+{
 	std::vector<std::string> serverName;
-	std::vector<ServerNode*> &servers = clientData.getServers();
+	std::vector<ServerNode *> &servers = clientData.getServers();
 	std::string Listen;
 	this->listenningServer = NULL;
 
-	for (size_t i = 0; i < servers.size(); i++){
-		if (servers[i]->getField("listen").getValues()[0] == clientData.getListen()){
-			if (this->listenningServer == NULL){
+	for (size_t i = 0; i < servers.size(); i++)
+	{
+		if (servers[i]->getField("listen").getValues()[0] == clientData.getListen())
+		{
+			if (this->listenningServer == NULL)
+			{
 				this->listenningServer = servers[i];
 			}
 			serverName = servers[i]->getField("server_name").getValues();
-			for (size_t j = 0; j < serverName.size(); j++){
-				if (this->getValue("Host") == serverName[j]){
+			for (size_t j = 0; j < serverName.size(); j++)
+			{
+				if (this->getValue("Host") == serverName[j])
+				{
 					this->listenningServer = servers[j];
-					return ;
+					return;
 				}
 			}
 		}
 	}
 }
 
-std::string Request::getpathName( void ){
+std::string Request::getpathName(void)
+{
 	return (this->pathName);
 }
 
-int Request::getContentLenght(){
+int Request::getContentLenght()
+{
 	return (this->contentLenght);
 }
 
-void Request::setpathName(std::string _Name){
+void Request::setpathName(std::string _Name)
+{
 	this->pathName = _Name;
 }
 
-int Request::isCgi(){
+int Request::isCgi()
+{
 	size_t pos = 0;
 	std::string cgiExtension;
 	pos = this->Uri.find(".");
@@ -94,21 +114,25 @@ int Request::isCgi(){
 		return (0);
 	cgiExtension = this->Uri.substr(pos);
 
-	if (this->serverLocation && !this->serverLocation->getCgiPath(cgiExtension).empty()){
+	if (this->serverLocation && !this->serverLocation->getCgiPath(cgiExtension).empty())
+	{
 		this->handleCgi->setExtension(cgiExtension);
 		this->handleCgi->setCgiPath(this->serverLocation->getCgiPath(cgiExtension));
-		if(this->serverLocation->getField("root").getValues().size() > 0){
+		if (this->serverLocation->getField("root").getValues().size() > 0)
+		{
 			this->handleCgi->setDirectPath(this->serverLocation->getFields()["root"].getValues()[0]);
 		}
 		else
 			this->handleCgi->setDirectPath(this->listenningServer->getFields()["root"].getValues()[0]);
-		if (this->serverLocation->getCgiPath(cgiExtension).empty()){
+		if (this->serverLocation->getCgiPath(cgiExtension).empty())
+		{
 			return (0);
 		}
 		this->isaCgi = true;
 		return (1);
 	}
-	else if (!this->listenningServer->cgiPaths[cgiExtension].empty()){
+	else if (!this->listenningServer->cgiPaths[cgiExtension].empty())
+	{
 		this->handleCgi->setExtension(cgiExtension);
 		this->handleCgi->setCgiPath(this->listenningServer->cgiPaths[cgiExtension]);
 		this->handleCgi->setDirectPath(this->listenningServer->getFields()["root"].getValues()[0]);
@@ -118,15 +142,19 @@ int Request::isCgi(){
 	return (0);
 }
 
-int Request::Validmethode(std::string &_Methode, Client &clientData){
+int Request::Validmethode(std::string &_Methode, Client &clientData)
+{
 	(void)clientData;
-	if (_Methode == "GET"){
+	if (_Methode == "GET")
+	{
 		this->methode = _Methode;
 	}
-	else if (_Methode == "POST"){
+	else if (_Methode == "POST")
+	{
 		this->methode = _Methode;
 	}
-	else if (_Methode == "DELETE"){
+	else if (_Methode == "DELETE")
+	{
 		this->methode = _Methode;
 	}
 	else
@@ -134,45 +162,54 @@ int Request::Validmethode(std::string &_Methode, Client &clientData){
 	return (0);
 }
 
-int Request::parseUri(std::string &uri){
+int Request::parseUri(std::string &uri)
+{
 	size_t pos = 0;
 
-	if (uri.length() > 800){
+	if (uri.length() > 800)
+	{
 		return (1);
 	}
 	pos = uri.find("?");
-	if (pos != std::string::npos) {
+	if (pos != std::string::npos)
+	{
 		this->Uri = uri.substr(0, pos);
 		this->quertyString = uri.substr(pos + 1);
 	}
-	else{
+	else
 		this->Uri = uri;
-	}
 	return (0);
 }
 
-int Request::ParseRequestLine(std::string &RqLine, Client &clientData){
+int Request::ParseRequestLine(std::string &RqLine, Client &clientData)
+{
 	std::vector<std::string> RequestLineChunks;
 	std::stringstream str(RqLine);
 	std::string token;
 
-	if (RqLine.empty()){
+	if (RqLine.empty())
+	{
 		clientData.getResponse().setStatusCode(400);
 		return (1);
 	}
-	if (std::count(RqLine.begin(), RqLine.end(), ' ') != 2){
+	if (std::count(RqLine.begin(), RqLine.end(), ' ') != 2)
+	{
 		clientData.getResponse().setStatusCode(400);
 		return (1);
 	}
-	while (std::getline(str, token, ' ')){
+	while (std::getline(str, token, ' '))
+	{
 		RequestLineChunks.push_back(token);
 	}
-	if (RequestLineChunks.size() != 3){
+	if (RequestLineChunks.size() != 3)
+	{
 		clientData.getResponse().setStatusCode(400);
 		return (1);
 	}
-	for (size_t i = 0; i < RequestLineChunks.size(); i++){
-		if (RequestLineChunks[i].empty()){
+	for (size_t i = 0; i < RequestLineChunks.size(); i++)
+	{
+		if (RequestLineChunks[i].empty())
+		{
 			clientData.getResponse().setStatusCode(400);
 			return (1);
 		}
@@ -181,6 +218,7 @@ int Request::ParseRequestLine(std::string &RqLine, Client &clientData){
 		clientData.getResponse().setStatusCode(414);
 		return (1);
 	}
+	clientData.getResponse().decodeUri(this->Uri);
 	if (RequestLineChunks[2] != "HTTP/1.1"){
 		clientData.getResponse().setStatusCode(505);
 		return (1);
@@ -192,11 +230,13 @@ int Request::ParseRequestLine(std::string &RqLine, Client &clientData){
 	return (0);
 }
 
-Location *Request::getServerLocation(){
+Location *Request::getServerLocation()
+{
 	return (this->serverLocation);
 }
 
-Location *Request::findLocationtobeUsed(){
+Location *Request::findLocationtobeUsed()
+{
 	std::map<std::string, Location> locations = this->listenningServer->getLocations();
 	std::map<std::string, Location>::iterator it;
 	std::string path = this->Uri;
@@ -206,7 +246,8 @@ Location *Request::findLocationtobeUsed(){
 	std::string rest;
 	size_t found;
 
-	if (locations.size()) {
+	if (locations.size())
+	{
 		for (it = locations.begin(); it != locations.end(); it++)
 		{
 			found = path.find(it->first);
@@ -221,48 +262,51 @@ Location *Request::findLocationtobeUsed(){
 				}
 			}
 		}
-		
 	}
 	return location;
 }
 
-std::string Request::FindHost(std::string HostLine){
-    size_t pos = HostLine.find("Host:");
-    if (pos != std::string::npos){
-        std::string hostPort = HostLine.substr(pos + 5);
-        hostPort.erase(std::remove_if(hostPort.begin(), hostPort.end(), ::isspace), hostPort.end());
-        size_t colonPos = hostPort.find(":");
-        if (colonPos != std::string::npos){
-            this->port = hostPort.substr(colonPos + 1);
-            return hostPort.substr(0, colonPos);
-        }
-        this->port = "DEFAULT";
-        return hostPort;
-    }
-    return "";
+std::string Request::FindHost(std::string HostLine)
+{
+	size_t pos = HostLine.find("Host:");
+	if (pos != std::string::npos)
+	{
+		std::string hostPort = HostLine.substr(pos + 5);
+		hostPort.erase(std::remove_if(hostPort.begin(), hostPort.end(), ::isspace), hostPort.end());
+		size_t colonPos = hostPort.find(":");
+		if (colonPos != std::string::npos)
+		{
+			this->port = hostPort.substr(colonPos + 1);
+			return hostPort.substr(0, colonPos);
+		}
+		this->port = "DEFAULT";
+		return hostPort;
+	}
+	return "";
 }
 
-
-std::string Request::getlocationName(){
+std::string Request::getlocationName()
+{
 	return (this->locationName);
 }
 
-void Request::deleteMethode(Client &clientData){
-	struct  stat ss;
-	Location *PathLcoation =  this->getServerLocation();
-	if (PathLcoation != NULL){
+
+void Request::deleteMethode(Client &clientData)
+{
+	struct stat ss;
+	Location *PathLcoation = this->getServerLocation();
+	if (PathLcoation != NULL)
 		this->pathName = PathLcoation->getField("root").getValues()[0] + "/" + this->Uri;
-	}
-	else{
+	else
 		this->pathName = clientData.getRequest().getserverNode().getFields()["root"].getValues()[0] + "/" + this->Uri;
-	}
-	if (stat(this->pathName.c_str(), &ss) != 0){
+	if (stat(this->pathName.c_str(), &ss) != 0)
 		clientData.getResponse().setStatusCode(204);
-	}
-	else{
-		if (ss.st_mode & S_IFDIR){
+	else
+	{
+		if (ss.st_mode & S_IFDIR)
+		{
 			clientData.getResponse().setStatusCode(403);
-			return ;
+			return;
 		}
 		else if (ss.st_mode & S_IFREG){
 			if (access(this->pathName.c_str(), O_WRONLY) == 0){
@@ -271,22 +315,23 @@ void Request::deleteMethode(Client &clientData){
 				}
 				else
 					clientData.getResponse().setStatusCode(500);
-				return ;
+				return;
 			}
 			else
 				clientData.getResponse().setStatusCode(403);
-			
 		}
-		else{
+		else
+		{
 			clientData.getResponse().setStatusCode(404);
-			return ;
+			return;
 		}
 	}
 }
 
-
-std::string stringToupper(std::string str){
-	for (int i = 0; str[i]; i++){
+std::string stringToupper(std::string str)
+{
+	for (int i = 0; str[i]; i++)
+	{
 		if (str[i] == '-')
 			str[i] = '_';
 		else
@@ -295,7 +340,10 @@ std::string stringToupper(std::string str){
 	return (str);
 }
 
-int Request::handleEnvForCgi(){
+int Request::handleEnvForCgi()
+{
+	bool isthere = true;
+	;
 	std::vector<std::string> cgiEnv;
 	std::string headr;
 
@@ -304,31 +352,42 @@ int Request::handleEnvForCgi(){
 	cgiEnv.push_back("QUERY_STRING=" + this->quertyString);
 	cgiEnv.push_back("SERVER_NAME=webser1.1");
 	cgiEnv.push_back("SCRIPT_NAME=" + this->Uri);
-	
-	for (std::map<std::string, std::string>::iterator it = this->getHeaders().begin(); it != this->getHeaders().end(); it++){
+
+	for (std::map<std::string, std::string>::iterator it = this->getHeaders().begin(); it != this->getHeaders().end(); it++)
+	{
 		cgiEnv.push_back(stringToupper(it->first) + "=" + it->second);
+	}
+
+	for (int i = 0; i < (int) cgiEnv.size(); i++)
+	{
+		if (cgiEnv[i].find("COOKIE=") != std::string::npos)
+			isthere = false;
+	}
+	if (!isthere)
+	{
+		cgiEnv.push_back("COOKIE=");
 	}
 	this->handleCgi->setUpCgenv(cgiEnv);
 	return (0);
 }
 
-
-int Request::checkAllowedMethode( void ){
+int Request::checkAllowedMethode(void)
+{
 	std::vector<std::string> allowedMythode;
-	if (!this->serverLocation){
+	if (!this->serverLocation)
 		return (1);
-	}
 	allowedMythode = this->serverLocation->getField("limit_except").getValues();
 	if (allowedMythode.size() == 0)
 		return (1);
-	if (std::find(allowedMythode.begin(), allowedMythode.end(), this->methode) == allowedMythode.end()){
+	if (std::find(allowedMythode.begin(), allowedMythode.end(), this->methode) == allowedMythode.end())
+	{
 		return (0);
 	}
 	return (1);
 }
 
-
-int Request::ParsingTheRequest(Client &ClientData) {
+int Request::ParsingTheRequest(Client &ClientData)
+{
 	size_t pos;
 	std::string name;
 	std::string Value;
@@ -337,16 +396,19 @@ int Request::ParsingTheRequest(Client &ClientData) {
 
 	std::getline(Message, ChunkLine, '\r');
 	Message.ignore(1);
-	if (!this->requestLine && this->ParseRequestLine(ChunkLine, ClientData)){
+	if (!this->requestLine && this->ParseRequestLine(ChunkLine, ClientData))
+	{
 		this->finishReading = true;
 		return (1);
 	}
 	this->requestLine = true;
-	while (std::getline(Message, ChunkLine)){
+	while (std::getline(Message, ChunkLine))
+	{
 		if (ChunkLine == "\r" || ChunkLine.empty())
 			break;
 		pos = ChunkLine.find(':');
-		if (pos == std::string::npos){
+		if (pos == std::string::npos)
+		{
 			ClientData.getResponse().setStatusCode(400);
 			return 0;
 		}
@@ -354,12 +416,14 @@ int Request::ParsingTheRequest(Client &ClientData) {
 		Value = ChunkLine.substr(pos + 1);
 		size_t spa = name.find(' ');
 		size_t tab = name.find('\t');
-		if (spa != std::string::npos || tab != std::string::npos){
+		if (spa != std::string::npos || tab != std::string::npos)
+		{
 			ClientData.getResponse().setStatusCode(400);
 			return (0);
 		}
-		Value.erase(std::remove_if(Value.begin(),Value.end(), ::isspace), Value.end());
-		if (Value.empty() || name.empty()){
+		Value.erase(std::remove_if(Value.begin(), Value.end(), ::isspace), Value.end());
+		if (Value.empty() || name.empty())
+		{
 			ClientData.getResponse().setStatusCode(400);
 			this->finishReading = true;
 			return (1);
@@ -367,65 +431,67 @@ int Request::ParsingTheRequest(Client &ClientData) {
 		this->setHeaders(name, Value);
 	}
 	this->findServer(ClientData);
-	this->serverLocation  = this->findLocationtobeUsed();
-	if (!this->checkAllowedMethode()){
+	this->serverLocation = this->findLocationtobeUsed();
+	if (!this->checkAllowedMethode())
+	{
 		ClientData.getResponse().setStatusCode(405);
 		this->finishReading = true;
 		ClientData.responseReady = true;
 		return (1);
 	}
 	size_t headerEnd = ClientData.getMessage().find("\r\n\r\n");
-	if (headerEnd != std::string::npos){
-		ClientData.getMessage().erase(0,headerEnd + 4);
-    	this->compliteHeaderparser = true;
+	if (headerEnd != std::string::npos)
+	{
+		ClientData.getMessage().erase(0, headerEnd + 4);
+		this->compliteHeaderparser = true;
 	}
-	else {
+	else
+	{
 		return (0);
 	}
-	if (this->isCgi() && this->compliteHeaderparser){
+	if (this->isCgi() && this->compliteHeaderparser)
+	{
 		this->handleEnvForCgi();
 		if (this->methode == "GET")
 			this->finishReading = true;
 		else if (this->methode == "POST" && this->compliteHeaderparser){
+			this->ParsePostHeaders();
 			if (this->serverLocation){
-				this->maxBodySize = std::atoi(this->serverLocation->getField("client_max_body_size").getValues()[0].c_str());
+				this->maxBodySize = this->serverLocation->getMaxBodySize();
 			}
 			else if (this->listenningServer){
-				this->maxBodySize = std::atoi(this->serverLocation->getField("client_max_body_size").getValues()[0].c_str());
+				this->maxBodySize = this->listenningServer->getMaxBodySize();
 			}
-			else if (this->maxBodySize == 0){
-				this->maxBodySize = MAX_BODY_SIZE;
-			}
-			this->ParsePostHeaders();
 		}
-		else{
+		else
+		{
 			this->isaCgi = false;
 			ClientData.getResponse().setStatusCode(406);
-			this->finishReading= true;
+			this->finishReading = true;
 			return (1);
 		}
 		return (0);
 	}
-	if (this->methode == "GET" && this->compliteHeaderparser){
+	if (this->methode == "GET" && this->compliteHeaderparser)
+	{
 		this->compliteHeaderparser = false;
 		this->finishReading = true;
 		ClientData.responseReady = true;
 		return (1);
 	}
-	else if (this->methode == "POST" && this->compliteHeaderparser){
+	else if (this->methode == "POST" && this->compliteHeaderparser)
+	{
 		this->ParsePostHeaders();
 		if (this->serverLocation){
-			this->maxBodySize = std::atoi(this->serverLocation->getField("client_max_body_size").getValues()[0].c_str());
+			this->maxBodySize = this->serverLocation->getMaxBodySize();
 		}
 		else if (this->listenningServer){
-			this->maxBodySize = std::atoi(this->serverLocation->getField("client_max_body_size").getValues()[0].c_str());
-		}
-		else if (this->maxBodySize == 0){
-			this->maxBodySize = MAX_BODY_SIZE;
+			this->maxBodySize = this->listenningServer->getMaxBodySize();
 		}
 		return (0);
 	}
-	if (this->methode == "DELETE"){
+	if (this->methode == "DELETE")
+	{
 		this->deleteMethode(ClientData);
 		this->finishReading = true;
 		ClientData.responseReady = true;
@@ -434,143 +500,176 @@ int Request::ParsingTheRequest(Client &ClientData) {
 	return 0;
 }
 
-int Request::ParsePostMethode(Client &clientData){
- 	this->bodybuffer = clientData.getMessage();
+int Request::ParsePostMethode(Client &clientData)
+{
+	this->bodybuffer = clientData.getMessage();
 	int returValue = this->parseBodyTypeBuffer(this->bodybuffer);
-	if (returValue != 3 && returValue != 0){
+	if (returValue != 3 && returValue != 0)
+	{
 		this->finishReading = true;
 	}
-	else if (returValue == 3){
+	else if (returValue == 3)
+	{
 		size_t pos = this->bodybuffer.find("\r\n");
-		if (pos != std::string::npos || this->bodybuffer.empty()){
-			this->finishReading =  true;
+		if (pos != std::string::npos || this->bodybuffer.empty())
+		{
+			this->finishReading = true;
 		}
 	}
-	if (clientData.getResponse().postBodyResponse(clientData)){
+	if (clientData.getResponse().postBodyResponse(clientData))
+	{
 		this->finishReading = true;
 		return (1);
 	}
 	return (0);
 }
 
-int Request::requestParserStart(Client &clientData) {
-	if (!this->isaCgi && !this->compliteHeaderparser && this->ParsingTheRequest(clientData)){
-		if (this->finishReading == true){
+int Request::requestParserStart(Client &clientData)
+{
+	if (!this->isaCgi && !this->compliteHeaderparser && this->ParsingTheRequest(clientData))
+	{
+		if (this->finishReading == true)
+		{
 			clientData.responseReady = true;
 		}
 		return (1);
 	}
-	else if (this->isaCgi){
-		if (this->methode == "POST" &&  this->compliteHeaderparser && !this->finishReading)
+	else if (this->isaCgi)
+	{
+		if (this->methode == "POST" && this->compliteHeaderparser && !this->finishReading)
 			if (this->ParsePostMethode(clientData))
 				return (1);
-		if (this->finishReading){
+		if (this->finishReading)
+		{
 			clientData.getResponse().closeCgiFileInput();
 			if (this->handleCgi->executeCgi(clientData))
 				clientData.responseReady = true;
 		}
 		return (0);
 	}
-	if (this->methode == "POST" && this->compliteHeaderparser){
+	if (this->methode == "POST" && this->compliteHeaderparser)
+	{
 		if (this->ParsePostMethode(clientData))
 			return (1);
 	}
 	return (0);
 }
 
-void Request::setFinishReading(bool var){
+void Request::setFinishReading(bool var)
+{
 	this->finishReading = var;
 }
 
-
-std::string Request::getTransferCoding(){
+std::string Request::getTransferCoding()
+{
 	return (this->TransferCoding);
 }
 
-std::string Request::getEndofBoundary(){
+std::string Request::getEndofBoundary()
+{
 	return (this->endofBoundary);
 }
 
-std::string Request::getStartBoundary(){
+std::string Request::getStartBoundary()
+{
 	return (this->startofBoundary);
 }
 
-TypeTransf  Request::getTheBodyType(){
+TypeTransf Request::getTheBodyType()
+{
 	return (this->bodyType);
 }
 
-ServerNode& Request::getserverNode() const{
+ServerNode &Request::getserverNode() const
+{
 	return *this->listenningServer;
 }
 
-void Request::setport(std::string _Port){
-	this->port =  _Port;
+void Request::setport(std::string _Port)
+{
+	this->port = _Port;
 }
 
-std::string Request::getport(){
+std::string Request::getport()
+{
 	return (this->port);
 }
 
-std::string Request::gethostName(){
+std::string Request::gethostName()
+{
 	return (this->hostName);
 }
 
-void Request::sethostName(std::string _HostName){
+void Request::sethostName(std::string _HostName)
+{
 	this->hostName = _HostName;
 }
 
-std::string Request::getValue(std::string _Key){
+std::string Request::getValue(std::string _Key)
+{
 	std::map<std::string, std::string>::iterator it = this->headers.find(_Key);
-	if (it != this->headers.end()){
+	if (it != this->headers.end())
+	{
 		return (this->headers[_Key]);
 	}
 	else
 		return ("");
 }
 
-void Request::SetUri(std::string _Uri){
+void Request::SetUri(std::string _Uri)
+{
 	size_t pos;
 	pos = _Uri.find("?");
-	if (pos == std::string::npos){
+	if (pos == std::string::npos)
+	{
 		pos = _Uri.find("#");
-		if (pos != std::string::npos){
+		if (pos != std::string::npos)
+		{
 			this->Uri = Uri.substr(0, pos);
 		}
-		else{
+		else
+		{
 			this->Uri = _Uri;
 		}
 	}
-	else{
+	else
+	{
 		this->Uri = _Uri.substr(0, pos);
 		this->quertyString = _Uri.substr(pos + 1);
 	}
 }
 
-
-std::string& Request::getBody(){
+std::string &Request::getBody()
+{
 	return (this->bodybuffer);
 }
 
-void Request::Setmethode(std::string _methode){
+void Request::Setmethode(std::string _methode)
+{
 	this->methode = _methode;
 }
-std::string Request::getmethode(){
+std::string Request::getmethode()
+{
 	return (this->methode);
 }
 
-std::string Request::getUri(){
+std::string Request::getUri()
+{
 	return (this->Uri);
 }
 
-long int &Request::getClientMaxSizeBody(){
+long int &Request::getClientMaxSizeBody()
+{
 	return (this->maxBodySize);
 }
 
-std::map<std::string,std::string> &Request::getHeaders( void ) {
+std::map<std::string, std::string> &Request::getHeaders(void)
+{
 	return this->headers;
 }
 
-void Request::reset( void ) {
+void Request::reset(void)
+{
 	this->Uri = "";
 	this->finishReading = false;
 	this->compliteHeaderparser = false;
@@ -579,6 +678,7 @@ void Request::reset( void ) {
 	this->handleCgi->reset();
 }
 
-Request::~Request() {
+Request::~Request()
+{
 	delete this->handleCgi;
 }

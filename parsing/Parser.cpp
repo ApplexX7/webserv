@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/09 11:28:23 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 10:49:57 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -378,22 +378,29 @@ void Parser::validateBodySize( std::vector<std::string> values ) {
     std::string size;
     char unit;
     int length;
+    bool hasUnit;
 
     if (values.size() != 1)
         throw Parser::ParsingException("Invalid number of arguments for \"client_max_body_size\"");
-    if (values[0].length() < 2)
+    if (values[0].length() == 0)
         throw Parser::ParsingException("Invalid argument for \"client_max_body_size\"");
-    
+
     length = values[0].length();
-    
-    size = values[0].substr(0, length - 1);
-    unit = std::toupper(values[0].substr(length - 1, 1)[0]);
-    
+
+    hasUnit = std::isalpha(values[0][length - 1]);
+
+    if (hasUnit) {    
+        size = values[0].substr(0, length - 1);
+        unit = std::toupper(values[0].substr(length - 1, 1)[0]);
+    }
+    else {
+        size = values[0];
+    }
+
     if (!Parser::isNumber(size))
         throw Parser::ParsingException("Invalid size for \"client_max_body_size\"");
-    if (unit != 'K' && unit != 'M' && unit != 'G')
+    if (hasUnit && unit != 'K' && unit != 'M' && unit != 'G')
         throw Parser::ParsingException("Invalid unit for \"client_max_body_size\"");
-    
 }
 
 void Parser::validateErrorPage( std::vector<std::string> values ) {

@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 10:36:50 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/12 12:09:36 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,6 @@ void setServerDefaults(ServerNode& server) {
     // if server has no autoindex
     if (!server.fieldExists("autoindex"))
         server.addField("autoindex", "off");
-    
-    // if server has no max size
-    if (!server.fieldExists("client_max_body_size"))
-        server.addField("client_max_body_size", "1m");
     
     if (!server.fieldExists("index"))
         server.addField("index", "index.html");
@@ -61,24 +57,39 @@ void checkEmptyAndDuplicates(std::vector<std::string>& splitField, ServerNode& s
 }
 
 void ServerNode::setMaxBodySize( void ) {
+    std::string values;
     std::string sizeStr;
     unsigned long long size;
     char unit;
     int length;
+    bool hasUnit;
 
+    this->maxSize = 4096;
+    if (this->fields.count("client_max_body_size") == 0)
+        return ;
     
-    length = this->getField("client_max_body_size").getValues()[0].length();
-    sizeStr = this->getField("client_max_body_size").getValues()[0].substr(0, length - 1);
-    unit = std::toupper(this->getField("client_max_body_size").getValues()[0].substr(length - 1, 1)[0]);
+    values = this->getField("client_max_body_size").getValues()[0];
+    length = values.length();
+    hasUnit = std::isalpha(values[length - 1]);
+
+    if (hasUnit) {
+        sizeStr = values.substr(0, length - 1);
+        unit = std::toupper(values.substr(length - 1, 1)[0]);    
+    }
+    else {
+        sizeStr = values;
+    }
     
     size = std::atoll(sizeStr.data());
-
-    if (unit == 'K')
-        size *= 1024;
-    if (unit == 'M')
-        size *= 1024 * 1024;
-    if (unit == 'G')
-        size *= 1024 * 1024 * 1024;
+    
+    if (hasUnit) {
+        if (unit == 'K')
+            size *= 1024;
+        if (unit == 'M')
+            size *= 1024 * 1024;
+        if (unit == 'G')
+            size *= 1024 * 1024 * 1024;
+    }
     this->maxSize = size;
 }
 
@@ -123,6 +134,7 @@ void ServerNode::initializeLocation( ListNode* child ) {
         }
     }
     this->locations[path].setServer(this);
+    this->locations[path].setMaxBodySize();
 }
 
 void ServerNode::initializeServer( ListNode* server ) {
@@ -163,9 +175,7 @@ void ServerNode::initializeServer( ListNode* server ) {
         if (splitField[0] == "cgi_path")
         {
             for (int i = 0; i < (int) values.size(); i += 2)
-            {
                 this->addCgi(values[i], values[i + 1]);
-            }
         }
     }
 
@@ -182,7 +192,9 @@ void ServerNode::initializeServer( ListNode* server ) {
 }
 
 // canonical form
-ServerNode::ServerNode( void ) {};
+ServerNode::ServerNode( void ) {
+    this->maxSize = 4096;
+};
 
 ServerNode::ServerNode( ServerNode& cpy ) {
     (void) cpy;
@@ -312,7 +324,6 @@ int ServerNode::generateServerFd( void ) {
 
     optval = 1;
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
-    setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
 
     // bind socket to port and address
     if (bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) != 0)
@@ -320,7 +331,6 @@ int ServerNode::generateServerFd( void ) {
         freeaddrinfo(servinfo);
         close(sockfd);
         throw ServerNode::SocketException("Error binding server socket for: " + splitListen[0] + ":" + splitListen[1]);
-        return -1;
     }
 
     // start listening on socket
@@ -329,7 +339,6 @@ int ServerNode::generateServerFd( void ) {
         freeaddrinfo(servinfo);
         close(sockfd);
         throw ServerNode::SocketException("Error listening on server socket");
-        return -1;
     }
     freeaddrinfo(servinfo);
     fcntl(sockfd, F_SETFL, O_NONBLOCK);
@@ -348,6 +357,10 @@ void ServerNode::setFd( int fd ) {
 std::string ServerNode::getListenField( void ) {
     std::string listen = this->getField("listen").getValues()[0];
     return listen;
+}
+
+unsigned long long ServerNode::getMaxBodySize( void ) const {
+    return this->maxSize;
 }
 
 const char* ServerNode::SocketException::what() const throw() {
