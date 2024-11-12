@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/12 11:03:05 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 11:25:34 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -324,7 +324,6 @@ int ServerNode::generateServerFd( void ) {
 
     optval = 1;
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
-    setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
 
     // bind socket to port and address
     if (bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) != 0)
@@ -332,7 +331,6 @@ int ServerNode::generateServerFd( void ) {
         freeaddrinfo(servinfo);
         close(sockfd);
         throw ServerNode::SocketException("Error binding server socket for: " + splitListen[0] + ":" + splitListen[1]);
-        return -1;
     }
 
     // start listening on socket
@@ -341,7 +339,6 @@ int ServerNode::generateServerFd( void ) {
         freeaddrinfo(servinfo);
         close(sockfd);
         throw ServerNode::SocketException("Error listening on server socket");
-        return -1;
     }
     freeaddrinfo(servinfo);
     fcntl(sockfd, F_SETFL, O_NONBLOCK);

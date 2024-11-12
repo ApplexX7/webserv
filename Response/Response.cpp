@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 20:38:17 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 11:21:05 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -621,43 +621,6 @@ std::string Response::constructHeader(void)
 	return header;
 }
 
-// std::string Response::constructHeader(void)
-// {
-// 	std::string header = "HTTP/1.1 ";
-// 	std::map<std::string, std::string> headers;
-
-// 	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
-
-// 	header += "Content-Type: " + this->contentType + "\r\n";
-// 	header += "Connection: keep-alive\r\n";
-
-// 	headers["Content-Type"] = this->contentType;
-	
-// 	if (this->isRedir)
-// 	{
-// 		header += "Location: " + this->redirUrl + "\r\n";
-// 	}
-// 	if (this->statusCode == PARTIAL_CONTENT)
-// 	{
-// 		unsigned long totalSize = this->rangeStart + this->contentLength;
-// 		header += "Content-Range: bytes " + std::to_string(this->rangeStart) + "-" + std::to_string(totalSize - 1) + "/" + std::to_string(totalSize) + "\r\n";
-// 	}
-// 	header += "Content-Length: " + std::to_string(this->contentLength) + "\r\n";
-// 	header += "Accept-Ranges: bytes\r\n";
-// 	header += "Date: " + getDateResponse() + "\r\n";
-// 	header += "Server: webserv/1.1\r\n";
-// 	header += "\r\n";
-
-// 	if (this->contentLength == 0)
-// 		this->status = FINISHED;
-
-// 	this->headerSent = true;
-
-// 	std::cout << "OLD:\n" << header << std::endl;
-
-// 	return header;
-// }
-
 std::string Response::getFileChunk(void)
 {
 	std::vector<char> buff(CHUNK_SIZE + 1);
@@ -1033,7 +996,9 @@ std::string Response::generateResponse(void)
 	return this->constructHeader();
 }
 
-Response::~Response() {}
+Response::~Response() {
+	this->file.close();
+}
 
 const char *Response::ResponseException::what() const throw()
 {

@@ -6,68 +6,23 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 20:51:36 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 11:44:51 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
 
-# define CHUNK_SIZE 1024
+#define CHUNK_SIZE 1024
 
-Webserv::Webserv( void ) {
+Webserv::Webserv(void)
+{
     this->listHead = NULL;
 }
 
-// void printChilds( ListNode *child)
-// {
-//     std::vector<std::string> fields;
-//     while (child)
-//     {
-//         std::cout << "\tchild start: " + child->getContent() << std::endl;
-//         fields = child->getFields();
-//         for (size_t i = 0; i < fields.size(); i++)
-//             std::cout << "\t\t" << fields[i] << std::endl;
-//         child = child->getNext();
-//     }
-// }
-
-// void printServerNode(ListNode* server) {
-//     ServerNode n(server);
-//     std::map<std::string, Field > fields;
-
-//     std::map<std::string, Field > f = n.getFields();
-
-//     std::map<std::string, Field >::iterator it;
-//     for (it = f.begin(); it != f.end(); it++)
-//     {
-//         std::cout << it->first << " => ";
-//         for (int i = 0; i < (int) it->second.getValues().size(); i++) {
-//             std::cout << it->second.getValues()[i] << " ";
-//         }
-//         std::cout << std::endl;
-//     }
-
-//     std::map<std::string, Location > locations = n.getLocations();
-
-//     std::map<std::string, Location >::iterator loc_it;
-        
-    
-//     for (loc_it = locations.begin(); loc_it != locations.end(); loc_it++) {
-//         std::cout << loc_it->first << ": " << std::endl;
-//         fields = loc_it->second.getFields();
-//         for (it = fields.begin(); it != fields.end(); it++) {
-//             std::cout << "\t" << it->first << " => ";
-//             for (int i = 0; i < (int) it->second.getValues().size(); i++) {
-//                 std::cout << it->second.getValues()[i] << " ";
-//             }
-//             std::cout << std::endl;
-//         }
-//     }
-// }
-
-
-void printVector(std::vector<std::string> arr) {
-    for (int i = 0; i < (int) arr.size(); i++) {
+void printVector(std::vector<std::string> arr)
+{
+    for (int i = 0; i < (int)arr.size(); i++)
+    {
         std::cout << arr[i] << " ---- ";
     }
     std::cout << std::endl;
@@ -76,15 +31,15 @@ void printVector(std::vector<std::string> arr) {
 /*
     - Initializes the servers
     - Displays warning in the case of servers with conflicting ports/names
-    
 */
 
-void Webserv::init( std::string configPath ) {
+void Webserv::init(std::string configPath)
+{
     Parser parser(configPath);
     std::string content = parser.getContent();
     std::vector<std::string> fields;
-    ListNode* head;
-    ListNode* tmp;
+    ListNode *head;
+    ListNode *tmp;
     std::string listenValue;
     std::string otherListenValue;
     std::vector<std::string> serverNames;
@@ -103,27 +58,31 @@ void Webserv::init( std::string configPath ) {
 
     tmp = head;
 
-    while (tmp) {
-        // printServerNode(tmp);
+    while (tmp)
+    {
         this->servers.push_back(new ServerNode(tmp));
 
         // check servername conflicts
         listenValue = this->servers[this->servers.size() - 1]->getField("listen").getValues()[0];
         serverNames = this->servers[this->servers.size() - 1]->getField("server_name").getValues();
-        for (int j = 0; j < (int) serverNames.size(); j++) {
+        for (int j = 0; j < (int)serverNames.size(); j++)
+        {
             if (std::count(servers[listenValue].begin(), servers[listenValue].end(), serverNames[j]) > 1)
-               continue ; 
+                continue;
             servers[listenValue].push_back(serverNames[j]);
         }
         tmp = tmp->getNext();
     }
 
-    for (it = servers.begin(); it != servers.end(); it++) {
+    for (it = servers.begin(); it != servers.end(); it++)
+    {
         serverNames = it->second;
-        for (int i = 0; i < (int) serverNames.size(); i++) {
+        for (int i = 0; i < (int)serverNames.size(); i++)
+        {
             occurences = std::count(serverNames.begin(), serverNames.end(), serverNames[i]);
-            if (occurences > 1) {
-                std::cout << "[WARN] Conflicting server name \"|" << serverNames[i] << "|\" at " << it->first << std::endl;
+            if (occurences > 1)
+            {
+                std::cout << "[WARN] Conflicting server name " << serverNames[i] << " at " << it->first << std::endl;
                 std::string tmp = serverNames[i];
                 while (occurences >= 1)
                 {
@@ -137,18 +96,17 @@ void Webserv::init( std::string configPath ) {
     }
 }
 
-
-
-bool isServerFd(std::vector<int> serverFds, int fd) {
+bool isServerFd(std::vector<int> serverFds, int fd)
+{
     return (std::find(serverFds.begin(), serverFds.end(), fd) != serverFds.end());
 }
 
 void disconnectClient(
-    std::map<int, Client*>& clients,
-    std::vector<struct pollfd>& fds,
+    std::map<int, Client *> &clients,
+    std::vector<struct pollfd> &fds,
     std::vector<int> &clientFds,
-    int i
-    ) {
+    int i)
+{
 
     if (clients[fds[i].fd])
     {
@@ -160,7 +118,6 @@ void disconnectClient(
     }
 }
 
-
 /*
     - Starts up the web server
     - Opens socket for each server
@@ -168,12 +125,13 @@ void disconnectClient(
     - Parses Requests and generates responses
 */
 
-void Webserv::listen( void ) {
+void Webserv::listen(void)
+{
     std::vector<int> serverFds;
     std::vector<int> &clientFds = this->clientFds;
     std::string message;
     std::string connection;
-    std::map<int, Client*> clients;
+    std::map<int, Client *> clients;
 
     struct pollfd newPollFd;
     int size;
@@ -182,36 +140,47 @@ void Webserv::listen( void ) {
     int new_fd;
     char buf[CHUNK_SIZE + 1];
     int bytes_read;
+    int bytes_sent;
     std::string res;
 
     addr_size = sizeof(their_addr);
-    
+
     // open server sockets
-    for (int i = 0; i < (int) this->servers.size(); i++) {
-        try {
-            serverFds.push_back(this->servers[i]->generateServerFd());
-        } catch (ServerNode::SocketException& e) {
+    for (int i = 0; i < (int)this->servers.size(); i++)
+    {
+        try
+        {
+            new_fd = this->servers[i]->generateServerFd();
+            if (new_fd > 0)
+                serverFds.push_back(new_fd);
+        }
+        catch (ServerNode::SocketException &e)
+        {
             std::cerr << e.what() << std::endl;
-            return ;
+            if (serverFds.size() == 0)
+                return;
         }
     }
 
     size = serverFds.size();
     std::vector<struct pollfd> fds(size);
 
-    for (int i = 0; i < (int) size; i++)
+    for (int i = 0; i < (int)size; i++)
     {
         fds[i].fd = serverFds[i];
         fds[i].events = POLLIN | POLLOUT | POLLHUP;
     }
-    
-    while (1) {
-        if (poll(fds.data(), fds.size(), 100) > 0) {
-            for (int i = 0; i < (int) fds.size(); i++)
+
+    while (1)
+    {
+        if (poll(fds.data(), fds.size(), 100) > 0)
+        {
+            for (int i = 0; i < (int)fds.size(); i++)
             {
                 // check client timeout
-                if (!isServerFd(serverFds, fds[i].fd)) {
-                    if (time(NULL) - clients[fds[i].fd]->timerStart > 15)
+                if (!isServerFd(serverFds, fds[i].fd))
+                {
+                    if (time(NULL) - clients[fds[i].fd]->timerStart > 10)
                     {
                         disconnectClient(clients, fds, clientFds, i);
                         continue;
@@ -222,19 +191,19 @@ void Webserv::listen( void ) {
                 if (fds[i].revents & POLLHUP)
                 {
                     disconnectClient(clients, fds, clientFds, i);
-                    continue ;
+                    continue;
                 }
                 // client wants to connect
-                if (fds[i].revents & POLLIN
-                && isServerFd(serverFds, fds[i].fd))
+                if (fds[i].revents & POLLIN && isServerFd(serverFds, fds[i].fd))
                 {
-                    try {
+                    try
+                    {
                         new_fd = accept(fds[i].fd, (struct sockaddr *)&their_addr, &addr_size);
 
                         if (new_fd < 0)
                             throw Webserv::ServerException("Error accepting opening connection");
-                        else {
-                            std::cout << "new client " << new_fd << std::endl;
+                        else
+                        {
                             newPollFd.events = POLLIN | POLLHUP;
                             clientFds.push_back(new_fd);
                             newPollFd.fd = new_fd;
@@ -242,23 +211,24 @@ void Webserv::listen( void ) {
                             clients[new_fd] = new Client(this->servers, "", new_fd);
                             clients[new_fd]->setListen(this->getServerByFd(fds[i].fd)->getListenField());
                         }
-                    } catch (std::exception& e) {
+                    }
+                    catch (std::exception &e)
+                    {
                         // do nothing, connection was refused
                     }
                 }
 
                 // client wants to send data
-                else if (!isServerFd(serverFds, fds[i].fd)
-                && fds[i].revents & POLLIN)
+                else if (!isServerFd(serverFds, fds[i].fd) && fds[i].revents & POLLIN)
                 {
                     try
                     {
                         // reset client timer
                         clients[fds[i].fd]->timerStart = time(NULL);
-                        
+
                         // read from client
                         bytes_read = recv(fds[i].fd, buf, CHUNK_SIZE, 0);
-                        if (bytes_read < 0)
+                        if (bytes_read <= 0)
                             throw Webserv::ServerException("Error reading from client");
                         buf[bytes_read] = 0;
                         message.assign(buf, bytes_read);
@@ -272,17 +242,14 @@ void Webserv::listen( void ) {
                             fds[i].events = POLLOUT;
                         }
                     }
-                    catch(std::exception& e)
+                    catch (std::exception &e)
                     {
-                        clients[fds[i].fd]->getResponse().setStatusCode(INTERNAL_SERVER_ERROR);
-                        clients[fds[i].fd]->findParentServer();
-                        fds[i].events = POLLOUT;
+                        disconnectClient(clients, fds, clientFds, i);
                     }
                 }
 
                 // client wants to receive data
-                else if (!isServerFd(serverFds, fds[i].fd)
-                && fds[i].revents & POLLOUT)
+                else if (!isServerFd(serverFds, fds[i].fd) && fds[i].revents & POLLOUT)
                 {
                     try
                     {
@@ -292,22 +259,25 @@ void Webserv::listen( void ) {
                         // if it's a cgi request check if execve finished
                         if (clients[fds[i].fd]->getRequest().getIsACgi())
                             clients[fds[i].fd]->getRequest().handleCgi->CgiMonitore(*clients[fds[i].fd]);
-                        
-                        
+
                         // send response
-                        if ((clients[fds[i].fd]->responseReady)) {
+                        if ((clients[fds[i].fd]->responseReady))
+                        {
                             res = clients[fds[i].fd]->getResponse().generateResponse();
-                            if (send(fds[i].fd, res.data(), res.size(), MSG_SEND) <= 0)
+                            bytes_sent = send(fds[i].fd, res.data(), res.size(), 0);
+                            if (bytes_sent <= 0)
                                 throw Webserv::ServerException("Error sending data");
-                            
+
                             // reset message
                             clients[fds[i].fd]->setMessage("");
 
                             connection = clients[fds[i].fd]->getRequest().getValue("Connection");
 
                             // finished sending response
-                            if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED) {
-                                if (connection == "keep-alive") {
+                            if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED)
+                            {
+                                if (connection == "keep-alive")
+                                {
                                     fds[i].events = POLLIN | POLLHUP;
                                     clients[fds[i].fd]->getResponse().reset();
                                     clients[fds[i].fd]->responseReady = false;
@@ -317,39 +287,28 @@ void Webserv::listen( void ) {
                                     disconnectClient(clients, fds, clientFds, i);
                             }
                         }
-                    } catch (std::exception& e) {
-                        if (res.length())
+                    }
+                    catch (std::exception &e)
+                    {
+                        if (bytes_sent > 0)
                         {
                             clients[fds[i].fd]->getResponse().setStatusCode(INTERNAL_SERVER_ERROR);
                             res = clients[fds[i].fd]->getResponse().generateResponse();
-                            send(fds[i].fd, res.data(), res.size(), MSG_SEND);
-                            disconnectClient(clients, fds, clientFds, i);
+                            send(fds[i].fd, res.data(), res.size(), 0);
                         }
-                        else
-                        {
-                            connection = clients[fds[i].fd]->getRequest().getValue("Connection");
-
-                            // finished sending response
-                            if (connection == "keep-alive") {
-                                fds[i].events = POLLIN | POLLHUP;
-                                clients[fds[i].fd]->getResponse().reset();
-                                clients[fds[i].fd]->responseReady = false;
-                                clients[fds[i].fd]->getRequest().reset();
-                            }
-                            else
-                                disconnectClient(clients, fds, clientFds, i);
-                            
-                        }
+                        disconnectClient(clients, fds, clientFds, i);
                     }
                 }
             }
         }
-        else {
-            for (int i = 0; i < (int) fds.size(); i++)
+        else
+        {
+            for (int i = 0; i < (int)fds.size(); i++)
             {
                 // check client timeout
-                if (!isServerFd(serverFds, fds[i].fd)) {
-                    if (time(NULL) - clients[fds[i].fd]->timerStart > 15)
+                if (!isServerFd(serverFds, fds[i].fd))
+                {
+                    if (time(NULL) - clients[fds[i].fd]->timerStart > 10)
                     {
                         disconnectClient(clients, fds, clientFds, i);
                         continue;
@@ -360,8 +319,10 @@ void Webserv::listen( void ) {
     }
 }
 
-ServerNode *Webserv::getServerByFd( int fd ) {
-    for (int i = 0; i < (int) this->servers.size(); i++) {
+ServerNode *Webserv::getServerByFd(int fd)
+{
+    for (int i = 0; i < (int)this->servers.size(); i++)
+    {
         if (this->servers[i]->getFd() == fd)
             return (this->servers[i]);
     }
@@ -373,25 +334,27 @@ ServerNode *Webserv::getServerByFd( int fd ) {
     - Closes server sockets
 */
 
-const char* Webserv::ServerException::what() const throw() {
+const char *Webserv::ServerException::what() const throw()
+{
     return message.c_str();
 };
 
-Webserv::ServerException::ServerException(std::string msg): message(msg) {};
+Webserv::ServerException::ServerException(std::string msg) : message(msg) {};
 
 Webserv::ServerException::~ServerException() throw() {};
 
-Webserv::~Webserv( void ) {
+Webserv::~Webserv(void)
+{
     ListNode::freeListNode(this->listHead);
-    
+
     // free servers
-    for (int i = 0; i < (int) this->servers.size(); i++)
+    for (int i = 0; i < (int)this->servers.size(); i++)
     {
         close(this->servers[i]->getFd());
         delete this->servers[i];
     }
 
-    for (int i = 0; i < (int) this->clientFds.size(); i++)
+    for (int i = 0; i < (int)this->clientFds.size(); i++)
         close(this->clientFds[i]);
 
     std::cout << "WEBSERV DESTRUCTOR CALLED" << std::endl;

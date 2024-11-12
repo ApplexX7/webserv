@@ -6,21 +6,21 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:04:58 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 21:03:49 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 11:31:37 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
 
 void leaks() {
-    system("lsof -c webserv");
+    system("leaks webserv");
 }
 
 int main(int argc, char **argv)
 {
     signal(SIGPIPE, SIG_IGN);
     
-    // atexit(leaks);
+    atexit(leaks);
 
     if (argc != 2)
     {
