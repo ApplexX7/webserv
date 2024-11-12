@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/12 17:38:24 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/12 18:40:25 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,6 @@ int Response::openFile(Client &clientData){
 	}
 	return (0);
 }
-
 
 int Response::writeChunkinfile(std::string content, Client &clientdata){
 	int status = this->openFile(clientdata);

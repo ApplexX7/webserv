@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/12 17:46:05 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/12 18:38:08 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -621,7 +621,7 @@ std::string Response::constructHeader(void)
 
 	if (accepts.size() != 0 
 	&& std::find(accepts.begin(), accepts.end(), this->contentType) == accepts.end()) {
-		if (accepts[0] != "*/*")
+		if (accepts[0] != "*/*" && headers["Content-Type"] != "application/octet-stream")
 			headers["Content-Type"] = accepts[0];
 	}
 

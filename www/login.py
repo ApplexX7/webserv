@@ -3,7 +3,7 @@ import sys
 import json
 from urllib.parse import unquote
 import base64
-impobcvcbcvrt time
+import time
 
 body = ""
 header = ""

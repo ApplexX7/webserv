@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/12 16:19:32 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 19:13:11 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,22 +65,15 @@ void Cgi::setCgiPath(std::string _CgiPath){
 }
 
 void Cgi::cgiExecution(Client &clientData){
-	char **args;
 	char **env;
-	
+	char *args[3] = {
+    	const_cast<char*>(this->cgiPath.c_str()),
+    	const_cast<char*>(clientData.getRequest().getUri().erase(0, 1).c_str()),
+    	NULL
+	};
 	if (chdir(this->direcpath.c_str()) == -1){
 		exit (1);
 	}
-	args = (char **) new char *[3];
-	if (!args){
-		exit (1);
-	}
-	args[0] = strdup(this->cgiPath.c_str());
-	std::string path3 = clientData.getRequest().getUri().erase(0, 1);
-	args[1] = strdup(path3.c_str());
-	if (!args[1])
-		exit (1);
-	args[2] = NULL;
 	if (clientData.getRequest().getmethode() == "POST"){
 		int fd_input = open(clientData.getResponse().getCginputFile().c_str(), O_RDONLY);
 		if (fd_input == -1){
@@ -104,19 +97,18 @@ void Cgi::cgiExecution(Client &clientData){
 		exit (1);
 	}
 	for (size_t i = 0; i < this->envCgi.size(); i++){
-		env[i] = strdup(this->envCgi[i].c_str());
+		env[i] =  new  char[this->envCgi[i].length()];
+		std::strcpy(env[i], this->envCgi[i].c_str());
 		if (!env[i]){
 			exit(1);
 		}
 	}
 	env[this->envCgi.size()] = 0;
 	if (execve(this->cgiPath.c_str(), args , env) == -1){
-		perror("Erorrr :");
 		for (int i = 0; env[i] != NULL; i++){
 			delete [] env[i];
 		}
 		delete [] env;
-		delete [] args;
 		exit (1);
 	}
 }
