@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/12 10:49:57 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 17:34:17 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,9 @@ Parser::Parser( Parser& copy ){
     (void) copy;
 };
 
-Parser::~Parser( void ) {};
+Parser::~Parser( void ) {
+    
+};
 
 Parser& Parser::operator=( Parser& rhs ){
     return rhs;
@@ -237,20 +239,26 @@ bool Parser::checkValidList( ListNode *head, int level )
 
 bool Parser::checkValidContent( std::string str ) {
     std::stack<char> st;
+    bool notEmpty = false;
 
+    
     for (size_t i = 0; i < str.length(); i++) {
         if (st.empty() && (str[i] == '{' || str[i] == '}'))
         {
+            notEmpty = true;
             st.push(str[i]);
             continue;
         }
         if (str[i] == '}')
             st.pop();
         if (str[i] == '{')
+        {
+            notEmpty = true;
             st.push(str[i]);
+        }
             
     }
-    return st.empty();
+    return notEmpty && st.empty();
 }
 
 std::vector<std::string> Parser::strSplit( std::string str, char c ) {
@@ -322,13 +330,9 @@ void Parser::validateCgiPath( std::vector<std::string> values ) {
 void Parser::validateListen( std::vector<std::string> values ) {
     std::string listen;
     std::vector<std::string> splitListen;
-    int status;
-    struct addrinfo hints;
-    struct addrinfo *servinfo;
 
     if (values.size() != 1)
         throw Parser::ParsingException("Invalid number of arguments for \"listen\"");
-    
     listen = values[0];
     
     // check if it has ':' in it, if so split it, 1st element shoud be numeric
@@ -344,19 +348,6 @@ void Parser::validateListen( std::vector<std::string> values ) {
         if (!Parser::isNumber(listen) || std::atoi(listen.data()) < 1 || std::atoi(listen.data()) > 65535)
             throw Parser::ParsingException("Invalid port number");
     }
-
-    // check host validity
-    Parser::ft_memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-
-    status = getaddrinfo(splitListen[0].data(), splitListen[1].data(), &hints, &servinfo);
-    if (status != 0) {
-        throw ParsingException("Error opening host " + splitListen[0]);
-    }
-
-    freeaddrinfo(servinfo);
 }
 
 void Parser::validateAllowedMethods( std::vector<std::string> values ) {

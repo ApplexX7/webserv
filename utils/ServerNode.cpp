@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerNode.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/12 12:09:36 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/12 17:31:01 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,6 @@ void ServerNode::initializeLocation( ListNode* child ) {
     std::vector<std::string> values;
     std::string path;
     std::string trimedField;
-    
 
     fields = child->getFields();
     splitField = (Parser::strSplit(child->getContent(), ' '));
@@ -161,7 +160,7 @@ void ServerNode::initializeServer( ListNode* server ) {
                 checkErrorPage(splitField, j);
             this->addField(splitField[0], splitField[j]);
         }
-
+        
         values = this->getField(splitField[0]).getValues();
 
         // if server has no host
@@ -313,7 +312,9 @@ int ServerNode::generateServerFd( void ) {
     Parser::ft_memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_NUMERICSERV | AI_CANONNAME;
+    hints.ai_flags = AI_PASSIVE;
+
+    
     getaddrinfo(splitListen[0].data(), splitListen[1].data(), &hints, &servinfo);
     sockfd = socket(PF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
@@ -321,16 +322,14 @@ int ServerNode::generateServerFd( void ) {
         freeaddrinfo(servinfo);
         throw ServerNode::SocketException("Error opening server socket");
     }
-
     optval = 1;
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
-
     // bind socket to port and address
     if (bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) != 0)
     {
         freeaddrinfo(servinfo);
         close(sockfd);
-        throw ServerNode::SocketException("Error binding server socket for: " + splitListen[0] + ":" + splitListen[1]);
+        throw ServerNode::SocketException("[Warning] failed binding server socket for: " + splitListen[0] + ":" + splitListen[1]);
     }
 
     // start listening on socket

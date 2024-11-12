@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/12 12:38:05 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 17:18:54 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ void initializeStatusTexts(std::map<int, std::string> &statusTexts)
 	statusTexts[METHOD_NOT_ALLOWED] = "Method Not Allowed";
 	statusTexts[NOT_ACCEPTABLE] = "Not Acceptable";
 	statusTexts[REQUEST_TIMEOUT] = "Request Timeout";
+	statusTexts[CONFLICT] = "Conflict";
 	statusTexts[PAYLOAD_TOO_LARGE] = "Payload too Large";
 	statusTexts[URI_TOO_LONG] = "URI Too Long";
 	statusTexts[UNSUPPORTED_MEDIA_TYPE] = "Unsupported Media Type";
@@ -574,6 +575,7 @@ std::string Response::constructHeader(void)
 	std::map<std::string, std::string> headers;
 	std::map<std::string, std::string> cgiHeaders;
 	std::map<std::string, std::string>::iterator it;
+	std::vector<std::string> accepts;
 
 
 	if (this->client->getRequest().getIsACgi() && !this->isError) {
@@ -587,7 +589,6 @@ std::string Response::constructHeader(void)
 	}
 	
 	header += toString(this->statusCode) + " " + this->getStatusText() + "\r\n";
-
 	headers["Content-Type"] = this->contentType;
 	headers["Connection"] = "keep-alive";
 	
@@ -615,6 +616,14 @@ std::string Response::constructHeader(void)
 		}
 	}
 
+	// check Accept header
+	accepts = Parser::strSplit(this->client->getRequest().getHeaders()["Accept"], ',');
+
+	if (accepts.size() != 0 
+	&& std::find(accepts.begin(), accepts.end(), this->contentType) == accepts.end()) {
+		headers["Content-Type"] = accepts[0];
+	}
+
 	for (it = headers.begin(); it != headers.end(); it++)
 		header += it->first + ": " + it->second + "\r\n";
 	header += "\r\n";
@@ -623,7 +632,7 @@ std::string Response::constructHeader(void)
 		this->status = FINISHED;
 
 	this->headerSent = true;
-	// std::cout << header << std::endl;
+	
 
 	return header;
 }
