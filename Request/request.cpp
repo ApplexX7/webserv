@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   request.cpp                                        :+:      :+:    :+:   */
+/*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 19:13:15 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/12 11:24:48 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,17 +177,14 @@ int Request::ParseRequestLine(std::string &RqLine, Client &clientData){
 			return (1);
 		}
 	}
-	// check the Uri // and modify some check for the Uri
 	if (this->parseUri(RequestLineChunks[1])){
 		clientData.getResponse().setStatusCode(414);
 		return (1);
 	}
-	// checkk HTTPS VERSION;
 	if (RequestLineChunks[2] != "HTTP/1.1"){
 		clientData.getResponse().setStatusCode(505);
 		return (1);
 	}
-	//valide methode;
 	if (this->Validmethode(RequestLineChunks[0], clientData)){
 		clientData.getResponse().setStatusCode(501);
 		return (1);
@@ -251,7 +248,6 @@ std::string Request::getlocationName(){
 }
 
 void Request::deleteMethode(Client &clientData){
-	// check for the Uri;
 	struct  stat ss;
 	Location *PathLcoation =  this->getServerLocation();
 	if (PathLcoation != NULL){
@@ -270,7 +266,6 @@ void Request::deleteMethode(Client &clientData){
 		}
 		else if (ss.st_mode & S_IFREG){
 			if (access(this->pathName.c_str(), O_WRONLY) == 0){
-					std::cout << this->pathName<< std::endl;
 				if (!remove(this->pathName.c_str())){
 					clientData.getResponse().setStatusCode(202);
 				}
@@ -340,7 +335,6 @@ int Request::ParsingTheRequest(Client &ClientData) {
 	std::string ChunkLine;
 	std::stringstream Message(ClientData.getMessage());
 
-
 	std::getline(Message, ChunkLine, '\r');
 	Message.ignore(1);
 	if (!this->requestLine && this->ParseRequestLine(ChunkLine, ClientData)){
@@ -393,6 +387,15 @@ int Request::ParsingTheRequest(Client &ClientData) {
 		if (this->methode == "GET")
 			this->finishReading = true;
 		else if (this->methode == "POST" && this->compliteHeaderparser){
+			if (this->serverLocation){
+				this->maxBodySize = std::atoi(this->serverLocation->getField("client_max_body_size").getValues()[0].c_str());
+			}
+			else if (this->listenningServer){
+				this->maxBodySize = std::atoi(this->serverLocation->getField("client_max_body_size").getValues()[0].c_str());
+			}
+			else if (this->maxBodySize == 0){
+				this->maxBodySize = MAX_BODY_SIZE;
+			}
 			this->ParsePostHeaders();
 		}
 		else{
@@ -414,7 +417,10 @@ int Request::ParsingTheRequest(Client &ClientData) {
 		if (this->serverLocation){
 			this->maxBodySize = std::atoi(this->serverLocation->getField("client_max_body_size").getValues()[0].c_str());
 		}
-		else{
+		else if (this->listenningServer){
+			this->maxBodySize = std::atoi(this->serverLocation->getField("client_max_body_size").getValues()[0].c_str());
+		}
+		else if (this->maxBodySize == 0){
 			this->maxBodySize = MAX_BODY_SIZE;
 		}
 		return (0);
@@ -427,7 +433,6 @@ int Request::ParsingTheRequest(Client &ClientData) {
 	}
 	return 0;
 }
-
 
 int Request::ParsePostMethode(Client &clientData){
  	this->bodybuffer = clientData.getMessage();

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 20:38:17 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 11:13:34 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -669,7 +669,6 @@ std::string Response::getFileChunk(void)
 		{
 			std::remove(this->path.c_str());
 			this->rangeStart = this->client->getRequest().handleCgi->getFileOffset();
-			std::cout << "path: " << this->rangeStart << std::endl;
 		}
 		if (!this->file.is_open())
 		{

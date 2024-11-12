@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostMethode.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 20:23:29 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 11:31:55 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,13 @@ std::string Response::generateFileName(){
 	struct tm*  Info = gmtime(&rawtime);
 	std::strftime(buffer, 100, "%a%d%b%Y%H:%M%S", Info);
 	return ((std::string) buffer);
+}
+
+static std::string int_to_string(int num){
+	std::ostringstream oss;
+	oss << num;
+	std::string str = oss.str();
+	return (str);
 }
 
 int Response::closeFileafterWriting(){
@@ -49,12 +56,10 @@ int Response::openFile(Client &clientData){
 	}
 	if (stat(this->bFullPath.c_str(), &buffer) == 0){
 		this->statusCode = 409;
-		return (1);
+		return (3);
 	}
-	std::cout <<this->bFullPath << std::endl;
 	this->outFile.open(this->bFullPath, std::ios::binary);
 	if (!this->outFile.good()){
-		std::cerr << "Error: Failed to create the file"<< std::endl;
 		return (1);
 	}
 	return (0);
@@ -62,13 +67,15 @@ int Response::openFile(Client &clientData){
 
 
 int Response::writeChunkinfile(std::string content, Client &clientdata){
-	if (this->openFile(clientdata)){
+	int status = this->openFile(clientdata);
+	if (status == 1){
 		this->statusCode = 400;
 		return (1);
 	}
+	else if (status == 3)
+		return (1);
 	this->outFile.write(content.c_str(), content.size());
 	if (!this->outFile){
-		std::cerr << "Error: failed to write in file"<< std::endl;
 		return (1);
 	}
 	return (0);
@@ -299,12 +306,23 @@ int Response::parseBoundarys(std::string &body, Client &clientData){
 int Response::parseContentLenght(Client &clientData, std::string &body){
 	size_t pos = 0;
 	this->bhConetentType = clientData.getRequest().getValue("Content-Type");
+	this->bhFileName = "/tmp/" + this->generateFileName() + int_to_string(clientData.getFd());
 	pos = body.find("\r\n\r\n");
 	if (pos != std::string::npos){
 		this->finaleBody = body.substr(0, pos);
 	}
 	else
 		this->finaleBody = body;
+	std::ofstream outputfile(this->bhFileName);
+	if (!outputfile.is_open()){
+		return (1);
+	}
+	outputfile.write(this->finaleBody.c_str(), this->finaleBody.length());
+	if (!outputfile){
+		outputfile.close();
+		return (1);
+	}
+	outputfile.close();
 	return (0);
 }
 
@@ -312,7 +330,7 @@ int Response::parseContentLenght(Client &clientData, std::string &body){
 int Response::handleCgiPost(Client &clientData){
 	std::srand(time(NULL));
 	if (this->cgInputfile.empty()){
-		this->cgInputfile = "/tmp/" + this->generateFileName() + std::to_string(std::rand()) + std::to_string(clientData.getFd());
+		this->cgInputfile = "/tmp/." + this->generateFileName() + std::to_string(std::rand()) + int_to_string(clientData.getFd());
 		this->cgiFile.open(this->cgInputfile, std::ios::binary);
 		if (!this->cgiFile.is_open()){
 			return (1);
@@ -394,13 +412,13 @@ int  Response::postBodyResponse(Client &clientData){
 			}
 			else{
 				clientData.responseReady = true;
-				this->statusCode = 400;
+				this->statusCode = 500;
 				return (1);
 			}
 		}
 	}
 	else if (clientData.getRequest().getTheBodyType() == NONE){
-		this->statusCode = 400;
+		this->statusCode = 406;
 		clientData.responseReady = true;
 		clientData.getRequest().setFinishReading(true);
 	}
