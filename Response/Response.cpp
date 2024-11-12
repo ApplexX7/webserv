@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/12 11:21:05 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 12:30:51 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,6 +217,13 @@ void trimSlashes(std::string &path)
 	while (i >= 0 && path[i] == '/')
 		i--;
 	path = path.substr(0, i + 1);
+}
+
+std::string toString(long long n) {
+	std::stringstream str;
+
+	str << n;
+	return str.str();
 }
 
 void Response::closeCgiFileInput( void ){
@@ -579,7 +586,7 @@ std::string Response::constructHeader(void)
 		}
 	}
 	
-	header += std::to_string(this->statusCode) + " " + this->getStatusText() + "\r\n";
+	header += toString(this->statusCode) + " " + this->getStatusText() + "\r\n";
 
 	headers["Content-Type"] = this->contentType;
 	headers["Connection"] = "keep-alive";
@@ -591,10 +598,10 @@ std::string Response::constructHeader(void)
 	if (this->statusCode == PARTIAL_CONTENT)
 	{
 		unsigned long totalSize = this->rangeStart + this->contentLength;
-		headers["Content-Range"] = "bytes " + std::to_string(this->rangeStart) + "-" + std::to_string(totalSize - 1) + "/" + std::to_string(totalSize);
+		headers["Content-Range"] = "bytes " + toString(this->rangeStart) + "-" + toString(totalSize - 1) + "/" + toString(totalSize);
 	}
 
-	headers["Content-Length"] = std::to_string(this->contentLength);
+	headers["Content-Length"] = toString(this->contentLength);
 	headers["Accept-Ranges"] = "bytes";
 	headers["Date"] = getDateResponse();
 	headers["Server"] = "webserv/1.1";
@@ -740,7 +747,7 @@ void Response::extractRange(void)
 std::string Response::constructErrorBody(void)
 {
 	std::string html = "<div style=\"text-align: center; \" >\
-		<h1>" + std::to_string(this->statusCode) +
+		<h1>" + toString(this->statusCode) +
 					   " " + this->getStatusText() + "</h1>\
 		<hr /> \
 		<bold>webserv 1.1</bold> \
