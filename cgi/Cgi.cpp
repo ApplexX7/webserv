@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 20:55:42 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 11:32:05 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,10 @@
 #include "signal.h"
 
 Cgi::Cgi( void ) {
-	this->thereIsOne = false;
+	this->fileOfsset = 0;
+	this->Cgi_timeout = 0;
+	this->fileName = "";
+	this->direcpath = "";
 }
 Cgi::~Cgi( void ) {};
 
@@ -29,7 +32,6 @@ int Cgi::getFileOffset( void ){
 void Cgi::reset(){
 	this->fileOfsset = 0;
 	this->Cgi_timeout = 0;
-	this->thereIsOne = false;
 	this->fileName = "";
 	this->direcpath = "";
 }
@@ -158,23 +160,21 @@ int Cgi::extractHeadrs(Client &clientData){
 	if (clientData.getResponse().getCgiHeaderValue("Content-Type").empty()){
 		clientData.getResponse().setCgiHeaders("Content-Type", "text/plain");
 	}
-	// if (clientData.getResponse().getCgiHeaderValue("Content-Length").empty()){
-	// 	size_t size;
-	// 	parseFile.seekg(0, std::ios::end);
-	// 	size = parseFile.tellg();
-	// 	std::cout << "size : " << size << std::endl;
-	// 	clientData.getResponse().setCgiHeaders("Content-Length", std::to_string(size - _offset));
-	// }
 	this->fileOfsset = _offset;
 	parseFile.close();
 	return (0);
 }
 
+static std::string int_to_string(int num){
+	std::ostringstream oss;
+	oss << num;
+	std::string str = oss.str();
+	return (str);
+}
 
 int Cgi::CgiMonitore(Client &clientData){
 	int status;
 	if(std::time(NULL) - this->Cgi_timeout >= 10){
-		std::cout << "Time Out" << std::endl;
 		kill(pid, SIGTERM);
 		remove(this->fileName.c_str());
 		close(this->fileResponse);
@@ -206,7 +206,7 @@ int Cgi::CgiMonitore(Client &clientData){
 
 int Cgi::executeCgi(Client &clientData) {
 	std::srand(std::time(NULL));
-	this->fileName = "/tmp/." +  clientData.getResponse().generateFileName() + std::to_string(std::rand()) + std::to_string(clientData.getFd());
+	this->fileName = "/tmp/." +  clientData.getResponse().generateFileName() + std::to_string(std::rand()) + int_to_string(clientData.getFd());
 	this->pid = fork();
 	if (this->pid == -1){
 		kill(0, SIGTERM);

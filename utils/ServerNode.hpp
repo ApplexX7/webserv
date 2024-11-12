@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 10:37:08 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/12 12:08:46 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,7 @@ class ServerNode {
         int getFd( void );
         void setFd( int );
         void setMaxBodySize( void );
+        unsigned long long getMaxBodySize( void ) const;
 
         std::string getListenField( void );
 

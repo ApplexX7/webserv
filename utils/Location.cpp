@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 09:31:10 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/12 10:56:57 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 12:09:03 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ void Location::setMaxBodySize( void ) {
     int length;
     bool hasUnit;
 
+    this->maxSize = 4096;
     if (this->fields.count("client_max_body_size") != 1)
         return ;
 

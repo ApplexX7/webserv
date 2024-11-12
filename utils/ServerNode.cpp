@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerNode.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/12 11:25:34 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 12:09:36 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -357,6 +357,10 @@ void ServerNode::setFd( int fd ) {
 std::string ServerNode::getListenField( void ) {
     std::string listen = this->getField("listen").getValues()[0];
     return listen;
+}
+
+unsigned long long ServerNode::getMaxBodySize( void ) const {
+    return this->maxSize;
 }
 
 const char* ServerNode::SocketException::what() const throw() {

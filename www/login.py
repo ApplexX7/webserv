@@ -109,7 +109,7 @@ if not logged_in:
             <body>
                 <div class="form-container">
                     <h2>Login</h2>
-                    <form action="/Desktop/webserv/login.py" method="post">
+                    <form action="/webserv/www/login.py" method="post">
                         <input type="text" name="username" placeholder="Username" required><br>
                         <input type="password" name="password" placeholder="Password" required><br>
                         <input type="submit" value="Log In">

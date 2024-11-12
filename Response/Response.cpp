@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/12 12:30:51 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 12:38:05 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -639,7 +639,6 @@ std::string Response::getFileChunk(void)
 		{
 			std::remove(this->path.c_str());
 			this->rangeStart = this->client->getRequest().handleCgi->getFileOffset();
-			std::cout << "path: " << this->rangeStart << std::endl;
 		}
 		if (!this->file.is_open())
 		{

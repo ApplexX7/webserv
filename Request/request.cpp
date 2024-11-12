@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/12 09:47:54 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/12 12:23:43 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,9 +177,7 @@ int Request::parseUri(std::string &uri)
 		this->quertyString = uri.substr(pos + 1);
 	}
 	else
-	{
 		this->Uri = uri;
-	}
 	return (0);
 }
 
@@ -216,21 +214,16 @@ int Request::ParseRequestLine(std::string &RqLine, Client &clientData)
 			return (1);
 		}
 	}
-	// check the Uri // and modify some check for the Uri
-	if (this->parseUri(RequestLineChunks[1]))
-	{
+	if (this->parseUri(RequestLineChunks[1])){
 		clientData.getResponse().setStatusCode(414);
 		return (1);
 	}
-	// checkk HTTPS VERSION;
-	if (RequestLineChunks[2] != "HTTP/1.1")
-	{
+	clientData.getResponse().decodeUri(this->Uri);
+	if (RequestLineChunks[2] != "HTTP/1.1"){
 		clientData.getResponse().setStatusCode(505);
 		return (1);
 	}
-	// valide methode;
-	if (this->Validmethode(RequestLineChunks[0], clientData))
-	{
+	if (this->Validmethode(RequestLineChunks[0], clientData)){
 		clientData.getResponse().setStatusCode(501);
 		return (1);
 	}
@@ -297,23 +290,17 @@ std::string Request::getlocationName()
 	return (this->locationName);
 }
 
+
 void Request::deleteMethode(Client &clientData)
 {
-	// check for the Uri;
 	struct stat ss;
 	Location *PathLcoation = this->getServerLocation();
 	if (PathLcoation != NULL)
-	{
 		this->pathName = PathLcoation->getField("root").getValues()[0] + "/" + this->Uri;
-	}
 	else
-	{
 		this->pathName = clientData.getRequest().getserverNode().getFields()["root"].getValues()[0] + "/" + this->Uri;
-	}
 	if (stat(this->pathName.c_str(), &ss) != 0)
-	{
 		clientData.getResponse().setStatusCode(204);
-	}
 	else
 	{
 		if (ss.st_mode & S_IFDIR)
@@ -321,13 +308,9 @@ void Request::deleteMethode(Client &clientData)
 			clientData.getResponse().setStatusCode(403);
 			return;
 		}
-		else if (ss.st_mode & S_IFREG)
-		{
-			if (access(this->pathName.c_str(), O_WRONLY) == 0)
-			{
-				std::cout << this->pathName << std::endl;
-				if (!remove(this->pathName.c_str()))
-				{
+		else if (ss.st_mode & S_IFREG){
+			if (access(this->pathName.c_str(), O_WRONLY) == 0){
+				if (!remove(this->pathName.c_str())){
 					clientData.getResponse().setStatusCode(202);
 				}
 				else
@@ -392,9 +375,7 @@ int Request::checkAllowedMethode(void)
 {
 	std::vector<std::string> allowedMythode;
 	if (!this->serverLocation)
-	{
 		return (1);
-	}
 	allowedMythode = this->serverLocation->getField("limit_except").getValues();
 	if (allowedMythode.size() == 0)
 		return (1);
@@ -473,9 +454,14 @@ int Request::ParsingTheRequest(Client &ClientData)
 		this->handleEnvForCgi();
 		if (this->methode == "GET")
 			this->finishReading = true;
-		else if (this->methode == "POST" && this->compliteHeaderparser)
-		{
+		else if (this->methode == "POST" && this->compliteHeaderparser){
 			this->ParsePostHeaders();
+			if (this->serverLocation){
+				this->maxBodySize = this->serverLocation->getMaxBodySize();
+			}
+			else if (this->listenningServer){
+				this->maxBodySize = this->listenningServer->getMaxBodySize();
+			}
 		}
 		else
 		{
@@ -496,13 +482,11 @@ int Request::ParsingTheRequest(Client &ClientData)
 	else if (this->methode == "POST" && this->compliteHeaderparser)
 	{
 		this->ParsePostHeaders();
-		if (this->serverLocation)
-		{
-			this->maxBodySize = std::atoi(this->serverLocation->getField("client_max_body_size").getValues()[0].c_str());
+		if (this->serverLocation){
+			this->maxBodySize = this->serverLocation->getMaxBodySize();
 		}
-		else
-		{
-			this->maxBodySize = MAX_BODY_SIZE;
+		else if (this->listenningServer){
+			this->maxBodySize = this->listenningServer->getMaxBodySize();
 		}
 		return (0);
 	}
