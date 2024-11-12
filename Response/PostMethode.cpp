@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/12 12:36:05 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/12 17:38:24 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,6 +164,11 @@ int Response::handle_partchunkedformdataWriting(Client &clientData){
 	std::string headerString;
 	std::string startBd = clientData.getRequest().getStartBoundary();
 	std::string endBd = clientData.getRequest().getEndofBoundary();
+
+	if (startBd.empty()){
+		this->statusCode = 405;
+		return (1);
+	}	
 	while (!this->finaleBody.empty()){
 		pos = this->finaleBody.find(startBd);
 		if (pos != std::string::npos){
@@ -215,7 +220,6 @@ int Response::handle_partchunkedformdataWriting(Client &clientData){
 int Response::hexaToDecima(std::string hexa){
 	int decimal;
 	std::stringstream ss;
-
 	ss << std::hex << hexa;
 	ss >> decimal;
 	return (decimal);
@@ -409,11 +413,13 @@ int  Response::postBodyResponse(Client &clientData){
 		else{
 			if (clientData.getRequest().getContentLenght() == 0){
 				clientData.responseReady = true;
-				this->statusCode = 201;
+				this->statusCode = 400;
+				return (1);
 			}
 			if (!this->parseContentLenght(clientData, clientData.getMessage())){
 				clientData.responseReady = true;
 				this->statusCode = 201;
+				return (1);
 			}
 			else{
 				clientData.responseReady = true;

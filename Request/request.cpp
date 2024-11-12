@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/12 12:23:43 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/12 16:49:38 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -386,6 +386,18 @@ int Request::checkAllowedMethode(void)
 	return (1);
 }
 
+static int checkHostValue(std::string Value){
+	std::vector<std::string> chuncked;
+	std::string token;
+	std::stringstream ss(Value);
+
+	while (ss >> Value)
+		chuncked.push_back(token);
+	if (chuncked.size() != 1)
+		return (1);
+	return (0);
+}
+
 int Request::ParsingTheRequest(Client &ClientData)
 {
 	size_t pos;
@@ -418,8 +430,16 @@ int Request::ParsingTheRequest(Client &ClientData)
 		size_t tab = name.find('\t');
 		if (spa != std::string::npos || tab != std::string::npos)
 		{
+			this->finishReading = true;
 			ClientData.getResponse().setStatusCode(400);
-			return (0);
+			return (1);
+		}
+		if (name == "Host"){
+			if (checkHostValue(Value)){
+				this->finishReading = true;
+				ClientData.getResponse().setStatusCode(400);
+				return (1);
+			}
 		}
 		Value.erase(std::remove_if(Value.begin(), Value.end(), ::isspace), Value.end());
 		if (Value.empty() || name.empty())
@@ -446,9 +466,7 @@ int Request::ParsingTheRequest(Client &ClientData)
 		this->compliteHeaderparser = true;
 	}
 	else
-	{
 		return (0);
-	}
 	if (this->isCgi() && this->compliteHeaderparser)
 	{
 		this->handleEnvForCgi();

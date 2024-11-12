@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/12 12:15:09 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/12 17:13:25 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -701,6 +701,20 @@ void Response::reset(void)
 	this->isBody = false;
 	this->isRedir = false;
 	this->redirUrl = "";
+	this->bFullPath = "";
+	this->chunkedNotComplite = 0;
+	this->chunkSize = 0;
+	this->globalRead = 0;
+	this->bufferBody.clear();
+	this->outFile.close();
+	this->bFullPath.clear();
+	this->finaleBody.clear();
+	this->bhCtDisposition.clear();
+	this->bhConetentType.clear();
+	this->bhName.clear();
+	this->bhFileName.clear();
+	this->cgInputfile.clear();
+	this->cgiFile.close();
 }
 
 void Response::extractRange(void)
