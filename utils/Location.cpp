@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 09:31:10 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/12 12:09:03 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/13 11:23:19 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,15 @@ void Location::addField( std::string key, std::string value ) {
     this->fields[key].addValue(value);
 }
 
+
+bool Location::checkLocationFieldExists( std::string key ) {
+   return this->fields.find(key) != this->fields.end();
+}
+
 Field &Location::getField( std::string key ) {
-    if (this->fields.find(key) != this->fields.end())
+    if (this->fields.count(key) != 0)
         return this->fields[key];
+    
     return this->server->getField(key);
 }
 

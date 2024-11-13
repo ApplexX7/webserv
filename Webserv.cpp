@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/12 17:00:52 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/13 12:30:49 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,6 +112,7 @@ void disconnectClient(
 
     if (clients[fds[i].fd])
     {
+        std::cout << "User disconnected " << fds[i].fd << std::endl;
         delete clients[fds[i].fd];
         clients.erase(fds[i].fd);
         close(fds[i].fd);
@@ -206,6 +207,7 @@ void Webserv::listen(void)
                             throw Webserv::ServerException("Error accepting opening connection");
                         else
                         {
+                            std::cout << "User connected " << new_fd << std::endl;
                             newPollFd.events = POLLIN | POLLHUP;
                             clients[new_fd] = new Client(this->servers, "", new_fd);
                             clientFds.push_back(new_fd);

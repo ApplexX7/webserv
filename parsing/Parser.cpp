@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/12 17:34:17 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/13 10:33:23 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -314,7 +314,6 @@ void Parser::validateField( std::string key, std::vector<std::string> values ) {
         Parser::validateCgiPath(values);
     if (key == "return")
         Parser::validateRedirection(values);
-    
 }
 
 void Parser::validatePathDirective( std::vector<std::string> values, std::string name ) {

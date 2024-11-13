@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/12 17:31:01 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/13 11:38:02 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,13 @@ void ServerNode::setMaxBodySize( void ) {
     this->maxSize = size;
 }
 
+void setLocationDefaults(Location& loc) {
+    if (!loc.checkLocationFieldExists("limit_except"))
+    {
+        loc.addField("limit_except", "GET POST DELETE");
+    }
+}
+
 void ServerNode::initializeLocation( ListNode* child ) {
     std::vector<std::string> fields;
     std::vector<std::string> splitField;
@@ -103,7 +110,7 @@ void ServerNode::initializeLocation( ListNode* child ) {
     fields = child->getFields();
     splitField = (Parser::strSplit(child->getContent(), ' '));
     if (splitField.size() != 2 || splitField[0] != "location")
-        throw Parser::ParsingException("Expected location directive but got \"" + splitField[0] + "\"");
+        throw Parser::ParsingException("Wrong location directive");
 
     path = splitField[1];
     if (this->locationExists(path))
@@ -305,6 +312,7 @@ int ServerNode::generateServerFd( void ) {
     struct addrinfo *servinfo;
     int sockfd;
     int optval;
+    int gaiRet = 0;
 
     splitListen = Parser::strSplit(this->fields["listen"].getValues()[0], ':');
     if (splitListen[0] == "localhost")
@@ -313,9 +321,12 @@ int ServerNode::generateServerFd( void ) {
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-
     
-    getaddrinfo(splitListen[0].data(), splitListen[1].data(), &hints, &servinfo);
+    gaiRet = getaddrinfo(splitListen[0].data(), splitListen[1].data(), &hints, &servinfo);
+    
+    if (gaiRet != 0)
+        throw ServerNode::SocketException("[Warning] getaddrinfo failed for " + splitListen[1]);
+
     sockfd = socket(PF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
     {

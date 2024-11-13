@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/12 19:40:08 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/13 12:25:52 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -575,7 +575,6 @@ std::string Response::constructHeader(void)
 	std::map<std::string, std::string> headers;
 	std::map<std::string, std::string> cgiHeaders;
 	std::map<std::string, std::string>::iterator it;
-	std::vector<std::string> accepts;
 
 
 	if (this->client->getRequest().getIsACgi() && !this->isError) {
@@ -614,15 +613,6 @@ std::string Response::constructHeader(void)
 				continue;
 			headers[it->first] = it->second;
 		}
-	}
-
-	// check Accept header
-	accepts = Parser::strSplit(this->client->getRequest().getHeaders()["Accept"], ',');
-
-	if (accepts.size() != 0 
-	&& std::find(accepts.begin(), accepts.end(), this->contentType) == accepts.end()) {
-		if (accepts[0] != "*/*" && headers["Content-Type"] != "application/octet-stream")
-			headers["Content-Type"] = accepts[0];
 	}
 
 	for (it = headers.begin(); it != headers.end(); it++)
@@ -674,31 +664,6 @@ std::string Response::getFileChunk(void)
 	if (this->bytesSent >= this->contentLength)
 		this->status = FINISHED;
 	return chunk;
-}
-
-bool Response::checkAllowedMethod(std::string path)
-{
-	ServerNode &server = this->client->getParentServer();
-	std::map<std::string, Location> locations = server.getLocations();
-	Location *location = NULL;
-	std::string method = this->client->getRequest().getmethode();
-	std::vector<std::string> allowedMethods;
-
-	location = this->getPathLocation(path);
-
-	if (!location)
-		return true;
-
-	allowedMethods = location->getField("limit_except").getValues();
-
-	if (allowedMethods.size() == 0)
-		return true;
-	if (std::find(allowedMethods.begin(), allowedMethods.end(), method) == allowedMethods.end())
-	{
-		this->statusCode = METHOD_NOT_ALLOWED;
-		throw ResponseException("Method not allowed");
-	}
-	return true;
 }
 
 void Response::reset(void)

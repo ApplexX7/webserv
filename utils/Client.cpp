@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 15:12:11 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 11:04:49 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/13 12:29:17 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,9 +102,7 @@ void Client::findParentServer( void ) {
         
         
         if (serverListen == this->listen) {
-            // std::cout << "|" << serverListen << "| |" << this->listen << "|" <<std::endl;
             if (this->parentServer == NULL) {
-                // std::cout << "default found on " << serverListen << std::endl;
                 this->parentServer = servers[i];
             }
 
@@ -112,8 +110,6 @@ void Client::findParentServer( void ) {
 
             for (int j = 0; j < (int) serverNames.size(); j++) {
                 if (host == serverNames[j]) {
-                    // match found
-                    // std::cout << "Matched with " << serverListen << " on " << host << std::endl;
                     this->parentServer = servers[i];
                     matched = true;
                     break ;

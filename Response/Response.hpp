@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 17:53:21 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/13 11:30:02 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,7 +154,6 @@ class Response {
         // helpers
         std::string getStatusText( void );
         std::string getFileChunk( void );
-        bool checkAllowedMethod( std::string );
         void reset( void );
         void extractRange( void );
         void decodeUri( std::string& );

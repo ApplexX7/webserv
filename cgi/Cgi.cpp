@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/13 09:42:05 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/13 12:02:20 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,7 @@ void Cgi::cgiExecution(Client &clientData){
 		exit (1);
 	}
 	for (size_t i = 0; i < this->envCgi.size(); i++){
-		env[i] =  new  char[this->envCgi[i].length()];
+		env[i] =  new  char[this->envCgi[i].length() + 1];
 		std::strcpy(env[i], this->envCgi[i].c_str());
 		if (!env[i]){
 			exit(1);
@@ -168,11 +168,10 @@ static std::string int_to_string(int num){
 int Cgi::CgiMonitore(Client &clientData){
 	int status;
 	if(std::time(NULL) - this->Cgi_timeout >= 10){
-		if (this->pid != -1)
+		if (this->pid > 0)
 			kill(this->pid, SIGTERM);
 		remove(this->fileName.c_str());
 		close(this->fileResponse);
-		this->thereIsOne = false;
 		this->fileResponse = -1;
 		clientData.getResponse().setStatusCode(408);
 		clientData.responseReady = true;
@@ -192,7 +191,7 @@ int Cgi::CgiMonitore(Client &clientData){
 			close(this->fileResponse);
 			this->fileResponse = -1;
 		}
-		if (this->pid != -1)
+		if (this->pid > 0)
 			kill(this->pid, SIGTERM);
 		return (1);
 	}
@@ -200,6 +199,12 @@ int Cgi::CgiMonitore(Client &clientData){
 }
 
 int Cgi::executeCgi(Client &clientData) {
+	std::string fullPath = clientData.getRequest().getRoot()+ "/" + clientData.getRequest().getUri();
+	if (access(fullPath.c_str(), F_OK) != 0){
+		clientData.getRequest().setisACGI(false);
+		clientData.getResponse().setStatusCode(404);
+		return (1);
+	}
 	std::srand(std::time(NULL));
 	this->fileName = "/tmp/." +  clientData.getResponse().generateFileName() + std::to_string(std::rand()) + int_to_string(clientData.getFd());
 	this->pid = fork();
@@ -208,7 +213,6 @@ int Cgi::executeCgi(Client &clientData) {
 		return (1);
 	}
 	if (this->pid == 0){
-		signal(SIGTERM, SIG_DFL);
 		this->cgiExecution(clientData);
 		return (1);
 	}

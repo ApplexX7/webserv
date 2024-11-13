@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 12:18:27 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/11 19:17:39 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/13 12:06:41 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ class Request{
         bool finishReading;
         bool compliteHeaderparser;
         long int maxBodySize;
+        std::string root;
         std::string locationName;
         std::string pathName;
         std::string quertyString;
@@ -80,12 +81,12 @@ class Request{
         int handleEnvForCgi();
         /*******************************/
         int checkAllowedMethode();
-        int getContentLenght();
-        bool getFinishReading();
-        bool getIsACgi();
+        int &getContentLenght();
+        bool &getFinishReading();
+        bool &getIsACgi();
         int requestParserStart(Client &clientData);
         void setpathName(std::string _Name);
-        std::string getpathName( void );
+        std::string &getpathName( void );
         void setHeaders(std::string &name, std::string &value);
         void Setmethode(std::string _metode);
         void setport(std::string _port);
@@ -93,17 +94,18 @@ class Request{
         int ParseRequestLine(std::string &Message, Client &ClientData);
         int ParsingRequestHeaders(std::string RequestHeader);
         Location *getServerLocation();
-        std::string getlocationName();
+        std::string &getlocationName();
         ServerNode &getserverNode() const;
         int Validmethode(std::string &methode, Client &clientData);
         std::string FindHost(std::string HostLine);
-        TypeTransf getTheBodyType();
-        std::string getStartBoundary();
-        std::string getEndofBoundary();
-        std::string getTransferCoding();
+        TypeTransf &getTheBodyType();
+        std::string &getStartBoundary();
+        std::string &getEndofBoundary();
+        std::string &getTransferCoding();
         void setFinishReading(bool var);
         Location *findLocationtobeUsed();
-
+        void setisACGI(bool var);
+        std::string &getRoot( void );
         long int &getClientMaxSizeBody();
     
         void findServer(Client &ClientData);
@@ -118,11 +120,11 @@ class Request{
         int parseBodytype();
         int parseBodyTypeBuffer(std::string &bufferedBody);
     
-        std::string  getport();
-        std::string gethostName();
+        std::string  &getport();
+        std::string &gethostName();
         std::string getValue(std::string _Key);
-        std::string getmethode();
-        std::string getUri();
+        std::string &getmethode();
+        std::string &getUri();
         std::string &getBody();
         std::map<std::string,std::string> &getHeaders( void );
 

@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:43:59 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/11 20:48:21 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/13 09:56:46 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@ class Cgi {
         void reset();
     private:
         time_t Cgi_timeout;
-        bool thereIsOne;
         int fileResponse;
         int pid;
         int fileOfsset;

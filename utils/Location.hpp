@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 09:30:53 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/12 10:43:07 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/13 10:59:25 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ class Location {
         Field &getField( std::string );
         void addCgiPath( std::string, std::string );
         std::string getCgiPath( std::string );
+        bool checkLocationFieldExists( std::string );
 
         void setMaxBodySize( void );
         unsigned long long getMaxBodySize( void ) const;

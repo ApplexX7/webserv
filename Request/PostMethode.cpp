@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostMethode.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/07 09:49:44 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/10 20:13:12 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/13 12:27:02 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,6 @@ int Request::ParsePostHeaders(){
 	return (0);
 }
 
-
-//check  the end of teh body and the type of body
 int Request::parseBodyTypeBuffer(std::string &bufferedBody){
 	if (!this->TransferCoding.empty()){
 		if (this->TransferCoding == "chunked"){

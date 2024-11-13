@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Request.cpp                                        :+:      :+:    :+:   */
+/*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/13 09:35:18 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/13 12:28:03 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ Request::Request()
 	this->serverLocation = NULL;
 }
 
-bool Request::getFinishReading()
+bool &Request::getFinishReading()
 {
 	return (this->finishReading);
 }
@@ -45,7 +45,7 @@ Request &Request::operator=(const Request &ope)
 	return (*this);
 }
 
-bool Request::getIsACgi()
+bool &Request::getIsACgi()
 {
 	return (this->isaCgi);
 }
@@ -56,6 +56,10 @@ void Request::setHeaders(std::string &name, std::string &value)
 	{
 		this->headers[name] = value;
 	}
+}
+
+void Request::setisACGI(bool var){
+	this->isaCgi = var;
 }
 
 void Request::findServer(Client &clientData)
@@ -86,12 +90,12 @@ void Request::findServer(Client &clientData)
 	}
 }
 
-std::string Request::getpathName(void)
+std::string &Request::getpathName(void)
 {
 	return (this->pathName);
 }
 
-int Request::getContentLenght()
+int &Request::getContentLenght()
 {
 	return (this->contentLenght);
 }
@@ -231,9 +235,13 @@ Location *Request::getServerLocation()
 	return (this->serverLocation);
 }
 
+std::string &Request::getRoot( void ){
+	return (this->root);
+}
+
 Location *Request::findLocationtobeUsed()
 {
-	std::map<std::string, Location> locations = this->listenningServer->getLocations();
+	std::map<std::string, Location> &locations = this->listenningServer->getLocations();
 	std::map<std::string, Location>::iterator it;
 	std::string path = this->Uri;
 	Location *location = NULL;
@@ -259,6 +267,10 @@ Location *Request::findLocationtobeUsed()
 			}
 		}
 	}
+	if (location)
+		this->root = location->getField("root").getValues()[0];
+	else
+		this->root = this->listenningServer->getField("root").getValues()[0];
 	return location;
 }
 
@@ -281,7 +293,7 @@ std::string Request::FindHost(std::string HostLine)
 	return "";
 }
 
-std::string Request::getlocationName()
+std::string &Request::getlocationName()
 {
 	return (this->locationName);
 }
@@ -370,6 +382,7 @@ int Request::handleEnvForCgi()
 int Request::checkAllowedMethode(void)
 {
 	std::vector<std::string> allowedMythode;
+
 	if (!this->serverLocation)
 		return (1);
 	allowedMythode = this->serverLocation->getField("limit_except").getValues();
@@ -574,22 +587,22 @@ void Request::setFinishReading(bool var)
 	this->finishReading = var;
 }
 
-std::string Request::getTransferCoding()
+std::string &Request::getTransferCoding()
 {
 	return (this->TransferCoding);
 }
 
-std::string Request::getEndofBoundary()
+std::string &Request::getEndofBoundary()
 {
 	return (this->endofBoundary);
 }
 
-std::string Request::getStartBoundary()
+std::string &Request::getStartBoundary()
 {
 	return (this->startofBoundary);
 }
 
-TypeTransf Request::getTheBodyType()
+TypeTransf &Request::getTheBodyType()
 {
 	return (this->bodyType);
 }
@@ -604,12 +617,12 @@ void Request::setport(std::string _Port)
 	this->port = _Port;
 }
 
-std::string Request::getport()
+std::string &Request::getport()
 {
 	return (this->port);
 }
 
-std::string Request::gethostName()
+std::string &Request::gethostName()
 {
 	return (this->hostName);
 }
@@ -662,12 +675,12 @@ void Request::Setmethode(std::string _methode)
 {
 	this->methode = _methode;
 }
-std::string Request::getmethode()
+std::string &Request::getmethode()
 {
 	return (this->methode);
 }
 
-std::string Request::getUri()
+std::string &Request::getUri()
 {
 	return (this->Uri);
 }
