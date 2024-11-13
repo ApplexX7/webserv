@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 09:45:37 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/12 19:13:11 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/13 09:42:05 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,6 +104,7 @@ void Cgi::cgiExecution(Client &clientData){
 		}
 	}
 	env[this->envCgi.size()] = 0;
+	fclose(stderr);
 	if (execve(this->cgiPath.c_str(), args , env) == -1){
 		for (int i = 0; env[i] != NULL; i++){
 			delete [] env[i];

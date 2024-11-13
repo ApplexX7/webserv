@@ -6,7 +6,7 @@
 /*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:28:36 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/12 16:49:38 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/13 09:35:18 by mohilali         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,10 +55,6 @@ void Request::setHeaders(std::string &name, std::string &value)
 	if (!name.empty() && !value.empty())
 	{
 		this->headers[name] = value;
-	}
-	else
-	{
-		std::cerr << "Error: Header name or value is empty!" << std::endl;
 	}
 }
 
@@ -688,6 +684,16 @@ std::map<std::string, std::string> &Request::getHeaders(void)
 
 void Request::reset(void)
 {
+    this->contentLenght = -1;
+    this->bodyType = NONE;
+    this->contentType = "";
+    this->startofBoundary = "";
+    this->endofBoundary = "";
+    this->TransferCoding = "";
+	this->isaCgi = false;
+    this->requestLine = false;
+    this->finishReading = false;
+    this->compliteHeaderparser = false;
 	this->Uri = "";
 	this->finishReading = false;
 	this->compliteHeaderparser = false;
