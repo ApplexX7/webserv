@@ -6,16 +6,18 @@
 #    By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/09/05 08:03:16 by wbelfatm          #+#    #+#              #
-#    Updated: 2024/11/13 10:34:07 by wbelfatm         ###   ########.fr        #
+#    Updated: 2024/11/13 14:18:53 by wbelfatm         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-CFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g
+CFLAGS = -Wall -Wextra -Werror -std=c++98
+
 SRC = main.cpp Webserv.cpp parsing/Parser.cpp utils/ListNode.cpp utils/ServerNode.cpp \
 	  utils/Field.cpp utils/Location.cpp utils/Client.cpp \
 	  Request/Request.cpp  Request/PostMethode.cpp \
 	  Response/Response.cpp Response/PostMethode.cpp Response/MimeType.cpp \
 	  cgi/Cgi.cpp
+	
 OBJ = ${SRC:.cpp=.o}
 NAME = webserv
 HEADERS = Webserv.hpp parsing/Parser.hpp utils/ListNode.hpp utils/ServerNode.hpp \

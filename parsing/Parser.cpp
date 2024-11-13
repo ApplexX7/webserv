@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/05 08:06:07 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/13 10:33:23 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/13 14:20:36 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,9 +137,6 @@ ListNode *Parser::extractBlocks( std::string str, int level )
 
         char tmpChar = str[end];
 
-        // if it is '{' then there's a subfield
-            // check if level is 0, create a subfield
-            // otherwise take it as field
         if (tmpChar == '{')
         {
             if (level == 0)
@@ -277,7 +274,6 @@ std::vector<std::string> Parser::strSplit( std::string str, char c ) {
         while (end < str.length() && str[end] != c)
             end++;
         strs.push_back(str.substr(start, end - start));
-        // std::cout << str.substr(start, end - start) << std::endl;
 
         if (end >= str.length())
             break ;

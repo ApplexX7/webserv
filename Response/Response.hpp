@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:14:38 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/13 11:30:02 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/13 14:20:46 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,8 +132,6 @@ class Response {
         std::string generateFileName();
         std::map<std::string, std::string> getMap( void ) const;
         void setMap(std::string _name, std::string _Value);
-        
-        // std::string getMimeType(std::string _Key);
         
         int getStatusCode( void );
         void setStatusCode( int );

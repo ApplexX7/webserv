@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 11:19:17 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/13 12:25:52 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/13 14:15:02 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -578,7 +578,8 @@ std::string Response::constructHeader(void)
 
 
 	if (this->client->getRequest().getIsACgi() && !this->isError) {
-		cgiHeaders = this->CgiHeaders; 
+		cgiHeaders = this->CgiHeaders;
+		cgiHeaders["Content-Type"] = "text/html";
 		if (cgiHeaders.count("Status") > 0)
 		{
 			this->statusCode = std::atoi(cgiHeaders["Status"].data());

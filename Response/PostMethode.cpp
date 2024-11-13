@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostMethode.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mohilali <mohilali@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 14:22:41 by mohilali          #+#    #+#             */
-/*   Updated: 2024/11/12 18:40:25 by mohilali         ###   ########.fr       */
+/*   Updated: 2024/11/13 14:01:24 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,7 +165,7 @@ int Response::handle_partchunkedformdataWriting(Client &clientData){
 	std::string endBd = clientData.getRequest().getEndofBoundary();
 
 	if (startBd.empty()){
-		this->statusCode = 405;
+		this->statusCode = 400;
 		return (1);
 	}	
 	while (!this->finaleBody.empty()){
@@ -428,7 +428,7 @@ int  Response::postBodyResponse(Client &clientData){
 		}
 	}
 	else if (clientData.getRequest().getTheBodyType() == NONE){
-		this->statusCode = 406;
+		this->statusCode = 400;
 		clientData.responseReady = true;
 		clientData.getRequest().setFinishReading(true);
 	}

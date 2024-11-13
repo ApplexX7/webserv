@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 11:47:25 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/13 11:38:02 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/13 14:17:56 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,7 +176,9 @@ void ServerNode::initializeServer( ListNode* server ) {
 
         // check directive values validity
         Parser::validateField(splitField[0], this->getField(splitField[0]).getValues());
-
+        this->addCgi(".py", "/usr/bin/python3");
+        this->addCgi(".php", "/usr/bin/php");
+        
         // add cgi paths
         if (splitField[0] == "cgi_path")
         {

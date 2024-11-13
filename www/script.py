@@ -1,3 +1,7 @@
 import time
+import os
 
-print("hello")
+print("Content-Type: text/html\r\n\r")
+
+print(os.environ)
+

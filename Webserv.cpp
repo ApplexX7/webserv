@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/13 12:30:49 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/13 14:15:28 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,15 +17,6 @@
 Webserv::Webserv(void)
 {
     this->listHead = NULL;
-}
-
-void printVector(std::vector<std::string> arr)
-{
-    for (int i = 0; i < (int)arr.size(); i++)
-    {
-        std::cout << arr[i] << " ---- ";
-    }
-    std::cout << std::endl;
 }
 
 /*
@@ -144,7 +135,7 @@ void Webserv::listen(void)
     char buf[CHUNK_SIZE + 1];
     int bytes_read;
     int bytes_sent;
-    std::string res;
+    std::string res = "";
 
     addr_size = sizeof(their_addr);
 
@@ -273,7 +264,7 @@ void Webserv::listen(void)
                             bytes_sent = send(fds[i].fd, res.data(), res.size(), 0);
                             if (bytes_sent <= 0)
                                 throw Webserv::ServerException("Error sending data");
-
+                                
                             // reset message
                             clients[fds[i].fd]->setMessage("");
 
@@ -282,21 +273,21 @@ void Webserv::listen(void)
                             // finished sending response
                             if (clients[fds[i].fd]->getResponse().getStatus() == FINISHED)
                             {
-                                if (connection == "keep-alive")
+                                if (connection == "close")
+                                    disconnectClient(clients, fds, clientFds, i);
+                                else
                                 {
                                     fds[i].events = POLLIN | POLLHUP;
                                     clients[fds[i].fd]->getResponse().reset();
                                     clients[fds[i].fd]->responseReady = false;
                                     clients[fds[i].fd]->getRequest().reset();
                                 }
-                                else
-                                    disconnectClient(clients, fds, clientFds, i);
                             }
                         }
                     }
                     catch (std::exception &e)
                     {
-                        if (bytes_sent > 0)
+                        if (res.length() > 0)
                         {
                             clients[fds[i].fd]->getResponse().setStatusCode(INTERNAL_SERVER_ERROR);
                             res = clients[fds[i].fd]->getResponse().generateResponse();
