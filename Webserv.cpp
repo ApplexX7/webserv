@@ -6,7 +6,7 @@
 /*   By: wbelfatm <wbelfatm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 12:25:41 by wbelfatm          #+#    #+#             */
-/*   Updated: 2024/11/13 14:15:28 by wbelfatm         ###   ########.fr       */
+/*   Updated: 2024/11/16 20:55:14 by wbelfatm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,6 @@ void disconnectClient(
 
     if (clients[fds[i].fd])
     {
-        std::cout << "User disconnected " << fds[i].fd << std::endl;
         delete clients[fds[i].fd];
         clients.erase(fds[i].fd);
         close(fds[i].fd);
@@ -195,10 +194,9 @@ void Webserv::listen(void)
                         new_fd = accept(fds[i].fd, (struct sockaddr *)&their_addr, &addr_size);
 
                         if (new_fd < 0)
-                            throw Webserv::ServerException("Error accepting opening connection");
+                            throw Webserv::ServerException("Error accepting connection");
                         else
                         {
-                            std::cout << "User connected " << new_fd << std::endl;
                             newPollFd.events = POLLIN | POLLHUP;
                             clients[new_fd] = new Client(this->servers, "", new_fd);
                             clientFds.push_back(new_fd);
@@ -232,6 +230,9 @@ void Webserv::listen(void)
                         clients[fds[i].fd]->getRequest().requestParserStart(*clients[fds[i].fd]);
                         if ((*clients[fds[i].fd]).getRequest().getFinishReading())
                         {
+                            std::cout << (*clients[fds[i].fd]).getRequest().getmethode() << " ";
+                            std::cout << (*clients[fds[i].fd]).getRequest().getUri() << std::endl;
+
                             // find server responsible for this client
                             clients[fds[i].fd]->findParentServer();
 
